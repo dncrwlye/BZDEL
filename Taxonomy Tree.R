@@ -1,7 +1,20 @@
 library(ape)
+library(tidyverse)
+
+########################################
+########################################
+library(readr)
+viruses <- read_csv("~/Desktop/BDEL/BZDEL/viruses.csv")
+
+#first do Mononegavirales
+
+taxonomy_tree <- function(order)
+{
+  
+Mononegavirales<-viruses %>%
+  filter(vOrder==order)
 
 virus_names <- unique(Mononegavirales$vVirusNameCorrected)
-
 matrix_mono <- matrix(100, length(virus_names), length(virus_names)) 
 colnames(matrix_mono) <- virus_names
 row.names(matrix_mono) <- virus_names
@@ -30,14 +43,23 @@ for (i in 1:length(virus_names))
   order_vector <- which(Mononegavirales$vGenus == as.character(order))
   matrix_mono[i,c(order_vector)] = 25
   matrix_mono[c(order_vector),i] = 25
-  
 }
 
 diag(matrix_mono) <- 0
 
 x<-as.dist(matrix_mono)
 hc <- hclust(x, "ave")
-hc.phylo <- as.ph
+hc_phylo <- as.phylo(hc)
+}
 
+Mononegavirales_hc_phylo<-taxonomy_tree('Mononegavirales')
+plot(Mononegavirales_hc_phylo)
 
-plot(hc)
+Picornavirales_hc_phylo<-taxonomy_tree('Picornavirales')
+plot(Picornavirales_hc_phylo)
+
+Herpesvirales_hc_phylo<-taxonomy_tree('Herpesvirales')
+plot(Picornavirales_hc_phylo)
+
+Nidovirales_hc_phylo<-taxonomy_tree('Nidovirales')
+plot(Picornavirales_hc_phylo)
