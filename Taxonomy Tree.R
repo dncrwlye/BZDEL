@@ -6,7 +6,6 @@ library(readr)
 ########################################
 viruses <- read_csv("~/Desktop/BDEL/BZDEL/viruses.csv")
 
-
 taxonomy_tree <- function(order)
 {
 Mononegavirales<-viruses %>% #I did Monogavirales first, then turned this into a function. Just ignore names meaning, its just a variable/dataset name now
@@ -54,7 +53,6 @@ x<-as.dist(matrix_mono)
 hc <- hclust(x, "ave")
 hc_phylo <- as.phylo(hc)
 }
-
 
 Mononegavirales_hc_phylo<-taxonomy_tree('Mononegavirales')
 plot(Mononegavirales_hc_phylo)
@@ -185,3 +183,69 @@ save(Mononegavirales_hc_phylo,
      file = 'phylo_data_for_alex.rdata')
   
 
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+#############  ~~**SUPER ALT. FUNCTION WHERE  WE COMBINE EVERYTHING**~~  #################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+
+taxonomy_tree_super_alt <- function()
+{
+
+  virus_names <- unique(viruses$vVirusNameCorrected)
+  
+  matrix_mono <- matrix(125, length(virus_names), length(virus_names)) 
+  colnames(matrix_mono) <- virus_names
+  row.names(matrix_mono) <- virus_names
+  diag(matrix_mono) <- 0
+  
+  for (i in 1:length(virus_names)) 
+  {
+    indice1 <- which(viruses == virus_names[i])[[1]] 
+    
+    order <- as.character(viruses[i, 'vOrder'])
+    if(order != 'Unassigned')    
+    {
+      order_vector <- which(viruses$vOrder == as.character(order))
+      matrix_mono[i,c(order_vector)] = 100
+      matrix_mono[c(order_vector),i] = 100
+    }
+    
+    family <- as.character(viruses[i, 'vFamily'])
+    if(family != 'Unassigned')    
+    {
+      family_vector <- which(viruses$vFamily == as.character(family))
+      matrix_mono[i,c(family_vector)] = 75
+      matrix_mono[c(family_vector),i] = 75
+    }
+    
+    subfamily <- as.character(viruses[i, 'vSubfamily'])
+    #several viruses don't have subfamilies, need to exclude these
+    if (!is.na(subfamily))
+    {
+      subfamily_vector <- which(viruses$vSubfamily == as.character(subfamily))
+      matrix_mono[i,c(subfamily_vector)] = 50
+      matrix_mono[c(subfamily_vector),i] = 50
+    }
+    
+    #okay this should actually go last
+    genus <- as.character(viruses[i, 'vGenus'])
+    if(genus != 'Unassigned')
+    {
+      genus_vector <- which(viruses$vGenus == as.character(genus))
+      matrix_mono[i,c(genusr_vector)] = 25
+      matrix_mono[c(genus_vector),i] = 25
+    }
+  }
+  
+  diag(matrix_mono) <- 0
+  
+  x<-as.dist(matrix_mono)
+  hc <- hclust(x, "ave")
+  hc_phylo <- as.phylo(hc)
+}
