@@ -238,7 +238,7 @@ taxonomy_tree_super_alt <- function()
     if(genus != 'Unassigned')
     {
       genus_vector <- which(viruses$vGenus == as.character(genus))
-      matrix_mono[i,c(genusr_vector)] = 25
+      matrix_mono[i,c(genus_vector)] = 25
       matrix_mono[c(genus_vector),i] = 25
     }
   }
@@ -249,3 +249,9 @@ taxonomy_tree_super_alt <- function()
   hc <- hclust(x, "ave")
   hc_phylo <- as.phylo(hc)
 }
+
+el_jefe_grande <-taxonomy_tree_super_alt()
+plot(el_jefe_grande)
+
+save(el_jefe_grande,  
+     file = 'el_jefe.rdata')
