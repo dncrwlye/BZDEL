@@ -36,11 +36,16 @@ for (i in 1:length(virus_names))
     matrix_mono[c(subfamily_vector),i] = 50
     }
   #okay this should actually go last
-  indice1 <- which(Mononegavirales == virus_names[i])[[1]] 
-  order <- as.character(Mononegavirales[i, 'vGenus'])
+
+  order <- as.character(viruses_no_order_subset[i, 'vGenus'])
+  
+  if(order != 'Unassigned')
+  {
+    order <- as.character(Mononegavirales[i, 'vGenus'])
   order_vector <- which(Mononegavirales$vGenus == as.character(order))
   matrix_mono[i,c(order_vector)] = 25
   matrix_mono[c(order_vector),i] = 25
+  }
 }
 
 diag(matrix_mono) <- 0
@@ -104,12 +109,17 @@ taxonomy_tree_alternative <- function(family)
       matrix_mono[i,c(subfamily_vector)] = 50
       matrix_mono[c(subfamily_vector),i] = 50
     }
+    
     #okay this should actually go last
-    indice1 <- which(viruses_no_order_subset == virus_names[i])[[1]] 
+
     order <- as.character(viruses_no_order_subset[i, 'vGenus'])
+    
+    if(order != 'Unassigned')
+    {
     order_vector <- which(viruses_no_order_subset$vGenus == as.character(order))
     matrix_mono[i,c(order_vector)] = 25
     matrix_mono[c(order_vector),i] = 25
+    }
   }
   
   diag(matrix_mono) <- 0
