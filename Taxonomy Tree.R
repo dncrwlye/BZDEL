@@ -1,47 +1,47 @@
 library(ape)
 library(tidyverse)
+library(readr)
 
 ########################################
 ########################################
-library(readr)
 viruses <- read_csv("~/Desktop/BDEL/BZDEL/viruses.csv")
 
-#first do Mononegavirales
 
 taxonomy_tree <- function(order)
 {
-Mononegavirales<-viruses %>%
+Mononegavirales<-viruses %>% #I did Monogavirales first, then turned this into a function. Just ignore names meaning, its just a variable/dataset name now
   filter(vOrder==order)
-virus_names <- unique(Mononegavirales$vVirusNameCorrected)
-matrix_mono <- matrix(100, length(virus_names), length(virus_names)) 
-colnames(matrix_mono) <- virus_names
+virus_names <- unique(Mononegavirales$vVirusNameCorrected) #create a vector that contains all the unique viruses in the order you are curious about
+matrix_mono <- matrix(100, length(virus_names), length(virus_names)) #create your distance matrix
+colnames(matrix_mono) <- virus_names #label your distance matrix 
 row.names(matrix_mono) <- virus_names
-diag(matrix_mono) <- 0
+diag(matrix_mono) <- 0 #set the diaganol of the distance matrix to zero, this is required for Hclust package
 
 for (i in 1:length(virus_names)) 
 {
-  indice1 <- which(Mononegavirales == virus_names[i])[[1]] 
+  indice1 <- which(Mononegavirales == virus_names[i])[[1]] # I'm not sure anymore if we need this
   
-  family <- as.character(Mononegavirales[i, 'vFamily'])
-  family_vector <- which(Mononegavirales$vFamily == as.character(family))
-  matrix_mono[i,c(family_vector)] = 75
+  family <- as.character(Mononegavirales[i, 'vFamily']) # pull the family name 
+  if(family != 'Unassigned') # several families are unassigned, we need to not group those viruses together 
+  {
+  family_vector <- which(Mononegavirales$vFamily == as.character(family)) #create a vector of indices that indiciate which viruses are in the same family
+  matrix_mono[i,c(family_vector)] = 75 #assign those locations on the matrix a 75
   matrix_mono[c(family_vector),i] = 75
-  
+  }
   subfamily <- as.character(Mononegavirales[i, 'vSubfamily'])
   #several viruses don't have subfamilies, need to exclude these
   if (!is.na(subfamily))
     {
     subfamily_vector <- which(Mononegavirales$vSubfamily == as.character(subfamily))
-    matrix_mono[i,c(subfamily_vector)] = 50
+    matrix_mono[i,c(subfamily_vector)] = 50 #the viruses are more closely related, so assign them a 50
     matrix_mono[c(subfamily_vector),i] = 50
     }
   #okay this should actually go last
 
-  order <- as.character(viruses_no_order_subset[i, 'vGenus'])
-  
+  order <- as.character(Mononegavirales[i, 'vGenus'])
   if(order != 'Unassigned')
   {
-    order <- as.character(Mononegavirales[i, 'vGenus'])
+  order <- as.character(Mononegavirales[i, 'vGenus'])
   order_vector <- which(Mononegavirales$vGenus == as.character(order))
   matrix_mono[i,c(order_vector)] = 25
   matrix_mono[c(order_vector),i] = 25
@@ -63,10 +63,10 @@ Picornavirales_hc_phylo<-taxonomy_tree('Picornavirales')
 plot(Picornavirales_hc_phylo)
 
 Herpesvirales_hc_phylo<-taxonomy_tree('Herpesvirales')
-plot(Picornavirales_hc_phylo)
+plot(Herpesvirales_hc_phylo)
 
 Nidovirales_hc_phylo<-taxonomy_tree('Nidovirales')
-plot(Picornavirales_hc_phylo)
+plot(Nidovirales_hc_phylo)
 
 ##########################################################################################
 ##########################################################################################
