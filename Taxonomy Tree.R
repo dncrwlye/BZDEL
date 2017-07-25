@@ -199,7 +199,7 @@ taxonomy_tree_super_alt <- function()
 
   virus_names <- unique(viruses$vVirusNameCorrected)
   
-  matrix_mono <- matrix(125, length(virus_names), length(virus_names)) 
+  matrix_mono <- matrix(500, length(virus_names), length(virus_names)) 
   colnames(matrix_mono) <- virus_names
   row.names(matrix_mono) <- virus_names
   diag(matrix_mono) <- 0
@@ -212,16 +212,16 @@ taxonomy_tree_super_alt <- function()
     if(order != 'Unassigned')    
     {
       order_vector <- which(viruses$vOrder == as.character(order))
-      matrix_mono[i,c(order_vector)] = 100
-      matrix_mono[c(order_vector),i] = 100
+      matrix_mono[i,c(order_vector)] = 250
+      matrix_mono[c(order_vector),i] = 250
     }
     
     family <- as.character(viruses[i, 'vFamily'])
     if(family != 'Unassigned')    
     {
       family_vector <- which(viruses$vFamily == as.character(family))
-      matrix_mono[i,c(family_vector)] = 75
-      matrix_mono[c(family_vector),i] = 75
+      matrix_mono[i,c(family_vector)] = 125
+      matrix_mono[c(family_vector),i] = 125
     }
     
     subfamily <- as.character(viruses[i, 'vSubfamily'])
@@ -229,8 +229,8 @@ taxonomy_tree_super_alt <- function()
     if (!is.na(subfamily))
     {
       subfamily_vector <- which(viruses$vSubfamily == as.character(subfamily))
-      matrix_mono[i,c(subfamily_vector)] = 50
-      matrix_mono[c(subfamily_vector),i] = 50
+      matrix_mono[i,c(subfamily_vector)] = 75
+      matrix_mono[c(subfamily_vector),i] = 75
     }
     
     #okay this should actually go last
@@ -238,8 +238,8 @@ taxonomy_tree_super_alt <- function()
     if(genus != 'Unassigned')
     {
       genus_vector <- which(viruses$vGenus == as.character(genus))
-      matrix_mono[i,c(genus_vector)] = 25
-      matrix_mono[c(genus_vector),i] = 25
+      matrix_mono[i,c(genus_vector)] = 35
+      matrix_mono[c(genus_vector),i] = 35
     }
   }
   
