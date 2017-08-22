@@ -2,13 +2,15 @@
 library(tidyverse)
 library(fuzzyjoin)
 
+Olival_Dataset_with_phyloBin_Variable <- read_excel("~/Desktop/BDEL/BZDEL/Data/Olival/data/Olival_Dataset_with_phyloBin_Variable.xlsx")
+
 associations <- read_csv("~/Desktop/BDEL/BZDEL/Data/Olival/data/associations.csv")
-load("~/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Olival_et_al_2017.Rdata")
+#load("~/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Olival_et_al_2017.Rdata")
 load("~/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Geohegan_Holmes_2015_viral_traits.Rdata")
 load("~/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Plourde_plos1_2017.rdata")
 load("~/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/jones_et_al.Rdata")
 
-olival_et_al_2017 <- full_join(olival_et_al_2017, associations)
+olival_et_al_2017 <- full_join(Olival_Dataset_with_phyloBin_Variable[,2:ncol(Olival_Dataset_with_phyloBin_Variable)], associations)
 
 olival_et_al_2017 <- olival_et_al_2017 %>%
   mutate(virus_name_dc = gsub('_[1-9]', ' ', vVirusNameCorrected)) %>%
@@ -64,7 +66,7 @@ jones_et_al <- jones_et_al %>%
 olival_et_al_2017_appended <- dplyr::full_join(as.data.frame(olival_et_al_2017), 
                            as.data.frame(Geohegan_Holmes), 
                            by=c('virus_name_dc','virus_name_dc')) %>%
-          select(c(vVirusNameCorrected,
+          select(c(phyloBin, vVirusNameCorrected,
                    vOrder, vFamily, vSubfamily, vGenus, ReverseZoonoses, 
                    vGenomeMinLength, vGenomeMaxLength, vGenomeAveLength, 
                    vCytoReplicTF, vSegmentedTF, vVectorYNna, vSSoDS, vDNAoRNA, 
@@ -85,7 +87,7 @@ olival_et_al_2017_appended <- dplyr::full_join(as.data.frame(olival_et_al_2017_a
                             as.data.frame(Plourde_plos1_2017), 
                             by=c('virus_name_dc','virus_name_dc')) %>%
 
-  select(c(vVirusNameCorrected,
+  select(c(phyloBin, vVirusNameCorrected,
              vOrder, vFamily, vSubfamily, vGenus, ReverseZoonoses, 
              vGenomeMinLength, vGenomeMaxLength, vGenomeAveLength, 
              vCytoReplicTF, vSegmentedTF, vVectorYNna, vSSoDS, vDNAoRNA, 
@@ -111,7 +113,7 @@ olival_et_al_2017_appended <- dplyr::full_join(as.data.frame(olival_et_al_2017_a
 olival_et_al_2017_appended <- dplyr::full_join(as.data.frame(olival_et_al_2017_appended), 
                             as.data.frame(jones_et_al), 
                             by=c('virus_name_dc','virus_name_dc')) %>%
-  select(c(vVirusNameCorrected,
+  select(c(phyloBin, vVirusNameCorrected,
            vOrder, vFamily, vSubfamily, vGenus, ReverseZoonoses, 
            vGenomeMinLength, vGenomeMaxLength, vGenomeAveLength, 
            vCytoReplicTF, vSegmentedTF, vVectorYNna, vSSoDS, vDNAoRNA, 
