@@ -1,0 +1,72 @@
+---
+title: "Phylofactor Trait Analysis"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+load("~/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Olival_Appended_Dataset.Rdata")
+
+olival_et_al_2017_appended <- olival_et_al_2017_appended %>%
+  filter(!is.na(phyloBin))
+```
+
+## Envelope Status 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+#y <- olival_et_al_2017_appended %>%
+#  filter(is.na(Envelope_Status))
+envelope_breakdown <- olival_et_al_2017_appended %>%
+    select(phyloBin, vEnvelope, virus_name_dc, IsZoonotic) %>%
+    unique() %>%
+    unite(phylo_envelope, phyloBin, vEnvelope) 
+
+    #%>%
+    #group_by(phyloBin, vEnvelope, IsZoonotic) %>%
+    #dplyr::summarise(counts =n()) %>%
+    #unite(phylo_envelope, phyloBin, vEnvelope) 
+    #%>%  tidyr::spread(IsZoonotic, counts)
+
+ggplot(olival_et_al_2017_appended) +
+    geom_bar(aes(x=as.factor(vEnvelope), fill= as.factor(IsZoonotic)))  +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(envelope_breakdown) +
+    geom_bar(aes(x=as.factor(phylo_envelope), fill= as.factor(IsZoonotic)))  +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+## Vector Status 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+#y <- olival_et_al_2017_appended %>%
+#  filter(is.na(Envelope_Status))
+vector_breakdown <- olival_et_al_2017_appended %>%
+    select(phyloBin, vVectorYNna, virus_name_dc, IsZoonotic) %>%
+    unique() %>%
+    unite(phylo_vVectorYNna, phyloBin, vVectorYNna) 
+
+    #%>%
+    #group_by(phyloBin, vEnvelope, IsZoonotic) %>%
+    #dplyr::summarise(counts =n()) %>%
+    #unite(phylo_envelope, phyloBin, vEnvelope) 
+    #%>%  tidyr::spread(IsZoonotic, counts)
+
+ggplot(olival_et_al_2017_appended) +
+    geom_bar(aes(x=as.factor(vVectorYNna), fill= as.factor(IsZoonotic)))  +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(vector_breakdown) +
+    geom_bar(aes(x=as.factor(phylo_vVectorYNna), fill= as.factor(IsZoonotic)))  +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
