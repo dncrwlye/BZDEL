@@ -1,0 +1,124 @@
+mSEIR <- function(beta=c(2e-5,5e-5),
+                  K=c(1000,2000),
+                  b=.4/365,
+                  sigma=1/6,
+                  g=1/7,
+                  C=matrix(1,nrow=length(beta),ncol=length(beta))-diag(1,nrow=length(beta),ncol=length(beta)),
+                  mu=1/3650,
+                  Tmax=365,
+                  Y0=NULL,
+                  m=.01,
+                  tau=NULL
+                  ){
+
+  
+  p=length(K)
+  if (!length(beta)==p){stop('beta and K are not same length')}
+  
+  if (dim(C)[1]==dim(C)[2]){
+    if (!dim(C)[1]==p){
+      stop('dimension of C does not match beta')
+    }
+  } else {stop('C is not square')}
+  ### state matrix
+  if (is.null(Y0)){
+    Y <- matrix(NA,nrow=4,ncol=p)
+    for (i in 1:p){
+      Y[,i] <- rmultinom(1,K[i],prob=c(.99,0,.01,0))
+    }
+  } else {
+    if (!all.equal(dim(Y0),c(4,p))){
+      stop('Dimension of Y0 is not 4xlength(K)')
+    }
+    Y <- Y0
+  }
+  
+  SEIR <-  c('S','E','I','R')
+  rownames(Y) <- SEIR
+  
+  ### indexes
+  births <- 1:p
+  SE <- (1:p)+p
+  EI <- (1:p)+2*p
+  IR <- (1:p)+3*p
+  death <- 4*p+1
+  migration <- 4*p+2
+  
+  ### propensities
+  lambdas <- numeric(4*p+2)
+  noLambdas <- length(lambdas)
+  
+  ### output
+  output <- NULL
+  output$time <- 0
+  output$SEIR <- Y
+  
+  
+  tt <- 0
+  
+  while (tt<Tmax){
+    
+    N <- colSums(Y)
+    Ntot <- sum(N)
+    ################### update lambdas
+    lambdas[births] <- max(b*(1-N/K),0)                      #births
+    lambdas[SE] <- beta*Y['S',]*Y['I',]                      #S-->E
+    lambdas[EI] <- sigma*Y['E',]                             #E-->I
+    lambdas[IR] <- g*Y['I',]                                 #I-->R
+    lambdas[death] <- mu*Ntot                                #deaths
+    lambdas[migration]<- m*Ntot                              #migration
+    
+    S <- sum(lambdas)
+    
+    ################## draw timestep
+    if (is.null(tau)){
+      dt <- rexp(1,rate=S)
+    } else {
+      dt <- tau
+    }
+    ################## update time
+    tt <- tt+dt
+    output$time <- c(output$time,tt)
+    
+    ################## draw event
+    if (is.null(tau)){
+      events <- sample(noLambdas,size=1,prob = lambdas)
+    } else {
+      nevents <- rpois(1,lambda=tau*S)
+      events <- sample(noLambdas,size=nevents,replace = T,prob=lambdas)
+    }
+    
+    ################## update Y
+    for (event in events){
+      if (event %in% births){
+        patch=event
+        Y['S',patch] <- Y['S',patch]+1
+      } else if (event %in% SE){
+        patch=event-p
+        Y[c('S','E'),patch]=Y[c('S','E'),patch]+c(-1,1)
+      } else if (event %in% EI){
+        patch=event-2*p
+        Y[c('E','I'),patch] <- Y[c('E','I'),patch]+c(-1,1)
+      } else if (event %in% IR){
+        patch=event-3*p
+        Y[c('I','R'),patch] <- Y[c('I','R'),patch]+c(-1,1)
+      } else if (event %in% death){
+        #sample patch
+        patch <- sample(x=p,size=1,prob=N)
+        #sample stage SEIR
+        stage <- sample(SEIR,size=1,prob=Y[,patch])
+        Y[stage,patch] = Y[stage,patch]-1
+      } else { #migration
+        #sample patch of migrant
+        ipatch <- sample(p,size=1,prob=N)
+        stage <- sample(SEIR,size=1,prob=Y[,ipatch])
+        jpatch <- sample(p,size=1,prob=C[ipatch,])
+        
+        Y[stage,c(ipatch,jpatch)] <- Y[stage,c(ipatch,jpatch)] + c(-1,1)
+      }
+    }
+    
+    output$SEIR <- abind(output$SEIR,Y,along=3)
+  }
+  return(output)
+}
