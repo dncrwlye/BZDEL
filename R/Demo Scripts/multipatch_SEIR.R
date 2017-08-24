@@ -8,7 +8,9 @@ sigma=1/6
 g=1/7
 tau=0.1
 # C <- matrix(c(0,1,1,0),nrow=2)
-C <- 0
+# C <- 0
+C=matrix(1,nrow=length(beta),ncol=length(beta))-diag(1,nrow=length(beta),ncol=length(beta))
+
 
 mu=1/3650
 Tmax=365

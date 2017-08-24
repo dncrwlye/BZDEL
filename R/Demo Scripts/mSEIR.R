@@ -3,7 +3,7 @@ mSEIR <- function(beta=c(2e-5,5e-5),
                   b=.4/365,
                   sigma=1/6,
                   g=1/7,
-                  C=matrix(1,nrow=length(beta),ncol=length(beta))-diag(1,nrow=length(beta),ncol=length(beta)),
+                  C=NULL,
                   mu=1/3650,
                   Tmax=365,
                   Y0=NULL,
@@ -15,11 +15,20 @@ mSEIR <- function(beta=c(2e-5,5e-5),
   p=length(K)
   if (!length(beta)==p){stop('beta and K are not same length')}
   
-  if (dim(C)[1]==dim(C)[2]){
-    if (!dim(C)[1]==p){
-      stop('dimension of C does not match beta')
+  ######### checking connectivity matrix
+  if (is.null(C)){
+    if (p>1){
+      matrix(1,nrow=p,ncol=p)-diag(1,nrow=p,ncol=p)
+    } else {
+      m=0
     }
-  } else {stop('C is not square')}
+  } else {
+    if (dim(C)[1]==dim(C)[2]){
+      if (!dim(C)[1]==p){
+        stop('dimension of C does not match beta')
+      }
+    } else {stop('C is not square')}
+  }
   ### state matrix
   if (is.null(Y0)){
     Y <- matrix(NA,nrow=4,ncol=p)
