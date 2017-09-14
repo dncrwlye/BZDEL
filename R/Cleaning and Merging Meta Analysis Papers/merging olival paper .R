@@ -137,6 +137,18 @@ olival_et_al_2017_appended <- dplyr::full_join(as.data.frame(olival_et_al_2017_a
 
 #100*(1 - sum(is.na(merged4$`TranMode Driver`))/nrow(merged4))
 
+
+#bringing in becker's human to human work 
+
+olival_et_al_2017_appended<-olival_et_al_2017_appended %>%
+  select(-c(Humany_to_Human))
+
+olival_et_al_2017_appended <- full_join(olival_et_al_2017_appended, human_to_human_zoonosis_data_DB_edit[,7:10], by = c('virus_name_dc'))
+
+
+
+
+
 save(olival_et_al_2017_appended, file='/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Olival_Appended_Dataset.Rdata')
 
 
