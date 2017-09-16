@@ -27,7 +27,8 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
                            virus == "Marburg" | 
                            virus == "Sudan virus" | 
                            virus == "Zaire Ebolavirus" | 
-                           virus == "Reston Ebola"), "Filovirus", virus)) %>%
+                           virus == "Reston Ebola"), "Filovirus", 
+                  ifelse(virus  == "Nipah" | virus == "Hendra" | virus  == "Henipavirus", "Henipavirus", virus))) %>%
   mutate(global_location = ifelse(grepl('Thailand|Malaysia|China|Cambodia', sampling_location), 'East Asia', 
                                   ifelse(grepl('Brazil', sampling_location), 'South America', 
                                          ifelse(grepl('Bangladesh|India',sampling_location), 'Central Asia', 
@@ -48,8 +49,10 @@ seroprevalence_henipavirus_single_time_point <- filovirus.seroprevalence %>%
     filter(single_sampling_point == 1) %>%
     mutate(month = round_date(sampling_date_single_time_point, unit= 'months')) %>%
     mutate(month = as.numeric(format(month, "%m"))) %>%
+    mutate(year = as.numeric(format(sampling_date_single_time_point, "%Y"))) %>%
     #mutate(month = format(as.Date(sampling_date_single_time_point), "%m-%d"))) %>%
-    group_by(month, age_class, title, species, virus, country, last_name_of_first_author, methodology, global_location, sampling_location) %>%
+    unite(group, c(title, methodology, age_class, last_name_of_first_author, year), sep = ", ") %>%
+    group_by(month, virus, species, country,  group) %>%
     summarise(sample_size = sum(sample_size), successes = sum (successes))  %>%
     mutate(seroprevalence_per = 100 * (successes/sample_size)) %>%
     filter(!is.na(seroprevalence_per)) %>%
@@ -65,8 +68,11 @@ seroprevalence_henipavirus_unclear_time_point <- filovirus.seroprevalence %>%
     #mutate(month = round_date(sampling_date_single_time_point, unit= 'months')) %>%
     mutate(month_1 = ifelse(difftime < 364, as.numeric(format(start_of_sampling, "%m")), 1)) %>%
     mutate(month_2 = ifelse(difftime < 364, as.numeric(format(end_of_sampling, "%m")), 12)) %>%
-    group_by(month_1, month_2, age_class, species, virus, country, title, last_name_of_first_author, methodology, global_location, sampling_location) %>%
-    summarise(sample_size = sum(sample_size), successes = sum (successes),difftime = mean(difftime))%>%
+    mutate(year = as.numeric(format(start_of_sampling, "%Y"))) %>%
+    unite(group, c(title, methodology, age_class, last_name_of_first_author, year), sep = ", ") %>%
+    group_by(month_1, month_2, virus, species, country,  group) %>%
+    #group_by(month_1, month_2, age_class, species, virus, country, title, last_name_of_first_author, methodology, global_location, sampling_location) %>%
+    summarise(sample_size = sum(sample_size), successes = sum (successes),difftime = mean(difftime)) %>%
     mutate(difftime_sqrt = sqrt(difftime)) %>% #going to divide any long sampling period by the square root of the sampling period
     mutate(seroprevalence_per = 100 * (successes/sample_size)) %>%
     filter(!is.na(seroprevalence_per)) %>%
@@ -77,7 +83,7 @@ seroprevalence_henipavirus_unclear_time_point <- filovirus.seroprevalence %>%
     mutate(seroprevalence_per_lower_bound = ifelse(difftime > 32, seroprevalence_per_lower_bound/difftime_sqrt, seroprevalence_per_lower_bound)) %>%
     ungroup() %>%
     select(-c(difftime, difftime_sqrt)) %>%
-    mutate(title = paste(title, "xc"))
+    mutate(group = paste(group, "xc"))
   
   x <- seroprevalence_henipavirus_unclear_time_point[,c(2:ncol(seroprevalence_henipavirus_unclear_time_point))]
   y <-seroprevalence_henipavirus_unclear_time_point[,c(1,3:ncol(seroprevalence_henipavirus_unclear_time_point))]
@@ -108,7 +114,7 @@ seroprevalence_graph <- seroprevalence_graph %>%
 
 seroprevalence_graph %>%
   filter(!is.na(month.dc.birthpulse)) %>%
-  unite(group, c(age_class, species, country, title, methodology), sep = " ") %>%
+  unite(group, c(species, group), sep = ": ") %>%
   ungroup() %>%
   ggplot() +
   geom_point(aes(x= month.dc.birthpulse, y= seroprevalence_per, colour = group, group = group)) +
