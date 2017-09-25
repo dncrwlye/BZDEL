@@ -1,0 +1,180 @@
+unique,vGenus,virus_name_dc,transmission,trans1,trans2,pr_vector,pr_excrete,pr_slaughter,pr_source,pr_notes
+3498,Gammaretrovirus,woolly monkey sarcoma virus,NA,NA,NA,unknown,unknown,unknown,NA,NA
+243,Bornavirus,borna disease virus,NA,NA,NA,0,1,0,Fenner's Veterinary Virology; Ludwig & Bode 2000 Rev. sci. tech. Off. int. Epiz,excluded possibility of exposure through horse meat
+318,Deltaretrovirus,bovine leukemia virus,NA,NA,NA,1,unknown,unknown,Bech-Nielsen et al. 1978 American Journal of Vetrinary Research; Kobayashi et al. 2010 BMC Vet Research; Foil et al. 1988 J Medical Entomology; Villalobos-Cortés 2017 African Journal of Biotechnology,"slaughter: possible through consumption of milk, antibodies detected following consumption"
+329,Parapoxvirus,bovine papular stomatitis virus,NA,NA,NA,0,1,0,Bowman et al. 1981 JAMA; Holmes et al. 2011 Veterinary Record; Viruses and Human Disease,NA
+616,Ebolavirus,cote d'ivoire ebolavirus,NA,NA,NA,0,1,1,Formenty et al. 1999 Journal of Infectious Disease,NA
+774,Cardiovirus,encephalomyocarditis virus,NA,NA,direct/indirect contact,0,1,1,Deutz et al. 2003 Wien Klin Wochenschr; Juncker-Voss et al. 2004 Berl Munch Tierarztl Wochenschr; Carocci & Bakkali-Kassimi 2012 Virulence,NA
+937,Arenavirus,flexal virus,NA,NA,NA,0,1,0,Viruses and Human Disease,NA
+942,Aphthovirus,foot and mouth disease virus,DC,DC,NA,0,1,1,Chase-Topping et al. 2013 Veterinary Research; ,NA
+1042,Unassigned,gan gan virus,NA,NA,NA,1,0,0,Encyclopedia of Arthropod-transmitted Infections of Man and Domesticated Animals,NA
+1057,Unassigned,gb virus c,NA,NA,NA,0,1,1,Epstein et al. 2010 PLoS Pathogens; Smith et al. 2005 Retrovirology,"aka hepatitis G, probably slaughter and excrete; transmission in humans via sexual contact and blood products, excrete or slaughter likely and similar to other hepatitis. Also found in bat saliva."
+1062,Gammaretrovirus,gibbon ape leukemia virus,NA,NA,NA,0,1,0,Brown & Tarlinton 2016 Mammal Review,NA
+1104,Henipavirus,hendra virus,DC,DC,bodily fluids,0,1,0,Willliamson et al. 1998 Australian Veterinary Journal,NA
+1126,Orthohepadnavirus,hepatitis b virus,NA,NA,blood; sexual,0,1,1,Hu et al. 2000 PNAS,NA
+1175,Coronavirus,human coronavirus 29e,NA,NA,NA,0,1,0,Pfefferle et al. 2009 EID,"most likely no longer zoonotic, historic introduction from bats to humans"
+1178,Enterovirus,human enterovirus a,NA,NA,NA,0,1,0,Manson's Tropical Diseases; Harvala et al. 2011 Journal of Virology,fecal-oral; likely not zoonotic
+1181,Enterovirus,human enterovirus b,NA,NA,NA,0,1,0,Manson's Tropical Diseases; Harvala et al. 2011 Journal of Virology,fecal-oral; likely not zoonotic
+1185,Enterovirus,human enterovirus d,NA,NA,NA,0,1,0,Manson's Tropical Diseases; Harvala et al. 2011 Journal of Virology,fecal-oral; likely not zoonotic
+1189,Simplexvirus,human herpesvirus,NA,NA,NA,0,1,0,Tischer & Osterrieder 2011 Vet Microbiology,NA
+1210,Metapneumovirus,human metapneumovirus,NA,NA,direct/indirect contact,NA,NA,NA,Greensill et al. 2003 EID; Palacios et al 2011 EID,not zoonotic; more evidence of reverse zoonosis from humans to NHPs
+1213,Norovirus,human norovirus alphatron,NA,NA,NA,0,1,0,Di Martino et al 2014 EID; Mesquita et al. 2013 Journal of Virology; Di Martino et al. 2009 Clinical & Vaccine Immunology; De Grazia et al. 2007 EID,NA
+1244,Respirovirus,human parainfluenza virus,NA,NA,NA,NA,NA,NA,Fenner's Veterinary Virology; Sasaki et al. 2013 EID,not zoonotic; more evidence of reverse zoonosis from humans to NHPs
+1270,Pneumovirus,human respiratory syncytial virus,NA,NA,direct/indirect contact; respiratory,NA,NA,NA,NA,likely not zoonotic
+1300,Influenzavirus A,influenza a virus,"DC, IC","DC, IC",NA,0,1,1,Pascua & Choi 2014 Clin Exp Vaccine Res; Reperant et al. 2012 Vaccine,NA
+1322,Influenzavirus B,influenza b virus,NA,NA,respiratory,0,1,1,Pascua & Choi 2014 Clin Exp Vaccine Res; Reperant et al. 2012 Vaccine,NA
+1325,Influenzavirus C,influenza c virus,NA,NA,respiratory,0,1,1,Pascua & Choi 2014 Clin Exp Vaccine Res; Reperant et al. 2012 Vaccine,NA
+1400,Unassigned,kasokero virus,NA,NA,NA,unknown,1,unknown,Kalunda et al. 1986 AJTMH,NA
+1482,Parechovirus,ljungan virus,NA,NA,NA,unknown,1,unknown,Ja¨a¨ skela¨inen et al. 2013 J Medical Virology,NA
+1506,Arenavirus,lymphocytic choriomeningitis virus,DC,DC,direct/indirect contact,0,1,0,Viruses and Human Disease,NA
+1731,Norovirus,norwalk virus,NA,NA,NA,0,1,1,Mattison et al 2007 EID; Bank-Wolf et al. 2010 Veterinary Microbiology,NA
+1882,Deltaretrovirus,primate t lymphotropic virus,NA,NA,NA,0,1,1,Wolfe et al. 2005 PNAS,hunting/keeping primates as pets
+1907,Parapoxvirus,pseudocowpox virus,DC,DC,NA,0,1,0,O_uzo_lu et al. 2014 Virusdisease,milking
+2922,Betacoronavirus,severe acute respiratory syndrome related coronavirus,NA,NA,NA,0,1,1,Li et al. 2006 Journal of Virology; Sheahan et al. 2008 Journal of Virology; Wang et al. 2005 EID,NA
+2952,Spumavirus,simian foamy virus,NA,NA,direct/indirect contact,0,1,1,Engel et al. 2013 Emerging Microbes & Infections; Mouinga-Ondémé & Kazanji 2013 Viruses,NA
+3016,Erythrovirus,simian parvovirus,NA,NA,NA,0,1,0,Brown et al. 2004 Journal Infectious Disease,NA
+3018,Respirovirus,simian virus 0,NA,NA,NA,NA,NA,NA,NA,no idea what this is
+3124,Varicellovirus,suid herpesvirus,NA,NA,NA,0,1,0,Tischer & Osterrieder 2011 Vet Microbiology,NA
+3141,Arenavirus,tacaribe virus,NA,NA,NA,1,1,0,Viruses and Human Disease,isolated from mosquitos
+3209,Rubulavirus,tioman virus,NA,NA,NA,0,1,1,Chua et al. 2001 Virology; Yaiw et al. 2007 Journal of Infectious Disease,odds of seropositivity higher for island inhabitants who ate fruit bats
+3215,Anellovirus,torque teno virus,NA,NA,NA,0,1,1,Manzin et al. 2015 JIDC; Ssemadaali et al. 2016 Scientific Reports,organ transplant = slaughter?
+3263,Orthopoxvirus,vaccinia virus,NA,NA,NA,0,1,0,Trindade et al. 2009 Clinical Infectious Disease,NA
+3381,Vesiculovirus,vesicular stomatitis new jersey virus,NA,NA,NA,1,0,0,Mead et al. 2004 Vector Borne Zoonotic Disease; ,NA
+94,Orthobunyavirus,anopheles a virus,NA,vector borne,vector borne,1,0,0,Dictionary of Virology,NA
+104,Flavivirus,aroa virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+112,Alphavirus,aura virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+138,Seadornavirus,banna virus,NA,vector borne,vector borne,1,unknown,unknown,Liu et al. 2010 EID,NA
+141,Flavivirus,banzi virus,NA,vector borne,vector borne,1,unknown,unknown,NA,NA
+143,Alphavirus,barmah forest virus,NA,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+159,Unassigned,bhanja virus,NA,vector borne,vector borne,1,unknown,unknown,NA,NA
+263,Flavivirus,bouboui virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+394,Orthobunyavirus,bunyamwera virus,NA,vector borne,vector borne,1,0,0,Viral Infections of Humans: Epidemiology and Control,NA
+426,Orthobunyavirus,california encephalitis virus,VB,vector borne,vector borne,1,0,0,NA,NA
+499,Orthobunyavirus,caraparu virus,NA,vector borne,vector borne,1,unknown,unknown,NA,NA
+513,Orthobunyavirus,catu virus,NA,vector borne,vector borne,1,unknown,unknown,NA,NA
+562,Vesiculovirus,chandipura virus,VB,vector borne,vector borne,1,unknown,unknown,Rao et al. 2004 Lancet,NA
+565,Orbivirus,changuinola virus,NA,vector borne,vector borne,1,0,0,Depaquit et al. 2010 EuroSurviellance; Viruses and Human Disease; Dictionary of Virology,NA
+569,Alphavirus,chikungunya virus,VB,vector borne,vector borne,1,0,0,Manson's Tropical Diseases; CDC,NA
+590,Coltivirus,colorado tick fever virus,VB,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+613,Orbivirus,corriparta virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+638,Nairovirus,crimean congo hemorrhagic fever virus,"VB, DC",vector borne,vector borne,1,1,1,Fenner's Veterinary Virology,NA
+689,Flavivirus,dengue virus,VB,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+714,Nairovirus,dera ghazi khan virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+721,Thogotovirus,dhori virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+728,Nairovirus,dugbe virus,VB,vector borne,vector borne,1,NA,NA,NA,NA
+742,Alphavirus,eastern equine encephalitis virus,"VB, DC",vector borne,vector borne,1,NA,NA,NA,NA
+888,Alphavirus,everglades virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1059,Alphavirus,getah virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1066,Orbivirus,great island virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1070,Orthobunyavirus,guama virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1088,Orthobunyavirus,guaroa virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1284,Flavivirus,ilheus virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1334,Vesiculovirus,isfahan virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1356,Flavivirus,japanese encephalitis virus,"VB, DC",vector borne,vector borne,1,NA,NA,NA,NA
+1398,Orthobunyavirus,kairi virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1412,Flavivirus,kokobera virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1417,Nucleorhabdovirus,kotonkan virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1421,Flavivirus,koutango virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1425,Flavivirus,kyasanur forest disease virus,"VB, DC",vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+1479,Orbivirus,lebombo virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+1491,Flavivirus,louping ill virus,VB,vector borne,vector borne,1,NA,NA,NA,NA
+1540,Orthobunyavirus,marituba virus,NA,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+1556,Alphavirus,mayaro virus,NA,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+1604,Flavivirus,modoc virus,NA,vector borne,vector borne,1,1,0,Fairbrother & Yuill 1987,transmitted horizontally in rodents
+1612,Lyssavirus,mokola virus,NA,vector borne,vector borne,1,1,0,Kemp et al. 1973 Archives of Virology,
+1687,Flavivirus,murray valley encephalitis virus,VB,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+1701,Alphavirus,ndumu virus,NA,vector borne,vector borne,1,0,0,Masembe et al. 2012 Jvirology,NA
+1735,Alphavirus,o'nyong nyong virus,NA,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+1745,Flavivirus,omsk hemorrhagic fever virus,"VB, DC",vector borne,vector borne,1,1,0,R__ek et al. 2010 Lancet; Manson's Tropical Diseases,NA
+1755,Orthobunyavirus,oriboca virus,NA,vector borne,vector borne,1,0,0,Auguste et al. 2010 AJTMH,NA
+1763,Orthobunyavirus,oropouche virus,NA,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+1766,Orbivirus,orungo virus,NA,vector borne,vector borne,1,0,0,Medical Microbiology. 4th edition,obiviruses are characterized by arthropod transmission
+1792,Orbivirus,palyam virus,NA,vector borne,vector borne,1,0,0,Medical Microbiology. 4th edition,obiviruses are characterized by arthropod transmission
+1802,Orthobunyavirus,patois virus,NA,vector borne,vector borne,1,unknown,unknown,NA,NA
+1844,Alphavirus,pixuna virus,NA,vector borne,vector borne,1,0,0,Viruses and Human Disease,NA
+1871,Flavivirus,powassan virus,VB,vector borne,vector borne,1,0,0,Viral Infections of Humans: Epidemiology and Control,NA
+1911,Phlebovirus,punta toro virus,NA,vector borne,vector borne,1,0,0,The Dictionary of Virology; Manson's Tropical Diseases,NA
+2786,Phlebovirus,rift valley fever virus,VB,vector borne,vector borne,1,1,1,Manson's Tropical Diseases,NA
+2847,Alphavirus,ross river virus,VB,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+2885,Phlebovirus,sandfly fever naples virus,VB,vector borne,vector borne,1,0,0,anson's Tropical Diseases,NA
+2887,Phlebovirus,sandfly fever sicilian virus,VB,vector borne,vector borne,1,0,0,anson's Tropical Diseases,NA
+2895,Alphavirus,semliki forest virus,NA,vector borne,vector borne,1,0,0,NA,NA
+2935,Orthobunyavirus,shamonda virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+2941,Orthobunyavirus,shuni virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3043,Alphavirus,sindbis virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3060,Flavivirus,st. louis encephalitis virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3138,Orthobunyavirus,tacaiuma virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3167,Yatapoxvirus,tanapox virus,NA,NA,vector,1,NA,NA,NA,NA
+3171,Flavivirus,tembusu virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3184,Nairovirus,thiafora virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3192,Thogotovirus,thogoto virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3200,Flavivirus,tick borne encephalitis virus,NA,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+3228,Unassigned,trubanaman virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3253,Alphavirus,una virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3257,Flavivirus,usutu virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3259,Phlebovirus,uukuniemi virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3274,Alphavirus,venezuelan equine encephalitis virus,VB,vector borne,vector borne,1,1,0,Manson's Tropical Diseases,NA
+3319,Vesiculovirus,vesicular stomatitis alagoas virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3322,Vesiculovirus,vesicular stomatitis indiana virus,NA,vector borne,vector borne,1,NA,NA,NA,NA
+3416,Flavivirus,wesselsbron virus,VB,vector borne,vector borne,1,NA,NA,NA,NA
+3428,Flavivirus,west nile virus,VB,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+3453,Alphavirus,western equine encephalitis virus,"VB, DC",vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+3500,Orthobunyavirus,wyeomyia virus,NA,vector borne,vector borne,1,0,0,Dictionary of Virology,most Orthobunyavirus transmit by mosquitoes
+3502,Yatapoxvirus,yaba monkey tumor virus,NA,NA,vector,1,1,0,Cho & Wenner 1973,NA
+3510,Flavivirus,yellow fever virus,VB,vector borne,vector borne,1,0,0,Manson's Tropical Diseases,NA
+3575,Flavivirus,zika virus,NA,vector borne,vector borne,1,0,0,NA,NA
+2,Dependovirus,adeno associated virus,NA,NA,fecal-oral; respiratory,0,1,0,The Dictionary of Virology,NA
+8,Polyomavirus,african green monkey polyomavirus,NA,NA,NA,0,1,0,Sauvage et al. 2011 EID,NA
+53,Amdovirus,aleutian mink disease virus,NA,NA,NA,0,1,0,Dictionary of Virology,NA
+67,Hantavirus,andes virus,DC,DC,direct/indirect contact,0,1,0,Dictionary of Virology; Manson's Tropical Diseases,NA
+114,Lyssavirus,australian bat lyssavirus,DC,DC,animal bite,0,1,0,McCall et al. 2000 EID,NA
+149,Hantavirus,bayou virus,DC,DC,direct/indirect contact,0,1,0,Viruses and Human Disease; The Molecular Epidemiology of Human Viruses; Fenner's Veterinary Virology; Manson's Tropical Diseases,NA
+175,Hantavirus,black creek canal virus,DC,DC,direct/indirect contact; respiratory,0,1,0,Viruses and Human Disease; The Molecular Epidemiology of Human Viruses; Fenner's Veterinary Virology; Manson's Tropical Diseases,NA
+450,Orthopoxvirus,camelpox virus,NA,NA,NA,0,1,0,Viruses and Human Disease,NA
+469,Morbillivirus,canine distemper virus,NA,NA,NA,0,1,0,Beinekea et al. 2015 OneHealth,NA
+528,Simplexvirus,cercopithecine herpesvirus,NA,NA,NA,0,1,0,Hull & Barry 2003 EID,NA
+621,Orthopoxvirus,cowpox virus,DC,DC,direct/indirect contact,0,1,0,Ninove et al. 2009 EID; Campe et al. 2009 EID,NA
+725,Hantavirus,dobrava belgrade virus,NA,NA,direct/indirect contact,0,1,0,Manson's Tropical Diseases,NA
+737,Lyssavirus,duvenhage virus,NA,NA,animal bite,0,1,NA,NA,NA
+860,Lyssavirus,european bat lyssavirus,NA,NA,animal bite,0,1,NA,NA,NA
+1083,Arenavirus,guanarito virus,"DC, IC","DC, IC",direct/indirect contact; respiratory,0,1,0,Viruses and Human Disease; Manson's Tropical Diseases,NA
+1096,Hantavirus,hantaan virus,DC,DC,direct/indirect contact,0,1,0,Manson's Tropical Diseases,NA
+1119,Hepatovirus,hepatitis a virus,NA,NA,fecal-oral,0,1,NA,NA,NA
+1140,Hepevirus,hepatitis e virus,NA,NA,fecal-oral,0,1,1,Pavio et al. 2010 Vet Res,NA
+1154,Mastadenovirus,human adenovirus a,NA,NA,NA,0,1,NA,NA,NA
+1156,Mastadenovirus,human adenovirus b,NA,NA,NA,0,1,NA,NA,NA
+1161,Mastadenovirus,human adenovirus c,NA,NA,fecal-oral; respiratory,0,1,NA,NA,NA
+1166,Mastadenovirus,human adenovirus d,NA,NA,NA,0,1,NA,NA,NA
+1168,Mastadenovirus,human adenovirus e,NA,NA,NA,0,1,NA,NA,NA
+1171,Mastadenovirus,human adenovirus f,NA,NA,NA,0,1,NA,NA,NA
+1256,Picobirnavirus,human picobirnavirus,NA,NA,fecal-oral,0,1,NA,NA,NA
+1384,Arenavirus,junin virus,DC,DC,direct/indirect contact,0,1,0,Viruses and Human Disease; Manson's Tropical Diseases,NA
+1452,Hantavirus,laguna negra virus,DC,DC,NA,0,1,0,Manson's Tropical Diseases,NA
+1457,Marburgvirus,lake victoria marburgvirus,NA,NA,bodily fluids,0,1,0,Manson's Tropical Diseases,NA
+1467,Arenavirus,lassa virus,NA,NA,direct/indirect contact; respiratory,0,1,0,Viruses and Human Disease; Manson's Tropical Diseases,NA
+1524,Arenavirus,machupo virus,DC,DC,direct/indirect contact; respiratory,0,1,0,Viruses and Human Disease; Manson's Tropical Diseases,NA
+1574,Morbillivirus,measles virus,NA,NA,respiratory,0,1,0,NA,"not sure why measles is here, no reservoir hosts"
+1586,Rubulavirus,menangle virus,DC,DC,direct/indirect contact,0,1,0,Emerging Viruses in Human Populations; Viruses and Human Disease,NA
+1619,Orthopoxvirus,monkeypox virus,DC,DC,direct/indirect contact,0,1,1,Manson's Tropical Diseases,NA
+1642,Rubulavirus,mumps virus,NA,NA,bodily fluids; respiratory,0,1,0,Manson's Tropical Diseases,also not zoonotic?
+1676,Pneumovirus,murine pneumonia virus,NA,NA,NA,0,1,0,NA,NA
+1705,Hantavirus,new york virus,NA,NA,direct/indirect contact,0,1,0,Manson's Tropical Diseases,NA
+1708,Henipavirus,nipah virus,"DC, T","DC, T",animal bite; direct/indirect contact,0,1,1,Luby et al. 2009 EID; Hughes et al. 2009 Clinical Infectious Disease; Parashar et al. 2000 J Infect Dis,NA
+1750,Parapoxvirus,orf virus,NA,NA,direct/indirect contact,0,1,1,Nougairede et al. 2013 EID; Fenner's Veterinary Virology,NA
+1797,Rubulavirus,parainfluenza virus,NA,NA,NA,0,1,0,Viral Infections of Humans: Epidemiology and Control,NA
+1836,Arenavirus,pichinde virus,NA,NA,NA,0,1,0,Viruses and Human Disease,NA
+1913,Hantavirus,puumala virus,IC,IC,direct/indirect contact,0,1,0,Manson's Tropical Diseases,NA
+1933,Lyssavirus,rabies virus,DC,DC,animal bite,0,1,1,NA,NA
+2778,Ebolavirus,reston ebolavirus,NA,NA,NA,0,1,NA,Emerging Viruses in Human Populations,NA
+2820,Flavivirus,rio bravo virus,NA,vector borne,vector borne,0,1,0,Price 1978 AJTMH; Constantine & Woodall 1964 Public Health Reports,"actually no evidence for arthropod transmission, all abt"
+2840,Hantavirus,rio mamore virus,NA,NA,NA,0,1,0,Manson's Tropical Diseases,NA
+2853,Rotavirus,rotavirus a,NA,NA,fecal-oral,0,1,NA,NA,NA
+2860,Rotavirus,rotavirus b,NA,NA,fecal-oral,0,1,NA,NA,NA
+2864,Rotavirus,rotavirus c,NA,NA,fecal-oral,0,1,NA,NA,NA
+2893,Parapoxvirus,sealpox virus,NA,NA,NA,0,1,0,Fenner's Veterinary Virology; Clark et al. 2005  BJD,NA
+2912,Hantavirus,seoul virus,"DC, IC","DC, IC",direct/indirect contact,0,1,0,Manson's Tropical Diseases,NA
+3028,Hantavirus,sin nombre virus,"DC, IC","DC, IC",direct/indirect contact,0,1,0,Manson's Tropical Diseases,NA
+3174,Hantavirus,thailand virus,NA,NA,NA,0,1,0,Manson's Tropical Diseases,NA
+3238,Hantavirus,tula virus,NA,NA,direct/indirect contact,0,1,0,Manson's Tropical Diseases,NA
+3468,Arenavirus,whitewater arroyo virus,DC,DC,NA,0,1,0,Fulhorst et al. 1996 Virology; Viruses and Human Disease,NA
+3561,Ebolavirus,zaire ebolavirus,DC,DC,NA,0,1,1,Becquart et al. 2010 PLoS ONE; Emerging Viruses in Human Populations,NA
