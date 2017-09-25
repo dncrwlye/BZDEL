@@ -23,6 +23,9 @@ olival_et_al_2017_reduced <- olival_et_al_2017_reduced %>%
   top_n(n=1, wt = vPubMedCites) %>%
   unique()
 
+save(olival_et_al_2017_reduced, file='/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Olival_Dataset_Reduced.Rdata')
+
+
 ################################
 pathogen_release_data_DB_edit_vector_done <- read_csv("~/Desktop/BDEL/BZDEL/Data/Olival/pathogen release data_DB edit_vector done.csv")
 
@@ -36,5 +39,5 @@ check <- olival_et_al_2017_reduced_becker_joined %>%
   filter(is.na(becker_trans1)) %>%
   filter(is.na(becker_trans2))
 
-save(olival_et_al_2017_reduced, file='/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Olival_Dataset_Reduced.Rdata')
+save(olival_et_al_2017_reduced_becker_joined, file='/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/phylofactor datasets/olival_et_al_2017_reduced_becker_joined.Rdata')
 
