@@ -255,3 +255,77 @@ plot(el_jefe_grande)
 
 save(el_jefe_grande,  
      file = 'el_jefe.rdata')
+
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+#############  ~~**SUPER ALT. FUNCTION WHERE  WE COMBINE EVERYTHING**~~  #################
+####################   BUT THIS TIME FOR THE REDUCED DATASET  ############################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+
+taxonomy_tree_super_alt <- function()
+{
+  #virus_names <- unique(olival_et_al_2017_reduced$virus_name_dc)
+  virus_names <- (olival_et_al_2017_reduced$virus_name_dc)
+  
+  
+  matrix_mono <- matrix(500, length(virus_names), length(virus_names)) 
+  colnames(matrix_mono) <- virus_names
+  row.names(matrix_mono) <- virus_names
+  diag(matrix_mono) <- 0
+  
+  for (i in 1:length(virus_names)) 
+  {
+    indice1 <- which(olival_et_al_2017_reduced == virus_names[i])[[1]] 
+    
+    order <- as.character(olival_et_al_2017_reduced[i, 'vOrder'])
+    if(order != 'Unassigned')    
+    {
+      order_vector <- which(olival_et_al_2017_reduced$vOrder == as.character(order))
+      matrix_mono[i,c(order_vector)] = 250
+      matrix_mono[c(order_vector),i] = 250
+    }
+    
+    family <- as.character(olival_et_al_2017_reduced[i, 'vFamily'])
+    if(family != 'Unassigned')    
+    {
+      family_vector <- which(olival_et_al_2017_reduced$vFamily == as.character(family))
+      matrix_mono[i,c(family_vector)] = 125
+      matrix_mono[c(family_vector),i] = 125
+    }
+    
+    subfamily <- as.character(olival_et_al_2017_reduced[i, 'vSubfamily'])
+    #several olival_et_al_2017_reduced don't have subfamilies, need to exclude these
+    if (!is.na(subfamily))
+    {
+      subfamily_vector <- which(olival_et_al_2017_reduced$vSubfamily == as.character(subfamily))
+      matrix_mono[i,c(subfamily_vector)] = 75
+      matrix_mono[c(subfamily_vector),i] = 75
+    }
+    
+    #okay this should actually go last
+    genus <- as.character(olival_et_al_2017_reduced[i, 'vGenus'])
+    if(genus != 'Unassigned')
+    {
+      genus_vector <- which(olival_et_al_2017_reduced$vGenus == as.character(genus))
+      matrix_mono[i,c(genus_vector)] = 35
+      matrix_mono[c(genus_vector),i] = 35
+    }
+  }
+  
+  diag(matrix_mono) <- 0
+  
+  x<-as.dist(matrix_mono)
+  hc <- hclust(x, "ave")
+  hc_phylo <- as.phylo(hc)
+}
+
+taxonomy_tree_olival_reduced_dataset <-taxonomy_tree_super_alt()
+plot(taxonomy_tree_olival_reduced_dataset)
+
+save(taxonomy_tree_olival_reduced_dataset,file = '/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/el_jefe_reduced.rdata')
