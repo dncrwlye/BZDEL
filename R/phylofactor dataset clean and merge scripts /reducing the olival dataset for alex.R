@@ -4,7 +4,7 @@
 library(tidyverse)
 library(fuzzyjoin)
 
-load("~/Desktop/BDEL/BZDEL/Data/phylofactor datasets /Olival_et_al_2017.Rdata")
+load("~/Desktop/BDEL/BZDEL/Data/phylofactor datasets/Olival_et_al_2017.Rdata")
 
 olival_et_al_2017_reduced <- olival_et_al_2017 %>%
   mutate(virus_name_dc = gsub('_[1-9]', ' ', vVirusNameCorrected)) %>%
@@ -23,21 +23,23 @@ olival_et_al_2017_reduced <- olival_et_al_2017_reduced %>%
   top_n(n=1, wt = vPubMedCites) %>%
   unique()
 
-save(olival_et_al_2017_reduced, file='/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Olival_Dataset_Reduced.Rdata')
-
+#save(olival_et_al_2017_reduced, file='/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/Meta Analyses Papers/Olival_Dataset_Reduced.Rdata')
 
 ################################
-pathogen_release_data_DB_edit_vector_done <- read_csv("~/Desktop/BDEL/BZDEL/Data/Olival/pathogen release data_DB edit_vector done.csv")
+#pathogen_release_data_DB_edit_vector_done <- read_csv("~/Desktop/BDEL/BZDEL/Data/Olival/pathogen release data_DB edit_vector done.csv")
 
-colnames(pathogen_release_data_DB_edit_vector_done) <- c(colnames(pathogen_release_data_DB_edit_vector_done[,1:3]),paste("becker", colnames(pathogen_release_data_DB_edit_vector_done[,4:11]), sep = "_"))
+pathogen_release_data_done <- read_csv("~/Desktop/BDEL/BZDEL/Data/Olival/pathogen release data_done.csv")
 
-olival_et_al_2017_reduced_becker_joined <- full_join(olival_et_al_2017_reduced, pathogen_release_data_DB_edit_vector_done)
+colnames(pathogen_release_data_done) <- c(colnames(pathogen_release_data_done[,1:3]),paste("becker", colnames(pathogen_release_data_done[,4:11]), sep = "_"))
+
+pathogen_release_data_done <- pathogen_release_data_done %>%
+  select(c(virus_name_dc, becker_pr_vector, becker_pr_excrete, becker_pr_slaughter, becker_pr_source, becker_pr_notes))
+
+olival_et_al_2017_reduced_becker_joined <- full_join(olival_et_al_2017_reduced, pathogen_release_data_done)
 
 check <- olival_et_al_2017_reduced_becker_joined %>%
   filter(IsZoonotic == 1) %>%
-  filter(is.na(becker_pr_source)) %>%
-  filter(is.na(becker_trans1)) %>%
-  filter(is.na(becker_trans2))
+  filter(is.na(becker_pr_source)) 
 
 save(olival_et_al_2017_reduced_becker_joined, file='/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/phylofactor datasets/olival_et_al_2017_reduced_becker_joined.Rdata')
 
