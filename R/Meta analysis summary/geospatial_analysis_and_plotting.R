@@ -66,7 +66,8 @@ xy = seroprevalence %>%
   mutate(lat = ifelse(is.na(lat), 10, lat)) %>%
   as.data.frame
 
-#we should probably go back and use polygons over polygons, but that is proving way too hard rn
+
+
 
 spdf <- SpatialPointsDataFrame(coords = xy,data=xy,
                                proj4string = CRS(proj4string(ecos)))
@@ -76,3 +77,23 @@ pps <- over(spdf,ecos[,'ECO_NAME'])
 seroprevalence_x <- as.data.frame(c(seroprevalence, pps)) %>%
   select(-c(north, south, west, east, administrative_area_level_1, north_two, south_two, west_two, east_two))
 
+#we should probably go back and use polygons over polygons, but that is proving way too hard rn
+
+seroprevalence_x <- seroprevalence%>%
+  select(-c(north, south, west, east, administrative_area_level_1, north_two, south_two, west_two, east_two))
+
+coordinate_box <- list()
+
+for(i in 1:nrow(seroprevalence_x))
+{
+  if(is.na(seroprevalence_x[i,'north_final'])) next 
+  
+  x <- as(raster::extent(as.numeric(seroprevalence_x[i,25]), as.numeric(seroprevalence_x[i,26]), 
+                         as.numeric(seroprevalence_x[i,24]), as.numeric(seroprevalence_x[i,23])), "SpatialPolygons")
+  
+  #proj4string(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  proj4string(x) <- proj4string(ecos)
+  coordinate_box[[i]] <- x
+}
+
+#...
