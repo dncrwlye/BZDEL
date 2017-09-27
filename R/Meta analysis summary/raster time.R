@@ -5,6 +5,9 @@ library(binom)
 library(lubridate)
 library(plotly)
 library(ggmap)
+library(raster)
+library(rgdal)
+library(broom)
 #raster fun
 
 MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
@@ -21,7 +24,7 @@ MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus m
 
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Seroprevalence') %>%
-  select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sample_size, seroprevalence_percentage, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sample_size, seroprevalence_percentage, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
   mutate(virus = ifelse((virus == "Ebola" | 
                            virus == "Marburg" | 
                            virus == "Zaire Ebola"|
@@ -41,6 +44,54 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   mutate(methodology = ifelse(methodology == 'PCR'| methodology == 'RT-PCR'| methodology == "RT-PCR  (urine)"| methodology == "RT-PCR (Oro-pharangyeal swab)", 'PCR based method', 
                               ifelse(methodology == "ELISA" | methodology == "ELISA + WB" | methodology == "Luminex", 'non nAb based method',
                                      ifelse(methodology == "VNT"| methodology == "SNT"| methodology == "Unclear, Presumably Neutralizing Antibodies", "nAb based method", methodology)))) %>%
-  mutate(successes = round((1/100)*seroprevalence_percentage * sample_size,0))
+  mutate(successes = round((1/100)*seroprevalence_percentage * sample_size,0)) 
+ 
+seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location)) %>%
+  rename(sampling_location = `unique(seroprevalence$sampling_location)`) %>%
+  mutate(sampling_location = as.character(sampling_location)) %>%
+  mutate(north=NA) %>%
+  mutate(south=NA) %>%
+  mutate(west=NA) %>%
+  mutate(east=NA) %>%
+  mutate(address = NA) %>%
+  mutate(administrative_area_level_1 = NA) 
+
+for(i in 1:nrow(seroprevalence_search))
+{
+  query <- seroprevalence_search$sampling_location[i] 
+  rd <- geocode(query, output = 'more', source = 'google')
+  if(is.atomic(rd)==FALSE)
+  {
+    if (is.na(rd$lon) == FALSE) 
+    {
+      seroprevalence_search$north[i] <- rd$north
+      seroprevalence_search$south[i] <- rd$south
+      seroprevalence_search$east[i]  <- rd$east
+      seroprevalence_search$west[i]  <- rd$west
+      seroprevalence_search$address[i]  <- rd$address
+      if(!(is.null(rd$administrative_area_level_1)))
+      {
+        seroprevalence_search$administrative_area_level_1[i]  <- rd$administrative_area_level_1
+      }
+    }
+  }
+}
+
+seroprevalence <- full_join(seroprevalence, seroprevalence_search)
+
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/")
+save(seroprevalence, file='MetaAnalysis/seroprevalence.Rdata')
+
+#sp<-readOGR('MetaAnalysis/official_teow')
+#sp <-tidy(sp)
+#plot(sp)
+#globe <- get_map('planet earth', zoom= 3)
+#ggmap(globe)
+
+#globe <- globe + geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=sp, alpha=0)
+#ggmap(globe)
+
+
+
 
 
