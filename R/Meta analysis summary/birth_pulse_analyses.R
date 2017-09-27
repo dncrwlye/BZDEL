@@ -49,10 +49,13 @@ species_location_table <- seroprevalence %>%
 
 #search_term <- paste(species_location_table$search_term[1:178], collapse = " OR ")
 
+seroprevalence_graph_inner_join <- inner_join(seroprevalence, Bat_Birth_Pulse_Data, by = c('species','country'))
+unique(seroprevalence_graph_inner_join)
+
 #write.csv(species_location_table, '/Users/buckcrowley/Desktop/species_location_table.csv')
 
-filovirus.seroprevalence<-seroprevalence #%>%
-  filter(virus=='Henipavirus')
+#filovirus.seroprevalence<-seroprevalence #%>%
+#  filter(virus=='Henipavirus')
 
 seroprevalence_henipavirus_single_time_point <- filovirus.seroprevalence %>%
     filter(single_sampling_point == 1) %>%
@@ -122,8 +125,10 @@ x<-seroprevalence_graph_full_join %>%
 #write.csv(x, '/Users/buckcrowley/Desktop/species_location_table.csv')
 
 
-plot<- seroprevalence_graph_inner_join %>%
-  mutate(month.dc.birthpulse = month - birth_pulse_1_quant_flipped) %>%
+#seroprevalence_graph_inner_join %>%
+  #mutate(month.dc.birthpulse = month - birth_pulse_1_quant_flipped) %>%
+seroprevalence_graph %>%
+ mutate(month.dc.birthpulse = month) %>%
   unite(group, c(species, group), sep = ": ") %>%
   ungroup() %>%
   ggplot() +
@@ -141,5 +146,5 @@ plot<- seroprevalence_graph_inner_join %>%
 ggplotly(plot, tooltip = c("x","y", "group"))
 
   
-
+unique(seroprevalence_graph$species)
 
