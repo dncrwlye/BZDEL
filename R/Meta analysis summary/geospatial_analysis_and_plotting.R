@@ -9,8 +9,8 @@ library(rgeos)
 # install.packages("gpclib", type="source")
 # gpclibPermit()
 
-ecos <- shapefile('official_teow/wwf_terr_ecos.shp')
-cols <- rainbow(length(unique(ecos$BIOME))) %>% sample(.)
+#ecos <- shapefile('official_teow/wwf_terr_ecos.shp')
+#cols <- rainbow(length(unique(ecos$BIOME))) %>% sample(.)
 
 plot(ecos)
 i=0
@@ -47,9 +47,9 @@ mp <- ggplot(eco.points)+aes(long,lat,group=group)
 
 # Which polygon is our point in? ------------------------------------------
 library(tidyverse)
-load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/seroprevalence.Rdata")
+load("~/BZDEL/Data/MetaAnalysis/seroprevalence.Rdata")
 
-ecos <- shapefile('~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
+ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
 
 # xy <- seroprevalence[,c('north','east')]
 # colnames(xy) <- c('lat','long')
@@ -66,9 +66,6 @@ xy = seroprevalence %>%
   mutate(lat = ifelse(is.na(lat), 10, lat)) %>%
   as.data.frame
 
-
-
-
 spdf <- SpatialPointsDataFrame(coords = xy,data=xy,
                                proj4string = CRS(proj4string(ecos)))
 
@@ -80,20 +77,40 @@ seroprevalence_x <- as.data.frame(c(seroprevalence, pps)) %>%
 #we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
 seroprevalence_x <- seroprevalence%>%
-  select(-c(north, south, west, east, administrative_area_level_1, north_two, south_two, west_two, east_two))
+  select(-c(north, south, west, east,  north_two, south_two, west_two, east_two)) %>%
+  mutate(coordinate_box = NA)
+
+seroprevalence_x_unique <- seroprevalence_x %>%
+  select(north_final, south_final, west_final, east_final) %>%
+  unique()
 
 coordinate_box <- list()
 
-for(i in 1:nrow(seroprevalence_x))
+
+for(i in 1:nrow(seroprevalence_x_unique))
 {
-  if(is.na(seroprevalence_x[i,'north_final'])) next 
+  if(is.na(seroprevalence_x_unique[i,'north_final'])) next 
   
-  x <- as(raster::extent(as.numeric(seroprevalence_x[i,25]), as.numeric(seroprevalence_x[i,26]), 
-                         as.numeric(seroprevalence_x[i,24]), as.numeric(seroprevalence_x[i,23])), "SpatialPolygons")
+  x <- as(raster::extent(as.numeric(seroprevalence_x_unique[i,3]), as.numeric(seroprevalence_x_unique[i,4]), 
+                         as.numeric(seroprevalence_x_unique[i,2]), as.numeric(seroprevalence_x_unique[i,1])), "SpatialPolygons")
   
   #proj4string(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
   proj4string(x) <- proj4string(ecos)
   coordinate_box[[i]] <- x
+  
+  seroprevalence_x_unique[i,'coordinate_box'] <- coordinate_box[[i]] %over% ecos[,'ECO_NAME']
+  
+  print(i)
 }
+
+seroprevalence_x <- seroprevalence_x %>%
+  select(-c(coordinate_box))
+
+seroprevalence_x_final <- full_join(seroprevalence_x, seroprevalence_x_unique)
+
+y <- seroprevalence_x_final %>%
+  filter(is.na(coordinate_box))
+
+save(seroprevalence_x_final, file ="~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions.Rdata")
 
 #...
