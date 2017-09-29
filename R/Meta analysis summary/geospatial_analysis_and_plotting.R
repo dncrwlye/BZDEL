@@ -113,4 +113,26 @@ y <- seroprevalence_x_final %>%
 
 save(seroprevalence_x_final, file ="~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions.Rdata")
 
-#...
+m <- do.call(bind, coordinate_box)
+plot(m)
+
+
+lat <- c(min(seroprevalence_x_final$south_final) ,max(seroprevalence_x_final$north_final))
+lon <- c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))
+
+map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
+               maptype = "satellite", source = "google")
+
+coordinate_box_fortified <- fortify(m)
+
+### When you draw a figure, you limit lon and lat.      
+ggmap(map)+
+  scale_x_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
+  scale_y_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
+  geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3)
+
+
+
+
+
+
