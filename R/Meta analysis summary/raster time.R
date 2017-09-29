@@ -109,7 +109,6 @@ seroprevalence <- seroprevalence %>%
   mutate(west_final = pmin(west, west_two, na.rm=TRUE)) %>%
   mutate(east_final = pmax(east, east_two, na.rm=TRUE)) 
   
-
 #x<-seroprevalence %>%
 #  filter(!is.na(west_two))
 
@@ -124,8 +123,5 @@ save(seroprevalence, file='MetaAnalysis/seroprevalence.Rdata')
 
 #globe <- globe + geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=sp, alpha=0)
 #ggmap(globe)
-
-
-
 
 
