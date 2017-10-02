@@ -53,4 +53,51 @@ Bat_Birth_Pulse_Data <- full_join(Bat_Birth_Pulse_Data, Bat_Birth_Pulse_Data_uni
 
 save(Bat_Birth_Pulse_Data, file = "~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/bat_birth_pulse_geocode.Rdata")
 
+################################################################
+
+ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
+
+#we should probably go back and use polygons over polygons, but that is proving way too hard rn
+
+Bat_Birth_Pulse_Data_x_unique <- Bat_Birth_Pulse_Data %>%
+  select(north, south, west, east) %>%
+  mutate(coordinate_box = NA) %>%
+  unique()
+
+coordinate_box <- list()
+
+for(i in 1:nrow(Bat_Birth_Pulse_Data_x_unique))
+{
+  if(is.na(Bat_Birth_Pulse_Data_x_unique[i,'north'])) next 
+  
+  x <- as(raster::extent(as.numeric(Bat_Birth_Pulse_Data_x_unique[i,3]), as.numeric(Bat_Birth_Pulse_Data_x_unique[i,4]), 
+                         as.numeric(Bat_Birth_Pulse_Data_x_unique[i,2]), as.numeric(Bat_Birth_Pulse_Data_x_unique[i,1])), "SpatialPolygons")
+  
+  #proj4string(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  proj4string(x) <- proj4string(ecos)
+  coordinate_box[[i]] <- x
+  
+  Bat_Birth_Pulse_Data_x_unique[i,'coordinate_box'] <- coordinate_box[[i]] %over% ecos[,'ECO_NAME']
+  
+  print(i)
+}
+
+Bat_Birth_Pulse_Data <- full_join(Bat_Birth_Pulse_Data, Bat_Birth_Pulse_Data_x_unique)
+
+save(Bat_Birth_Pulse_Data, file ="~/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_ecoregions.Rdata")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
