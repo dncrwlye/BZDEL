@@ -12,7 +12,7 @@ library(broom)
 Bat_Birth_Pulse_Data <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/bat birth pulse/Bat Birth Pulse Data.xlsx")
 
 Bat_Birth_Pulse_Data <- Bat_Birth_Pulse_Data %>%
-  select(c(species,location, birth_pulse_1_quant, birth_pulse_2_quant)) %>%
+  dplyr::select(c(species,location, birth_pulse_1_quant, birth_pulse_2_quant)) %>%
   #rename(country= location) %>%
   mutate(location = tolower(location)) %>%
   mutate(species = tolower(species)) %>%
@@ -29,12 +29,13 @@ Bat_Birth_Pulse_Data_unique <- as.data.frame(unique(Bat_Birth_Pulse_Data$locatio
   mutate(south=NA) %>%
   mutate(west=NA) %>%
   mutate(east=NA) %>%
-  mutate(address = NA) 
+  mutate(address = NA) %>%
+  filter(location != 'na')
 
 for(i in 1:nrow(Bat_Birth_Pulse_Data_unique))
 {
   query <- Bat_Birth_Pulse_Data_unique$location[i] 
-  rd <- geocode(query, output = 'more', source = 'google')
+  rd <- geocode(query, output = 'more', source = 'google', force= TRUE, override_limit = TRUE)
   if(is.atomic(rd)==FALSE)
   {
     if (is.na(rd$lon) == FALSE) 
@@ -47,4 +48,9 @@ for(i in 1:nrow(Bat_Birth_Pulse_Data_unique))
     }
   }
 }
+
+Bat_Birth_Pulse_Data <- full_join(Bat_Birth_Pulse_Data, Bat_Birth_Pulse_Data_unique)
+
+save(Bat_Birth_Pulse_Data, file = "~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/bat_birth_pulse_geocode.Rdata")
+
 
