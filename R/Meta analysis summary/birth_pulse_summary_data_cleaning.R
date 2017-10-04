@@ -32,6 +32,7 @@ Bat_Birth_Pulse_Data_unique <- as.data.frame(unique(Bat_Birth_Pulse_Data$locatio
   mutate(address = NA) %>%
   filter(location != 'na')
 
+
 for(i in 1:nrow(Bat_Birth_Pulse_Data_unique))
 {
   query <- Bat_Birth_Pulse_Data_unique$location[i] 
@@ -59,10 +60,44 @@ ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
 
 #we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
-Bat_Birth_Pulse_Data_x_unique <- Bat_Birth_Pulse_Data %>%
-  select(north, south, west, east) %>%
-  mutate(coordinate_box = NA) %>%
+Bat_Birth_Pulse_Data_unique <- Bat_Birth_Pulse_Data %>%
+  dplyr::select(c(north, south,east, west))%>%
   unique()
+
+eco_regions_placeholder <- as.data.frame(matrix(ncol=5))
+colnames(eco_regions_placeholder) <- (c("ECO_NAME","north","south","west","east"))
+coordinate_box <- list()
+
+for(i in 1:nrow(Bat_Birth_Pulse_Data_unique))
+{
+  if(is.na(Bat_Birth_Pulse_Data_unique[i,'north'])) next 
+  
+  x <- as(raster::extent(as.numeric(Bat_Birth_Pulse_Data_unique[i,3]), as.numeric(Bat_Birth_Pulse_Data_unique[i,4]), 
+                         as.numeric(Bat_Birth_Pulse_Data_unique[i,2]), as.numeric(Bat_Birth_Pulse_Data_unique[i,1])), "SpatialPolygons")
+  
+  #proj4string(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  proj4string(x) <- proj4string(ecos)
+  coordinate_box[[i]] <- x
+  
+  m <- as.data.frame(over(coordinate_box[[i]], ecos[,'ECO_NAME'], returnList = TRUE)) %>%
+    unique() %>%
+    mutate(north = as.numeric(Bat_Birth_Pulse_Data_unique[i, "north"])) %>%
+    mutate(south = as.numeric(Bat_Birth_Pulse_Data_unique[i, "south"])) %>%  
+    mutate(west = as.numeric(Bat_Birth_Pulse_Data_unique[i, "west"])) %>%
+    mutate(east = as.numeric(Bat_Birth_Pulse_Data_unique[i, "east"])) 
+  
+  eco_regions_placeholder <- bind_rows(eco_regions_placeholder, m)
+  print(i)
+}
+
+Bat_Birth_Pulse_Data_final <- full_join(Bat_Birth_Pulse_Data, eco_regions_placeholder)
+
+y <- seroprevalence_x_final %>%
+  filter(is.na(coordinate_box))
+
+save(Bat_Birth_Pulse_Data_final, file ="~/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternative.Rdata")
+
+
 
 coordinate_box <- list()
 
