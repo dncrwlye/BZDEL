@@ -1,71 +1,85 @@
 ### mapping samples to raster polygons
 library(raster)
 library(rgdal)
-library(magrittr)
+library(tidyverse)
 library(ggmap)
 library(broom)
 library(maptools)
-# install.packages("gpclib", type="source")
-# gpclibPermit()
-
-ecos <- shapefile('official_teow/wwf_terr_ecos.shp')
-cols <- rainbow(length(unique(ecos$BIOME))) %>% sample(.)
-
-plot(ecos)
-i=0
-for (biom in unique(ecos$BIOME)){
-  i=i+1
-  plot(ecos[ecos$BIOME==biom,],col=cols[i],add=TRUE)
-}
-
-
-### alternatively, using maptools & ggmap
-# ecos <- readShapePoly('official_teow/wwf_terr_ecos.shp')
-world <- map_data('world')
-
-ecos2 <- readOGR('official_teow')
-# eco.points = tidy(ecos2,region = 'BIOME')
-epts <- tidy(ecos2)
-# biomes <- tidy(ecos2,region='BIOME') #this takes too long.
-
-ggplot()+
-  geom_polygon(data=world,aes(x=long,y=lat,group=group))+
-  geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))+
-  theme(legend.position = 'none')+
-  coord_fixed(1.3)
-
-mp <- ggplot(eco.points)+aes(long,lat,group=group)
-
-# 
-# worldmap <- borders('world',colour = 'grey50',fill='grey50')
-# 
-# mp <- ggplot() + worldmap
-# mp+geom_polygon(data=ecos,mapping(group=BIOME))
-
+library(rgeos)
+library(plotly)
+library(sp)
 
 
 # Which polygon is our point in? ------------------------------------------
-library(tidyverse)
-load('C:/Users/Alculus/Documents/Bozeman/BZDEL/Data/MetaAnalysis/seroprevalence.Rdata')
+load("~/BZDEL/Data/MetaAnalysis/seroprevalence.Rdata")
+ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
 
-ecos <- shapefile('official_teow/wwf_terr_ecos.shp')
+#we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
-# xy <- seroprevalence[,c('north','east')]
-# colnames(xy) <- c('lat','long')
-# xy <- xy[(!(is.na(xy$lat)|is.na(xy$long))),] %>% as.data.frame
+seroprevalence_x <- seroprevalence%>%
+  select(-c(north, south, west, east,  north_two, south_two, west_two, east_two)) %>%
+  mutate(coordinate_box = NA)
 
-xy = seroprevalence %>%
-  mutate(lat = ave(north, south, rm.na=TRUE)) %>%
-  mutate(lon = ave(west, east, rm.na=TRUE)) %>%
-  select(c(lon, lat)) %>%
-  #rename(lat=north,long=east) %>% 
-  filter(!(is.na(lat))) %>%
-  filter(!(is.na(lon))) %>%
-  as.data.frame
+seroprevalence_x_unique <- seroprevalence_x %>%
+  select(north_final, south_final, west_final, east_final) %>%
+  unique()
 
-spdf <- SpatialPointsDataFrame(coords = xy,data=xy,
-                               proj4string = CRS(proj4string(ecos)))
-
-pps <- over(spdf,ecos[,'ECO_NAME'])
+eco_regions_placeholder <- as.data.frame(matrix(ncol=5))
+colnames(eco_regions_placeholder) <- (c("ECO_NAME","north_final","south_final","west_final","east_final"))
 
 
+coordinate_box <- list()
+
+for(i in 1:nrow(seroprevalence_x_unique))
+{
+  if(is.na(seroprevalence_x_unique[i,'north_final'])) next 
+  
+  x <- as(raster::extent(as.numeric(seroprevalence_x_unique[i,3]), as.numeric(seroprevalence_x_unique[i,4]), 
+                         as.numeric(seroprevalence_x_unique[i,2]), as.numeric(seroprevalence_x_unique[i,1])), "SpatialPolygons")
+  
+  #proj4string(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  proj4string(x) <- proj4string(ecos)
+  coordinate_box[[i]] <- x
+  
+  m <- as.data.frame(over(coordinate_box[[i]], ecos[,'ECO_NAME'], returnList = TRUE)) %>%
+    unique() %>%
+    mutate(north_final = as.numeric(seroprevalence_x_unique[i, "north_final"])) %>%
+    mutate(south_final = as.numeric(seroprevalence_x_unique[i, "south_final"])) %>%  
+    mutate(west_final = as.numeric(seroprevalence_x_unique[i, "west_final"])) %>%
+    mutate(east_final = as.numeric(seroprevalence_x_unique[i, "east_final"])) 
+  
+  eco_regions_placeholder <- bind_rows(eco_regions_placeholder, m)
+  print(i)
+}
+
+
+seroprevalence_x_final <- full_join(seroprevalence_x, eco_regions_placeholder)
+
+y <- seroprevalence_x_final %>%
+  filter(is.na(coordinate_box))
+
+save(seroprevalence_x_final, file ="~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
+
+#######################################################################################
+
+#............plotting data ....................................
+
+
+lat <- c(min(seroprevalence_x_final$south_final, na.rm=TRUE) ,max(seroprevalence_x_final$north_final, na.rm=TRUE))
+lon <- c(min(seroprevalence_x_final$west_final, na.rm=TRUE),max(seroprevalence_x_final$east_final, na.rm=TRUE))
+
+map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
+               maptype = "satellite", source = "google")
+
+m <- do.call(bind, coordinate_box)
+coordinate_box_fortified <- fortify(m)
+
+eco.points = fortify(ecos)
+
+
+### When you draw a figure, you limit lon and lat.      
+ggmap(map)+
+  scale_x_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
+  scale_y_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
+  geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
+  geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))
