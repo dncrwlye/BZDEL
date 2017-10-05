@@ -96,8 +96,3 @@ seroprevalence_graph_inner_join %>%
 ggplotly(seroprevalence_graph, tooltip = c("x","y", "group"))
 
 
-
-
-  
-unique(seroprevalence_graph$species)
-
