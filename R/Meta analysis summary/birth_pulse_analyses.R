@@ -6,6 +6,8 @@ library(lubridate)
 library(plotly)
 library(lme4)
 library(dplyr)
+library(mgcv)
+library(visreg)
 
 load("~/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternative.Rdata")
 load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternative.Rdata")
@@ -129,7 +131,7 @@ seroprevalence_graph_inner_join_filter_dc_style <- seroprevalence_graph_inner_jo
 #  
 
 # ..................................... graphing ...............................
-seroprevalence_graph_inner_join_filter_dc_style %>%
+x<-seroprevalence_graph_inner_join_filter_dc_style %>%
   filter(virus=='Henipavirus') %>%
   filter(methodology != "non nAb based method") %>%
   #mutate(month.dc.birthpulse = abs(month.dc.birthpulse)) %>%
@@ -137,7 +139,7 @@ seroprevalence_graph_inner_join_filter_dc_style %>%
   #ungroup() %>%
   ggplot(aes(x= month.dc.birthpulse, y= value, colour = substudy, group = substudy, text = paste('group', substudy))) +
   geom_point() +
-  geom_line(size=1) +
+  geom_line(size=1.5) +
   #geom_ribbon(alpha = .2, aes(x= month.dc.birthpulse, 
   #                            ymin=seroprevalence_per_lower_bound, 
   #                            ymax=seroprevalence_per_upper_bound,
@@ -170,7 +172,6 @@ seroprevalence_graph_anti_join <- seroprevalence_graph_anti_join %>%
   group_by(title) %>%
   mutate(value = (seroprevalence_per - mean(seroprevalence_per))/sd(seroprevalence_per, na.rm=TRUE))
 
-
 ploty_graph <- seroprevalence_graph_anti_join %>%
   mutate(month.dc.birthpulse = month) %>%
   #unite(group, c(species, group), sep = ": ") %>%
@@ -189,9 +190,24 @@ ploty_graph <- seroprevalence_graph_anti_join %>%
 
 ggplotly(ploty_graph, tooltip = 'text')
 
+#...................................gam..........................................
 
 
 
+seroprevalence_graph_inner_join_filter_dc_style_gam <-seroprevalence_graph_inner_join_filter_dc_style %>%
+  ungroup() %>%
+  filter(!(is.na(birth_pulse_2_quant))) %>%
+  mutate(substudy = as.factor(as.character(substudy))) %>%
+  mutate(virus = as.factor(as.character(virus))) %>%
+  mutate(methodology = as.factor(as.character(methodology))) #%>%
+ # filter(methodology=="PCR based method")
+
+gam<-gam(value ~ s(month.dc.birthpulse) + s(methodology, bs ='re')+ s(virus, bs='re')+ s(substudy, bs='re'), data = seroprevalence_graph_inner_join_filter_dc_style_gam, method="REML" ,weights=1/sqrt(sample_size))
+summary(gam)
+visreg(gam, "month.dc.birthpulse", gg=TRUE)
 
 
+gam2<-gam(seroprevalence_per ~ s(month.dc.birthpulse) + s(methodology, bs ='re') + s(virus, bs='re') + s(substudy, bs='re'), data = seroprevalence_graph_inner_join_filter_dc_style_gam, method="REML" ,weights=1/sqrt(sample_size))
+summary(gam)
+visreg(gam2, "month.dc.birthpulse", gg=TRUE)
 
