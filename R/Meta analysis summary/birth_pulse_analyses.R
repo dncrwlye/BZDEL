@@ -7,7 +7,6 @@ library(plotly)
 library(lme4)
 library(dplyr)
 
-
 load("~/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternative.Rdata")
 load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternative.Rdata")
 #load("~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions.Rdata")
@@ -19,10 +18,12 @@ seroprevalence_single_time_point <- seroprevalence_x_final %>%
     filter(single_sampling_point == 1) %>%
     mutate(month = round_date(sampling_date_single_time_point, unit= 'months')) %>%
     mutate(month = as.numeric(format(month, "%m"))) %>%
+    mutate(day = as.numeric(format(sampling_date_single_time_point, "%d"))) %>%
     mutate(year = as.numeric(format(sampling_date_single_time_point, "%Y"))) %>%
     #mutate(month = format(as.Date(sampling_date_single_time_point), "%m-%d"))) %>%
-    mutate(substudy = paste(title, year, species, sep = ', ')) %>%
-    group_by(title, month, virus, species, ECO_NAME,  methodology, age_class, last_name_of_first_author, year, sampling_location, north_final, south_final, west_final, east_final) %>%
+    #mutate(substudy = paste(title, year, species, sep = ', ')) %>%
+    #group_by(title, month, year, day, virus, species, ECO_NAME,  methodology, age_class, last_name_of_first_author, year, sampling_location, address) %>%
+    group_by(title, month, year, day, virus, methodology, species, sex, age_class, ECO_NAME, sampling_location, sampling_location_two) %>%
     summarise(sample_size = sum(sample_size), successes = sum (successes))  %>%
     mutate(seroprevalence_per = 100 * (successes/sample_size)) %>%
     filter(!is.na(seroprevalence_per)) %>%
@@ -39,9 +40,10 @@ seroprevalence_unclear_time_point <- seroprevalence_x_final %>%
     mutate(month_1 = ifelse(difftime < 364, as.numeric(format(start_of_sampling, "%m")), 1)) %>%
     mutate(month_2 = ifelse(difftime < 364, as.numeric(format(end_of_sampling, "%m")), 12)) %>%
     mutate(year = as.numeric(format(start_of_sampling, "%Y"))) %>%
+    mutate(day = as.numeric(format(start_of_sampling, "%d"))) %>%
     #unite(group, c(age_class, last_name_of_first_author, year), sep = ", ") %>%
-    group_by(title, month_1, month_2, virus, species, ECO_NAME, methodology, age_class, last_name_of_first_author, year, sampling_location, north_final, south_final, west_final, east_final) %>%
-    #group_by(month_1, month_2, age_class, species, virus, country, title, last_name_of_first_author, methodology, global_location, sampling_location) %>%
+    #group_by(title, month_1, month_2, virus, species, ECO_NAME, methodology, age_class, last_name_of_first_author, year, sampling_location, north_final, south_final, west_final, east_final) %>%
+    group_by(title, month_1, month_2, year, day, virus, methodology, species, sex, age_class, ECO_NAME, sampling_location, sampling_location_two) %>%
     summarise(sample_size = sum(sample_size), successes = sum (successes),difftime = mean(difftime)) %>%
     mutate(difftime_sqrt = sqrt(difftime)) %>% #going to divide any long sampling period by the square root of the sampling period
     mutate(seroprevalence_per = 100 * (successes/sample_size)) %>%
@@ -89,9 +91,13 @@ seroprevalence_graph_inner_join_filter <- seroprevalence_graph_inner_join %>%
 
 seroprevalence_graph_inner_join_filter_alex_style <- seroprevalence_graph_inner_join_filter %>%
   #unite(substudy, c(year, species, title), sep = ", ") %>%
-  mutate(substudy = paste(title, year, species,sampling_location, north_final, east_final, sep = ', ')) %>%
-  group_by(substudy) %>%
+  mutate(substudy = paste(title, year, species, sex, age_class, sampling_location, sep = ', ')) %>%
+  #mutate(group = paste(title, ))
+  group_by(title) %>%
   mutate(value = (seroprevalence_per - mean(seroprevalence_per))/sd(seroprevalence_per, na.rm=TRUE))
+  
+
+#group_by(title, month_1, month_2, year, day, virus, methodology, species, sex, age_class, ECO_NAME, sampling_location, sampling_location_two) %>%
   
 
 x<-seroprevalence_graph_inner_join_filter_alex_style %>%
@@ -105,7 +111,7 @@ x<-seroprevalence_graph_inner_join_filter_alex_style %>%
   #filter(methodology=='PCR based method') %>%
   #mutate(month.dc.birthpulse = month - birth_pulse_1_quant_flipped) %>%
   #unite(group, c(species, group), sep = ": ") %>%
-  ungroup() %>%
+  #ungroup() %>%
   ggplot(aes(x= month.dc.birthpulse, y= value, colour = substudy, group = substudy, text = paste('group', substudy))) +
   geom_point() +
   geom_line() +
