@@ -8,6 +8,11 @@ library(ggmap)
 library(raster)
 library(rgdal)
 library(broom)
+library(maptools)
+library(rgeos)
+library(sp)
+
+
 #raster fun
 
 MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
@@ -30,12 +35,9 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
                            virus == "Zaire Ebola"|
                            virus == "Sudan virus" | 
                            virus == "Zaire Ebolavirus" | 
+                           virus == "Zaire Ebola"|
                            virus == "Reston Ebola"), "Filovirus", 
                         ifelse(virus  == "Nipah" | virus == "Hendra" | virus  == "Henipavirus", "Henipavirus", virus))) %>%
-  mutate(global_location = ifelse(grepl('Thailand|Malaysia|Cambodia|Phillippines', sampling_location), 'South East Asia', 
-                                  ifelse(grepl('Brazil', sampling_location), 'South America', 
-                                         ifelse(grepl('Bangladesh|India',sampling_location), 'Central Asia', 
-                                                ifelse(grepl('Ghana|DRC|Gabon|Annobon|Uganda|Congo|Zambia|Madagascar',sampling_location), "sub_saharan_africa", NA))))) %>%
   mutate(sampling_location = tolower(sampling_location)) %>%
   mutate(country = stri_extract_first_regex(sampling_location, '[a-z]+')) %>%
   mutate(species = tolower(species)) %>%
@@ -54,7 +56,6 @@ seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location))
   mutate(west=NA) %>%
   mutate(east=NA) %>%
   mutate(address = NA) 
-
 
 for(i in 1:nrow(seroprevalence_search))
 {
@@ -114,6 +115,84 @@ seroprevalence <- seroprevalence %>%
 
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/")
 save(seroprevalence, file='MetaAnalysis/seroprevalence.Rdata')
+
+
+#..............moving onto the ecoregions analyses.................................
+
+ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
+
+#we should probably go back and use polygons over polygons, but that is proving way too hard rn
+
+seroprevalence_x <- seroprevalence%>%
+  select(-c(north, south, west, east,  north_two, south_two, west_two, east_two)) %>%
+  mutate(coordinate_box = NA)
+
+seroprevalence_x_unique <- seroprevalence_x %>%
+  select(north_final, south_final, west_final, east_final) %>%
+  unique()
+
+eco_regions_placeholder <- as.data.frame(matrix(ncol=5))
+colnames(eco_regions_placeholder) <- (c("ECO_NAME","north_final","south_final","west_final","east_final"))
+
+coordinate_box <- list()
+
+for(i in 1:nrow(seroprevalence_x_unique))
+{
+  if(is.na(seroprevalence_x_unique[i,'north_final'])) next 
+  
+  x <- as(raster::extent(as.numeric(seroprevalence_x_unique[i,3]), as.numeric(seroprevalence_x_unique[i,4]), 
+                         as.numeric(seroprevalence_x_unique[i,2]), as.numeric(seroprevalence_x_unique[i,1])), "SpatialPolygons")
+  
+  #proj4string(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  proj4string(x) <- proj4string(ecos)
+  coordinate_box[[i]] <- x
+  
+  m <- as.data.frame(over(coordinate_box[[i]], ecos[,'ECO_NAME'], returnList = TRUE)) %>%
+    unique() %>%
+    mutate(north_final = as.numeric(seroprevalence_x_unique[i, "north_final"])) %>%
+    mutate(south_final = as.numeric(seroprevalence_x_unique[i, "south_final"])) %>%  
+    mutate(west_final = as.numeric(seroprevalence_x_unique[i, "west_final"])) %>%
+    mutate(east_final = as.numeric(seroprevalence_x_unique[i, "east_final"])) 
+  
+  eco_regions_placeholder <- bind_rows(eco_regions_placeholder, m)
+  print(i)
+}
+
+seroprevalence_x_final <- full_join(seroprevalence_x, eco_regions_placeholder)
+
+y <- seroprevalence_x_final %>%
+  filter(is.na(coordinate_box))
+
+save(seroprevalence_x_final, file ="~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
+
+#######################################################################################
+
+#............plotting data ....................................
+
+
+lat <- c(min(seroprevalence_x_final$south_final, na.rm=TRUE) ,max(seroprevalence_x_final$north_final, na.rm=TRUE))
+lon <- c(min(seroprevalence_x_final$west_final, na.rm=TRUE),max(seroprevalence_x_final$east_final, na.rm=TRUE))
+
+map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
+               maptype = "satellite", source = "google")
+
+m <- do.call(bind, coordinate_box)
+coordinate_box_fortified <- fortify(m)
+
+eco.points = fortify(ecos)
+
+
+### When you draw a figure, you limit lon and lat.      
+ggmap(map)+
+  scale_x_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
+  scale_y_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
+  geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
+  geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))
+
+
+
+
+
 
 #sp<-readOGR('MetaAnalysis/official_teow')
 #sp <-tidy(sp)

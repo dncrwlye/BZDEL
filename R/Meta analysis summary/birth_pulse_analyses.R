@@ -36,6 +36,7 @@ seroprevalence_unclear_time_point <- seroprevalence_x_final %>%
     filter(!is.na(start_of_sampling)) %>%
     mutate(difftime = as.numeric(difftime(end_of_sampling, start_of_sampling))) %>%
     mutate(difftime = ifelse(difftime > 1000, 1000, difftime)) %>%
+    filter(difftime < 365/3) %>% #total arbitrary filter, but we need to come up with some time point
     #mutate(month = round_date(sampling_date_single_time_point, unit= 'months')) %>%
     mutate(month_1 = ifelse(difftime < 364, as.numeric(format(start_of_sampling, "%m")), 1)) %>%
     mutate(month_2 = ifelse(difftime < 364, as.numeric(format(end_of_sampling, "%m")), 12)) %>%
@@ -72,8 +73,31 @@ rm(x,y, seroprevalence_single_time_point, seroprevalence_unclear_time_point)
 
 # also join
 
-seroprevalence_graph_inner_join <- inner_join(seroprevalence_graph, Bat_Birth_Pulse_Data_final)
-
+seroprevalence_graph_inner_join <- left_join(seroprevalence_graph, Bat_Birth_Pulse_Data_final) %>%
+  mutate(birth_pulse_1_quant = ifelse(species == 'cynopterus sphinx' & is.na(birth_pulse_1_quant) & sampling_location == 'vietnam',7,birth_pulse_1_quant)) %>%
+  #for cynopterus sphinx in thailand we are using the estimates from India, which is pretty funky, and should probably be addressed!
+  mutate(birth_pulse_1_quant = ifelse(species == 'hipposideros commersoni' & is.na(birth_pulse_1_quant) & sampling_location == 'democratic republic of the congo, durba',10.5,birth_pulse_1_quant)) %>%
+  #for hipposideros commersoni in DRC i am using the zimbabwe estimate
+  mutate(birth_pulse_1_quant = ifelse(species == 'hipposideros spp' & is.na(birth_pulse_1_quant) & sampling_location == 'uganda, queen elizabeth national park',2.5,birth_pulse_1_quant)) %>%
+  # for the hipposiderod spp in uganda going to use the h. caffer estimate from uganda
+  mutate(birth_pulse_1_quant = ifelse(species == 'nycteris hispida spp' & is.na(birth_pulse_1_quant) & sampling_location == 'democratic republic of the congo, durba',0,birth_pulse_1_quant)) %>%
+  #going to use the myconecteris estimates from the congo i guess
+  mutate(birth_pulse_1_quant = ifelse(species == 'pteropus hypomelanus' & is.na(birth_pulse_1_quant) & sampling_location =='thailand',4,birth_pulse_1_quant)) %>%
+  mutate(birth_pulse_1_quant = ifelse(species == 'pteropus hypomelanus' & is.na(birth_pulse_1_quant) & sampling_location =='malaysia, johor',4,birth_pulse_1_quant)) %>%
+  mutate(birth_pulse_1_quant = ifelse(species == 'pteropus hypomelanus' & is.na(birth_pulse_1_quant) & sampling_location =='malaysia, perak',4,birth_pulse_1_quant)) %>%
+  mutate(birth_pulse_1_quant = ifelse(species == 'pteropus hypomelanus' & is.na(birth_pulse_1_quant) & sampling_location =='malaysia, tioman island',4,birth_pulse_1_quant)) %>%
+  #for the pteropus hypomelanus estimates from malaysia and thailand, we are using phillippines estimates
+  mutate(birth_pulse_1_quant = ifelse(species == 'pteropus scapulatus' & is.na(birth_pulse_1_quant) & sampling_location =='australia, katherine gorge national park',3.5,birth_pulse_1_quant)) %>%
+  mutate(birth_pulse_1_quant = ifelse(species == 'pteropus scapulatus' & is.na(birth_pulse_1_quant) & sampling_location =='australia, flora nature park',3.5,birth_pulse_1_quant)) %>%
+  mutate(birth_pulse_1_quant = ifelse(species == 'pteropus scapulatus' & is.na(birth_pulse_1_quant) & sampling_location =='australia, elsey national park',3.5,birth_pulse_1_quant)) %>%
+  #our location for 'pteropus scapulatus' is from northern australia, which google thinks is a bar in eastern australia, so have to do this one by hand i guess
+  mutate(birth_pulse_1_quant = ifelse(species == 'pteropus vampyrus' & is.na(birth_pulse_1_quant & sampling_location =='indonesia, sumatera'),3.0,birth_pulse_1_quant)) %>%
+  #going to use the thailand, malaysia estimates for the missing indonesia estimates
+  mutate(birth_pulse_1_quant = ifelse(species == 'rousettus leschenaulti' & is.na(birth_pulse_1_quant & sampling_location =='vietnam'),3.0,birth_pulse_1_quant)) 
+  #we have estimate for vietnam, not sure why this isn't working
+  
+  
+  
 #seroprevalence_graph_inner_join_filter.analyses <- seroprevalence_graph_inner_join %>%
 #  dplyr::select(species, group,ECO_NAME, month, birth_pulse_1_quant) %>%
 #  unique() %>%
@@ -89,70 +113,69 @@ seroprevalence_graph_inner_join_filter <- seroprevalence_graph_inner_join %>%
   unique() %>%
   mutate(month.dc.birthpulse = month - birth_pulse_1_quant_new) 
 
-seroprevalence_graph_inner_join_filter_alex_style <- seroprevalence_graph_inner_join_filter %>%
-  #unite(substudy, c(year, species, title), sep = ", ") %>%
-  mutate(substudy = paste(title, year, species, sex, age_class, sampling_location, sep = ', ')) %>%
-  #mutate(group = paste(title, ))
+seroprevalence_graph_inner_join_filter_dc_style <- seroprevalence_graph_inner_join_filter %>%
+  mutate(substudy = paste(species, sex, age_class, sampling_location,year, title, sep = ', ')) %>%
   group_by(title) %>%
   mutate(value = (seroprevalence_per - mean(seroprevalence_per))/sd(seroprevalence_per, na.rm=TRUE))
   
-
-#group_by(title, month_1, month_2, year, day, virus, methodology, species, sex, age_class, ECO_NAME, sampling_location, sampling_location_two) %>%
-  
-
-x<-seroprevalence_graph_inner_join_filter_alex_style %>%
-  filter(substudy=="Risk Factors for Nipah Virus Infection among Pteropid Bats , Peninsular Malaysia xc, 2004, pteropus vampyrus, malaysia, tioman island")
-
-y<-seroprevalence_x_final %>%
-  filter(title=="Risk Factors for Nipah Virus Infection among Pteropid Bats , Peninsular Malaysia")
+# seroprevalence_graph_inner_join_filter_alex_style <- seroprevalence_graph_inner_join_filter %>%
+#   #mutate(substudy = paste(species, sex, age_class, sampling_location,year, title, sep = ', ')) %>%
+#   group_by(species, virus, methodology, sex, age_class, sampling_location,year, title) %>%
+#   summarise(seroprevalence_substudy = mean(seroprevalence_per)) %>%
+#   ungroup() %>%
+#   group_by(title) %>%
+#   mutate(seroprevalence_substudy= (seroprevalence_substudy - mean(seroprevalence_substudy, na.rm=TRUE)/sd(seroprevalence_substudy, na.rm = TRUE))) %>%
+#   ungroup()
+#  
 
 # ..................................... graphing ...............................
-x<-seroprevalence_graph_inner_join_filter_alex_style %>%
-  #filter(methodology=='PCR based method') %>%
-  #mutate(month.dc.birthpulse = month - birth_pulse_1_quant_flipped) %>%
+seroprevalence_graph_inner_join_filter_dc_style %>%
+  filter(virus=='Henipavirus') %>%
+  filter(methodology != "non nAb based method") %>%
+  #mutate(month.dc.birthpulse = abs(month.dc.birthpulse)) %>%
   #unite(group, c(species, group), sep = ": ") %>%
   #ungroup() %>%
   ggplot(aes(x= month.dc.birthpulse, y= value, colour = substudy, group = substudy, text = paste('group', substudy))) +
   geom_point() +
-  geom_line() +
+  geom_line(size=1) +
   #geom_ribbon(alpha = .2, aes(x= month.dc.birthpulse, 
   #                            ymin=seroprevalence_per_lower_bound, 
   #                            ymax=seroprevalence_per_upper_bound,
   #                            fill= group)) +
   theme(legend.position="none") +
-  ylab('seroprevalence') +
-  ggtitle(paste(c('Filovirus', "Seroprevalence; Data from Meta Analysis")))+
+  ylab('change in seroprevalence from mean, adjusted by study') +
+  xlab('month since (or until) birth pulse') +
+  ggtitle(paste(c("Filovirus & Henipavirus Seroprevalence; Data from Meta Analysis")))+
   facet_grid(virus~methodology)
 
 ggplotly(x, tooltip = 'text')
 
 
-
-
-x<-seroprevalence_x_final %>%
-  filter(title == 'Antibodies to Nipah or Nipah-like Viruses in Bats , China' & species == "hipposideros pomona")
-
-
-
-
+#...........................anti join section.........................................
 
 
 seroprevalence_graph_anti_join <- anti_join(seroprevalence_graph, Bat_Birth_Pulse_Data_final)
 
-seroprevalence_graph_anti_join <- seroprevalence_graph_anti_join %>%
-  dplyr::select(-c(ECO_NAME)) %>%
-  unique()# %>%
-  #mutate(month.dc.birthpulse = month - birth_pulse_1_quant_flipped) %>%
-  #mutate(during_birth_pulse = ifelse(month.dc.birthpulse >= 0 & month.dc.birthpulse < 3, 0, 1))
+seroprevalence_graph_anti_join_analyses <- seroprevalence_graph_anti_join %>%
+  filter(!(grepl('xc',title))) %>%
+  dplyr::select(c(species, sampling_location, ECO_NAME)) %>%
+  unique()
 
+x <-Bat_Birth_Pulse_Data_final %>%
+  filter(grepl('pteropus hypomelanus', species))
+
+
+seroprevalence_graph_anti_join <- seroprevalence_graph_anti_join %>%
+  mutate(substudy = paste(species, sex, age_class, sampling_location,year, title, sep = ', ')) %>%
+  group_by(title) %>%
+  mutate(value = (seroprevalence_per - mean(seroprevalence_per))/sd(seroprevalence_per, na.rm=TRUE))
 
 
 ploty_graph <- seroprevalence_graph_anti_join %>%
-  #filter(methodology=='PCR based method') %>%
   mutate(month.dc.birthpulse = month) %>%
-  unite(group, c(species, group), sep = ": ") %>%
-  ungroup() %>%
-  ggplot(aes(x= month.dc.birthpulse, y= seroprevalence_per, colour = group, group = group, text = paste('group', group))) +
+  #unite(group, c(species, group), sep = ": ") %>%
+  #ungroup() %>%
+  ggplot(aes(x= month.dc.birthpulse, y= seroprevalence_per, colour = substudy, group = substudy, text = paste('group', substudy))) +
   geom_point() +
   geom_line() +
   #geom_ribbon(alpha = .2, aes(x= month.dc.birthpulse, 
@@ -165,15 +188,6 @@ ploty_graph <- seroprevalence_graph_anti_join %>%
   facet_grid(virus~methodology)
 
 ggplotly(ploty_graph, tooltip = 'text')
-
-
-hover_text <- py$get_figure()
-
-str(py$x$layout)
-
-py$x$data[[2]]$text <- c('Laurier', 'Fairmount')
-py
-
 
 
 
