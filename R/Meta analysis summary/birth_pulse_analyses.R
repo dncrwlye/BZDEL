@@ -193,7 +193,6 @@ ggplotly(ploty_graph, tooltip = 'text')
 #...................................gam..........................................
 
 
-
 seroprevalence_graph_inner_join_filter_dc_style_gam <-seroprevalence_graph_inner_join_filter_dc_style %>%
   ungroup() %>%
   filter(!(is.na(birth_pulse_2_quant))) %>%
@@ -201,6 +200,8 @@ seroprevalence_graph_inner_join_filter_dc_style_gam <-seroprevalence_graph_inner
   mutate(virus = as.factor(as.character(virus))) %>%
   mutate(methodology = as.factor(as.character(methodology))) #%>%
  # filter(methodology=="PCR based method")
+
+save(seroprevalence_graph_inner_join_filter_dc_style_gam, file = "~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/seroprevalence_graph_inner_join_filter_dc_style_gam.Rdata")
 
 gam<-gam(value ~ s(month.dc.birthpulse) + s(methodology, bs ='re')+ s(virus, bs='re')+ s(substudy, bs='re'), data = seroprevalence_graph_inner_join_filter_dc_style_gam, method="REML" ,weights=1/sqrt(sample_size))
 summary(gam)

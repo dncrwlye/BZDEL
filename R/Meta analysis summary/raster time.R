@@ -57,6 +57,8 @@ seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location))
   mutate(east=NA) %>%
   mutate(address = NA) 
 
+seroprevalence <- seroprevalence %>% unique()
+
 for(i in 1:nrow(seroprevalence_search))
 {
   query <- seroprevalence_search$sampling_location[i] 
@@ -120,15 +122,16 @@ save(seroprevalence, file='MetaAnalysis/seroprevalence.Rdata')
 #..............moving onto the ecoregions analyses.................................
 
 ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
+ecos <- shapefile('~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
 
 #we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
 seroprevalence_x <- seroprevalence%>%
-  select(-c(north, south, west, east,  north_two, south_two, west_two, east_two)) %>%
+  dplyr::select(-c(north, south, west, east,  north_two, south_two, west_two, east_two)) %>%
   mutate(coordinate_box = NA)
 
 seroprevalence_x_unique <- seroprevalence_x %>%
-  select(north_final, south_final, west_final, east_final) %>%
+  dplyr::select(north_final, south_final, west_final, east_final) %>%
   unique()
 
 eco_regions_placeholder <- as.data.frame(matrix(ncol=5))
@@ -163,8 +166,12 @@ seroprevalence_x_final <- full_join(seroprevalence_x, eco_regions_placeholder)
 y <- seroprevalence_x_final %>%
   filter(is.na(coordinate_box))
 
-save(seroprevalence_x_final, file ="~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
+save(seroprevalence_x_final, file ="~/Desktop/BDEL//BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
 
+
+seroprevalence_x_final <- seroprevalence_x_final %>%
+  dplyr::select(-c(ECO_NAME)) %>%
+  unique()
 #######################################################################################
 
 #............plotting data ....................................
