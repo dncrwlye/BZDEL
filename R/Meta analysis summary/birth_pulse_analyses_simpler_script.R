@@ -97,11 +97,15 @@ rm(x,y, seroprevalence_single_time_point, seroprevalence_unclear_time_point)
 # also join
 
 seroprevalence_join5 <- seroprevalence_join4 %>%
+  mutate(month.dc.birthpulse_original = month - birth_pulse_1_quant_new) %>%
   mutate(month.dc.birthpulse = month - birth_pulse_1_quant_new) %>%
   mutate(month.dc.birthpulse = ifelse(month.dc.birthpulse > 6, month.dc.birthpulse - 12,
                                       ifelse(month.dc.birthpulse < -6, month.dc.birthpulse + 12, month.dc.birthpulse))) %>%
-  mutate(seroprevalence_percentage_lt = ifelse(seroprevalence_percentage == 0, exp(0), seroprevalence_percentage)) %>% #need to decide what we want to set 0 seroprevalence to
-  mutate(seroprevalence_per_lt = log(seroprevalence_percentage_lt)) %>%
+  mutate(seroprevalence_percentage = ifelse(seroprevalence_percentage == 0, exp(0), seroprevalence_percentage)) %>% #need to decide what we want to set 0 seroprevalence to
+  mutate(seroprevalence_percentage = seroprevalence_percentage/100) %>%
+  #mutate(odds = seroprevalence_percentage / (1-seroprevalence_percentage)) %>%
+  #mutate(logit = log(odds)) %>%
+  mutate(seroprevalence_percentage_lt = log(seroprevalence_percentage)) %>%
   mutate(substudy = paste(species, sex, age_class, sampling_location,year, title, sep = ', ')) %>%
   mutate(birth_pulse_2_quant = ifelse(birth_pulse_2_quant=='NA', NA, birth_pulse_2_quant)) %>%
   mutate(birth_pulse_two_cat = ifelse(is.na(birth_pulse_2_quant), 'FALSE', 'TRUE')) %>%
@@ -112,47 +116,71 @@ seroprevalence_join5 <- seroprevalence_join4 %>%
   mutate(species = as.factor(as.character(species))) %>%
   mutate(methodology = as.factor(as.character(methodology))) 
 
+hist((seroprevalence_join5$logit))
+hist(seroprevalence_join5$seroprevalence_percentage)
+
+# ..................................... random scatter of dates...............................
+
 runif_month<-runif(n=nrow(seroprevalence_join5), -6,6)
 seroprevalence_join5 <- cbind(seroprevalence_join5,runif_month) %>%
   mutate(runif_month1= round(as.numeric(runif_month)))
 
-#...................................gam..........................................
+#...................................log binomial variance..........................................
 
 seroprevalence_join6 <- seroprevalence_join5 %>%
-  mutate(seroprevalence_percentage = seroprevalence_percentage/100) %>%
-  mutate(binomial_variance = seroprevalence_percentage*sample_size*(1-seroprevalence_percentage)) %>%
-  mutate(inverse_binomial_variance = 1/ binomial_variance)
+  mutate(log_binomial_variance = ((1+(exp(1)^2-1)*seroprevalence_percentage)^sample_size) - ((1+(exp(1)-1)*seroprevalence_percentage)^(2*sample_size))) %>%
+  mutate(log_binomial_variance_inverse = 1/log_binomial_variance) %>%
+  mutate(inverse_variance = 1/(seroprevalence_percentage*(1-seroprevalence_percentage))/sample_size)
 
-gam3<-gam(seroprevalence_per_lt ~ s(month.dc.birthpulse, by=birth_pulse_two_cat) + s(species, bs='re') + s(substudy, bs='re') + s(title, bs='re') + s(virus, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join5, method="REML", weights=log(sample_size))
+
+
+#...................................metafor and vi..........................................
+
+library(metafor)
+## convert to effect size (logit transformed)
+## xi is whatever your vector of successes are)
+## ni  is the vector of sample size
+## PLO tells this to calculate logit-transformed proportions (yi) and the corresponding sampling variance (vi)
+#data=data.frame(data,escalc(xi=round(data$serop*data$sample,0),ni=data$sample,measure="PLO"))
+
+data=as.data.frame(escalc(xi=round(seroprevalence_join6$seroprevalence_percentage*seroprevalence_join6$sample_size,0),ni=seroprevalence_join6$sample_size,measure="PLO"))
+
+seroprevalence_join6 <- cbind(seroprevalence_join6, data)
+
+gam3<-gam(seroprevalence_percentage_lt ~ s(month.dc.birthpulse, by=birth_pulse_two_cat) + s(species, bs='re') + s(substudy, bs='re') + s(title, bs='re') + s(virus, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join5, method="REML", weights=sqrt(sample_size))
 summary(gam3)
 #plot(predict.gam(gam3))
 visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat") 
 gam.check(gam3)
-#plot(gam3$residuals)
+qqPlot(gam3$residuals)
 
-gam3<-gam(seroprevalence_per_lt ~ s(runif_month, by=birth_pulse_two_cat) + s(species, bs='re') + s(substudy, bs='re') + s(title, bs='re') + s(virus, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join5, method="REML", weights=log(sample_size))
+gam3<-gam(seroprevalence_percentage_lt ~ s(runif_month, by=birth_pulse_two_cat) + s(species, bs='re') + s(substudy, bs='re') + s(title, bs='re') + s(virus, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join5, method="REML", weights=(sample_size))
 summary(gam3)
 #plot(predict.gam(gam3))
 visreg(gam3, "runif_month", by = "birth_pulse_two_cat") 
 
-
-
-
-
-gam3<-gam(seroprevalence_per_lt ~ s(month.dc.birthpulse, by=birth_pulse_two_cat) + s(substudy, bs='re') + s(title, bs='re') + s(methodology, bs='re'), data = seroprevalence_join6, method="REML" ,weights=inverse_binomial_variance)
+gam3<-gam(seroprevalence_percentage_lt ~ s(month.dc.birthpulse, by=birth_pulse_two_cat)  + s(substudy, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join6, method="REML", weights=inverse_variance)
 summary(gam3)
-visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat", gg=TRUE) 
+#plot(predict.gam(gam3))
+visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat") 
 gam.check(gam3)
 
-seroprevalence_join5 %>%
-  group_by(title) %>%
-  summarise(n=n())
-# ..................................... random scatter ...............................
 
-runif(1,-6,6)
+plot(1/(seroprevalence_join6$vi), seroprevalence_join6$sample_size)
 
+#........................becker vi yi thing...................................................
 
+gam3<-gam(yi ~ s(month.dc.birthpulse, by=birth_pulse_two_cat)  + s(substudy, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join6, method="REML", weights=vi)
+summary(gam3)
+#plot(predict.gam(gam3))
+visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat") 
+gam.check(gam3)
+qqPlot(gam3$residuals)
 
+gam3<-gam(yi ~ s(month.dc.birthpulse, by=birth_pulse_two_cat)  + s(substudy, bs='re') + s(species, bs='re') + s(methodology, bs='re'), data = seroprevalence_join6, method="REML", weights=(1/vi))
+summary(gam3)
+visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat") 
+gam.check(gam3)
 
 # ..................................... graphing ...............................
 x<-seroprevalence_join5 %>%
@@ -176,3 +204,67 @@ x<-seroprevalence_join5 %>%
   ggtitle(paste(c("Filovirus & Henipavirus Seroprevalence; Data from Meta Analysis")))+
   facet_grid(methodology~virus~birth_pulse_two_cat) 
 ggplotly(x)
+
+#.....................binomial stuffss for pcr...............................................
+
+seroprevalence_join7 <- seroprevalence_join6 %>%
+  mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
+  filter(methodology == 'PCR based method') %>%
+  mutate(failures = sample_size-successes) %>%
+  data.frame()
+
+df.successes <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$successes), 1:35] %>%
+  mutate(successes = 1)
+df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$failures), 1:35] %>%
+  mutate(successes = 0)
+seroprevalence_join8 <- rbind(df.successes,df.failures)
+
+plot(seroprevalence_join8$month.dc.birthpulse, seroprevalence_join8$month.dc.birthpulse_original)
+unique(seroprevalence_join8$month.dc.birthpulse_original)
+
+gam8<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat)  + s(substudy, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+summary(gam8)
+visreg(gam8, "month.dc.birthpulse_original", by = "birth_pulse_two_cat") 
+gam.check(gam8)
+
+unique(seroprevalence_join7$substudy)
+
+#.....................binomial stuffss for serology...............................................
+
+seroprevalence_join7a <- seroprevalence_join6 %>%
+  mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
+  filter(methodology == 'nAb based method' | methodology == "non nAb based method") %>%
+  mutate(failures = sample_size-successes) %>%
+  data.frame()
+
+df.successes <- seroprevalence_join7a[rep(row.names(seroprevalence_join7a), seroprevalence_join7a$successes), 1:35] %>%
+  mutate(successes = 1)
+df.failures <- seroprevalence_join7a[rep(row.names(seroprevalence_join7a), seroprevalence_join7a$failures), 1:35] %>%
+  mutate(successes = 0)
+seroprevalence_join8a <- rbind(df.successes,df.failures)
+
+gam8a<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat)  + s(title, bs='re') + s(substudy, bs='re') + s(virus, bs='re') + s(methodology, bs='re'), data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+summary(gam8a)
+visreg(gam8a, "month.dc.birthpulse_original", by = "birth_pulse_two_cat") 
+gam.check(gam8a)
+
+#.....................binomial stuffss for all data...............................................
+
+seroprevalence_join7b <- seroprevalence_join6 %>%
+  mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
+  #filter(methodology == 'PCR based method') %>%
+  mutate(failures = sample_size-successes) %>%
+  data.frame()
+
+df.successes <- seroprevalence_join7b[rep(row.names(seroprevalence_join7b), seroprevalence_join7b$successes), 1:35] %>%
+  mutate(successes = 1)
+df.failures <- seroprevalence_join7b[rep(row.names(seroprevalence_join7b), seroprevalence_join7b$failures), 1:35] %>%
+  mutate(successes = 0)
+seroprevalence_join8b <- rbind(df.successes,df.failures)
+
+gam8b<-gam(successes ~ s(month.dc.birthpulse_original, by=(birth_pulse_two_cat, methodology))  + s(substudy, bs='re'), data = seroprevalence_join8b, method="REML", family=binomial(link='logit'))
+summary(gam8b)
+visreg(gam8b, "month.dc.birthpulse_original", by = "methodology") 
+gam.check(gam8b)
+
+unique(seroprevalence_join7$substudy)
