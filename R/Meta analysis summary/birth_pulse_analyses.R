@@ -98,14 +98,6 @@ seroprevalence_graph_inner_join <- left_join(seroprevalence_graph, Bat_Birth_Pul
   mutate(birth_pulse_1_quant = ifelse(species == 'rousettus leschenaulti' & is.na(birth_pulse_1_quant & sampling_location =='vietnam'),3.0,birth_pulse_1_quant)) 
   #we have estimate for vietnam, not sure why this isn't working
   
-#seroprevalence_graph_inner_join_filter.analyses <- seroprevalence_graph_inner_join %>%
-#  dplyr::select(species, group,ECO_NAME, month, birth_pulse_1_quant) %>%
-#  unique() %>%
-#  group_by(species, group) %>%
-#  summarise(sd = sd(birth_pulse_1_quant, na.rm=TRUE)) %>%
-#  mutate(sd_total = sd(seroprevalence_graph_inner_join$birth_pulse_1_quant, na.rm=TRUE)) %>%
-#  mutate(ratio = sd/sd_total)
-
 seroprevalence_graph_inner_join_filter <- seroprevalence_graph_inner_join %>%
   dplyr::select(-c(birth_pulse_1_quant_flipped)) %>%
   group_by_at(vars(-ECO_NAME, birth_pulse_1_quant, birth_pulse_2_quant)) %>%
@@ -115,30 +107,8 @@ seroprevalence_graph_inner_join_filter <- seroprevalence_graph_inner_join %>%
   mutate(month.dc.birthpulse = ifelse(month.dc.birthpulse > 6, month.dc.birthpulse - 12,
                                ifelse(month.dc.birthpulse < -6, month.dc.birthpulse + 12, month.dc.birthpulse))) %>%
   ungroup() %>%
-  mutate(successes = ifelse(is.na(successes), seroprevalence_per * sample_size, successes)) %>%
-  mutate(non_successes = sample_size-successes)
-
-#df<-as.matrix(seroprevalence_graph_inner_join_filter)
-#df2 <- df[rep(1:nrow(df), df[,13]), -c(13,27)] 
-#df2<- as.data.frame(df2) %>% mutate(success = 'SUCCESS')
-#df3 <- df[rep(1:nrow(df), df[,27]), -c(13,27)] 
-#df3<- as.data.frame(df3) %>% mutate(success = 'FAILURE')
-#df4<-rbind(df2, df3)
-
-seroprevalence_graph_inner_join_filter_dc_style <- seroprevalence_graph_inner_join_filter %>%
-  #mutate(value = (seroprevalence_per - mean(seroprevalence_per))/sd(seroprevalence_per, na.rm=TRUE))
-  mutate(value = (seroprevalence_per/sd(seroprevalence_graph_inner_join_filter$seroprevalence_per, na.rm=TRUE)))%>%
-  mutate(seroprevalence_per = ifelse(seroprevalence_per == 0, .135, seroprevalence_per)) %>%
-  mutate(seroprevalence_per_lt = log(seroprevalence_per))
-
-plot(seroprevalence_graph_inner_join_filter_dc_style$value)
-plot(seroprevalence_graph_inner_join_filter_dc_style$seroprevalence_per)
-plot(seroprevalence_graph_inner_join_filter_dc_style$seroprevalence_per_lt, seroprevalence_graph_inner_join_filter_dc_style$value)
-
-#...................................gam..........................................
-
-seroprevalence_graph_inner_join_filter_dc_style_gam <-seroprevalence_graph_inner_join_filter_dc_style %>%
-  ungroup() %>%
+  mutate(seroprevalence_per = ifelse(seroprevalence_per == 0, .135, seroprevalence_per)) %>% #need to decide what we want to set 0 seroprevalence to
+  mutate(seroprevalence_per_lt = log(seroprevalence_per)) %>%
   mutate(substudy = paste(species, sex, age_class, sampling_location,year, title, sep = ', ')) %>%
   mutate(birth_pulse_2_quant = ifelse(birth_pulse_2_quant=='NA', NA, birth_pulse_2_quant)) %>%
   mutate(birth_pulse_two_cat = ifelse(is.na(birth_pulse_2_quant), 'FALSE', 'TRUE')) %>%
@@ -148,22 +118,22 @@ seroprevalence_graph_inner_join_filter_dc_style_gam <-seroprevalence_graph_inner
   mutate(virus = as.factor(as.character(virus))) %>%
   mutate(methodology = as.factor(as.character(methodology)))
 
-#save(seroprevalence_graph_inner_join_filter_dc_style_gam, file = "~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/seroprevalence_graph_inner_join_filter_dc_style_gam.Rdata")
-gam<-gam(value ~ s(month.dc.birthpulse), data = seroprevalence_graph_inner_join_filter_dc_style_gam, method="REML",weights=1/sqrt(sample_size))
-summary(gam)
-visreg(gam, "month.dc.birthpulse")
+rm(seroprevalence_graph_inner_join)
 
-gam2<-gam(value ~ s(month.dc.birthpulse, by=birth_pulse_two_cat), data = seroprevalence_graph_inner_join_filter_dc_style_gam, method="REML" ,weights=1/sqrt(sample_size))
-summary(gam2)
-visreg(gam2, "month.dc.birthpulse", gg=TRUE)
+#plot(seroprevalence_graph_inner_join_filter_dc_style$value)
+#plot(seroprevalence_graph_inner_join_filter_dc_style$seroprevalence_per)
+#plot(seroprevalence_graph_inner_join_filter_dc_style$seroprevalence_per_lt, seroprevalence_graph_inner_join_filter_dc_style$value)
 
-gam3<-gam(seroprevalence_per_lt ~ s(month.dc.birthpulse, by=birth_pulse_two_cat) + s(substudy, bs='re') + s(title, bs='re') + s(methodology, bs='re'), data = seroprevalence_graph_inner_join_filter_dc_style_gam, method="REML" ,weights=1/sqrt(sample_size))
+#...................................gam..........................................
+
+gam3<-gam(seroprevalence_per_lt ~ s(month.dc.birthpulse, by=birth_pulse_two_cat) + s(substudy, bs='re') + s(title, bs='re') + s(methodology, bs='re'), data = seroprevalence_graph_inner_join_filter, method="REML" ,weights=1/sqrt(sample_size))
 summary(gam3)
 visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat", gg=TRUE)
+#gam.check(gam3)
+#plot(gam3$residuals)
 
-plot(gam3$residuals)
 # ..................................... graphing ...............................
-x<-seroprevalence_graph_inner_join_filter_dc_style_gam %>%
+seroprevalence_graph_inner_join_filter %>%
   filter(virus=='Henipavirus') %>%
   filter(methodology != "non nAb based method") %>%
   #mutate(month.dc.birthpulse = abs(month.dc.birthpulse)) %>%
@@ -181,44 +151,8 @@ x<-seroprevalence_graph_inner_join_filter_dc_style_gam %>%
   ylab('change in seroprevalence from mean, adjusted by study') +
   xlab('month since (or until) birth pulse') +
   ggtitle(paste(c("Filovirus & Henipavirus Seroprevalence; Data from Meta Analysis")))+
-  facet_grid(methodology~birth_pulse_two_cat)
-
-ggplotly(x, tooltip = 'text')
-
-#...........................anti join section.........................................
+  facet_grid(~birth_pulse_two_cat)
 
 
-#seroprevalence_graph_anti_join <- anti_join(seroprevalence_graph, Bat_Birth_Pulse_Data_final)
-
-#seroprevalence_graph_anti_join_analyses <- seroprevalence_graph_anti_join %>%
-#  filter(!(grepl('xc',title))) %>%
-#  dplyr::select(c(species, sampling_location, ECO_NAME)) %>%
-#  unique()
-
-#x <-Bat_Birth_Pulse_Data_final %>%
-#  filter(grepl('pteropus hypomelanus', species))
-
-#seroprevalence_graph_anti_join <- seroprevalence_graph_anti_join %>%
-#  mutate(substudy = paste(species, sex, age_class, sampling_location,year, title, sep = ', ')) %>%
-#  group_by(title) %>%
-#  mutate(value = (seroprevalence_per - mean(seroprevalence_per))/sd(seroprevalence_per, na.rm=TRUE))
-
-#ploty_graph <- seroprevalence_graph_anti_join %>%
-#  mutate(month.dc.birthpulse = month) %>%
-#unite(group, c(species, group), sep = ": ") %>%
-#ungroup() %>%
-#  ggplot(aes(x= month.dc.birthpulse, y= seroprevalence_per, colour = substudy, group = substudy, text = paste('group', substudy))) +
-#  geom_point() +
-#  geom_line() +
-#geom_ribbon(alpha = .2, aes(x= month.dc.birthpulse, 
-#                            ymin=seroprevalence_per_lower_bound, 
-#                            ymax=seroprevalence_per_upper_bound,
-#                            fill= group)) +
-#  theme(legend.position="none") +
-#  ylab('seroprevalence') +
-#  ggtitle(paste(c('Filovirus', "Seroprevalence; Data from Meta Analysis")))+
-#  facet_grid(virus~methodology)
-
-#ggplotly(ploty_graph, tooltip = 'text')
 
 
