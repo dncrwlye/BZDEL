@@ -15,6 +15,7 @@ load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternat
 load("~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
 load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
 
+x <- filter(seroprevalence_x_final, species == "cynotilapia afra")
 #...........................step 1...... clean the data a little for ones where we have unique time points
 
 Bat_Birth_Pulse_Data_final <- Bat_Birth_Pulse_Data_final %>%
@@ -248,23 +249,4 @@ summary(gam8a)
 visreg(gam8a, "month.dc.birthpulse_original", by = "birth_pulse_two_cat") 
 gam.check(gam8a)
 
-#.....................binomial stuffss for all data...............................................
 
-seroprevalence_join7b <- seroprevalence_join6 %>%
-  mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
-  #filter(methodology == 'PCR based method') %>%
-  mutate(failures = sample_size-successes) %>%
-  data.frame()
-
-df.successes <- seroprevalence_join7b[rep(row.names(seroprevalence_join7b), seroprevalence_join7b$successes), 1:35] %>%
-  mutate(successes = 1)
-df.failures <- seroprevalence_join7b[rep(row.names(seroprevalence_join7b), seroprevalence_join7b$failures), 1:35] %>%
-  mutate(successes = 0)
-seroprevalence_join8b <- rbind(df.successes,df.failures)
-
-gam8b<-gam(successes ~ s(month.dc.birthpulse_original, by=(birth_pulse_two_cat, methodology))  + s(substudy, bs='re'), data = seroprevalence_join8b, method="REML", family=binomial(link='logit'))
-summary(gam8b)
-visreg(gam8b, "month.dc.birthpulse_original", by = "methodology") 
-gam.check(gam8b)
-
-unique(seroprevalence_join7$substudy)
