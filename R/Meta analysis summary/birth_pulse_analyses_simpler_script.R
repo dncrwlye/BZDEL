@@ -15,6 +15,8 @@ load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternat
 load("~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
 load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
 
+
+
 x<-seroprevalence_x_final %>% #find out whats going with dates
   filter(is.na(single_sampling_point) & is.na(start_of_sampling))
 #...........................step 1...... clean the data a little for ones where we have unique time points
@@ -47,7 +49,7 @@ seroprevalence_join <- left_join(seroprevalence_x_final, Bat_Birth_Pulse_Data_fi
   #going to use the thailand, malaysia estimates for the missing indonesia estimates
   mutate(birth_pulse_1_quant = ifelse(species == 'rousettus leschenaulti' & is.na(birth_pulse_1_quant & sampling_location =='vietnam'),3.0,birth_pulse_1_quant))  %>%
   #we have estimate for vietnam, not sure why this isn't working
-  mutate(birth_pulse_1_quant = ifelse(species == 'eidolon helvum' & is.na(birth_pulse_1_quant & sampling_location =='annobon island'),8.5,birth_pulse_1_quant)) 
+  mutate(birth_pulse_1_quant = ifelse(species == 'eidolon helvum' & sampling_location =='annobon island',8.5,birth_pulse_1_quant))
   #the eidolon helvum results are funky because they are part of the same ecoregion as all the other islands that peel works on, so probably better to just do this by hand
 
 seroprevalence_join2 <- seroprevalence_join %>%
@@ -56,12 +58,13 @@ seroprevalence_join2 <- seroprevalence_join %>%
 
 seroprevalence_join3 <- seroprevalence_join2 %>%
   group_by_at(vars(-ECO_NAME, -birth_pulse_1_quant, birth_pulse_2_quant)) %>%
-  summarise(birth_pulse_1_quant_new = mean(birth_pulse_1_quant, na.rm=TRUE)) %>%
+  summarise(birth_pulse_1_quant_new = mean(birth_pulse_1_quant, na.rm=TRUE),birth_pulse_1_quant_new_std = sd(birth_pulse_1_quant, na.rm=TRUE)) %>%
   unique() %>%
   ungroup() %>%
   mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage), successes/sample_size, seroprevalence_percentage)) %>%
-  filter(!is.na(seroprevalence_percentage))
-
+  filter(!is.na(seroprevalence_percentage)) 
+  
+unique(seroprevalence_join3$birth_pulse_1_quant_new_std)
 #x <- seroprevalence_join2 %>%   filter(sampling_location=='annobon island') %>% select(-c(ECO_NAME, birth_pulse_1_quant, birth_pulse_2_quant))%>% unique()
 #x <- seroprevalence_join2 %>% filter(sampling_location=='annobon island') %>% group_by_at(vars(-ECO_NAME, -birth_pulse_1_quant, birth_pulse_2_quant)) %>% summarise(x = mean(birth_pulse_1_quant,na.rm=TRUE))
 
@@ -222,7 +225,7 @@ df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seropre
   mutate(successes = 0)
 seroprevalence_join8 <- rbind(df.successes,df.failures)
 
-gam8<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat)  + s(virus, bs='re') + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat)  + virus + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
 summary(gam8)
 #visreg(gam8, "month.dc.birthpulse_original", by = "birth_pulse_two_cat", gg=TRUE)
 plot(gam8)
@@ -234,15 +237,16 @@ seroprevalence_join7a <- seroprevalence_join5 %>%
   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
   filter(methodology == 'nAb based method' | methodology == "non nAb based method") %>%
   mutate(failures = sample_size-successes) %>%
-  data.frame()
+  data.frame() 
 
 df.successes <- seroprevalence_join7a[rep(row.names(seroprevalence_join7a), seroprevalence_join7a$successes), 1:34] %>%
   mutate(successes = 1)
 df.failures <- seroprevalence_join7a[rep(row.names(seroprevalence_join7a), seroprevalence_join7a$failures), 1:34] %>%
   mutate(successes = 0)
-seroprevalence_join8a <- rbind(df.successes,df.failures)
+seroprevalence_join8a <- rbind(df.successes,df.failures) %>%
+  mutate(last_name_of_first_author = as.factor(last_name_of_first_author))
 
-gam8a<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat) + s(substudy, bs='re'), data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat) + methodology + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
 summary(gam8a)
 visreg(gam8a, "month.dc.birthpulse_original", by = "birth_pulse_two_cat")
 #gam.check(gam8a)
@@ -260,80 +264,107 @@ visreg(gam8a, "month.dc.birthpulse_original", by = "birth_pulse_two_cat")
 
 ##................................trying alex's idea...................................
 
-seroprevalence_join7 <- seroprevalence_join5 %>%
-  mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
-  filter(methodology == 'PCR based method') %>%
-  mutate(failures = sample_size-successes) %>%
-  data.frame()
+# seroprevalence_join7 <- seroprevalence_join5 %>%
+#   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
+#   filter(methodology == 'PCR based method') %>%
+#   mutate(failures = sample_size-successes) %>%
+#   data.frame()
+# # 
+# df.successes <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$successes), 1:34] %>%
+#   mutate(successes = 1)
+# df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$failures), 1:34] %>%
+#   mutate(successes = 0)
+# seroprevalence_join8 <- rbind(df.successes,df.failures)
+# # 
+# seroprevalence_join9 <- seroprevalence_join8 %>%
+#   mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
 # 
-df.successes <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$successes), 1:34] %>%
-  mutate(successes = 1)
-df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$failures), 1:34] %>%
-  mutate(successes = 0)
-seroprevalence_join8 <- rbind(df.successes,df.failures)
+# #test one
+# glm(successes ~ parabola, family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
 # 
-seroprevalence_join9 <- seroprevalence_join8 %>%
-  mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
-
-#test one
-glm(successes ~ parabola, family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
-
-x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$parabola)))
-x<-x%>%
-  spread(Var2, Freq) 
-x %>%
-  mutate(p = `1`/`0`) %>%
-  ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
-  geom_point()
-
-x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$month.dc.birthpulse_original)))
-x<-x%>%
-  spread(Var2, Freq) 
-
-x %>%
-  mutate(p = `1`/`0`) %>%
-  ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
-  geom_point()
-
-y <-seroprevalence_join7 %>%
-  filter(month.dc.birthpulse_original==0)
-
-#..........................trying for all  data.........................................
-
-seroprevalence_join7 <- seroprevalence_join5 %>%
-  mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
-  mutate(failures = sample_size-successes) %>%
-  data.frame()
-
-y <- seroprevalence_join7 %>%
-  filter(seroprevalence_percentage > .5)
-# 
-df.successes <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$successes), 1:34] %>%
-  mutate(successes = 1)
-df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$failures), 1:34] %>%
-  mutate(successes = 0)
-seroprevalence_join8 <- rbind(df.successes,df.failures)
-# 
-seroprevalence_join9 <- seroprevalence_join8 %>%
-  mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
-
-library(lme4)
-#first test
-glm(successes ~ parabola + methodology, family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
-
 # x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$parabola)))
 # x<-x%>%
 #   spread(Var2, Freq) 
-# x%>%
+# x %>%
 #   mutate(p = `1`/`0`) %>%
 #   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
 #   geom_point()
+# 
+# x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$month.dc.birthpulse_original)))
+# x<-x%>%
+#   spread(Var2, Freq) 
+# 
+# x %>%
+#   mutate(p = `1`/`0`) %>%
+#   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
+#   geom_point()
+# 
+# y <-seroprevalence_join7 %>%
+#   filter(month.dc.birthpulse_original==0)
+# 
+# #..........................trying for all  data.........................................
+# 
+# seroprevalence_join7 <- seroprevalence_join5 %>%
+#   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
+#   mutate(failures = sample_size-successes) %>%
+#   data.frame()
+# 
+# y <- seroprevalence_join7 %>%
+#   filter(seroprevalence_percentage > .5)
+# # 
+# df.successes <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$successes), 1:34] %>%
+#   mutate(successes = 1)
+# df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$failures), 1:34] %>%
+#   mutate(successes = 0)
+# seroprevalence_join8 <- rbind(df.successes,df.failures)
+# # 
+# seroprevalence_join9 <- seroprevalence_join8 %>%
+#   mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
+# 
+# library(lme4)
+# #first test
+# glm(successes ~ parabola + methodology, family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
+# 
+# # x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$parabola)))
+# # x<-x%>%
+# #   spread(Var2, Freq) 
+# # x%>%
+# #   mutate(p = `1`/`0`) %>%
+# #   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
+# #   geom_point()
+# 
+# x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$month.dc.birthpulse_original)))
+# x<-x%>%
+#   spread(Var2, Freq) 
+# x %>%
+#   mutate(p = `1`/`0`) %>%
+#   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
+#   geom_point()
+# 
+# x<- seroprevalence_join3 %>%
+#   mutate(seroprevalence_percentage = round(seroprevalence_percentage)) %>%
+#   group_by(methodology) %>%
+#   mutate(sum = n()) %>%
+#   ungroup() %>%
+#   group_by(methodology, seroprevalence_percentage, sum) %>%
+#   summarise(n=n()) %>%
+#   mutate(n=n/sum) %>%
+#   filter(seroprevalence_percentage == 0)
+# 
+# seroprevalence_join3 %>%
+#   ggplot(aes(seroprevalence_percentage)) +
+#   geom_histogram() + 
+#   facet_grid(~methodology_kw) 
+  
 
-x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$month.dc.birthpulse_original)))
-x<-x%>%
-  spread(Var2, Freq) 
-x %>%
-  mutate(p = `1`/`0`) %>%
-  ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
-  geom_point()
-
+gam_matrix <- 
+  matrix(c("PCR only", 
+           "Intercept", 
+           "Henipaviruses (ref=Filovirus)", 
+           "Time Since First Birth Pulse (annual birth pulse)", 
+           "Time Since First Birth Pulse (biannual birth pulse)", 
+           "Substudy", 
+           "Title",
+           
+            
+           ))

@@ -1,7 +1,10 @@
 #.................. sampling scheme................
 library(ggplot2)
 library(magrittr)
+library(knitr)
 library(dplyr)
+
+
 x<-seq(0,365,by=1)
 amp <- rnorm(n=length(x), mean=.2)
 amp <- runif(n=length(x))
@@ -64,65 +67,106 @@ ggplot() +
                   Green represents a potentially longitudinal sampling, but the study reports only a single mean estimate of seroprevalence for a given sample period.", parse = TRUE)
 
 
-#.............ehhhh just gonna add on that alex shit rn and try and figure it out.........
-plot(smooth_y[120:280], type='l')
+#.............ehhhh gonna make a table describing the amount of longitudinal studies.........
+library(tidyverse)
+library(stringi)
+library(readxl)
+MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
+                                            col_types = c("text", "numeric", "text", 
+                                                          "text", "text", "text", "text", "text", 
+                                                          "text", "text", "text", "text", "text", 
+                                                          "text", "text", "text", "text", "numeric", "numeric", 
+                                                          "numeric", "numeric", "numeric", 
+                                                          "numeric", "numeric", "numeric", 
+                                                          "numeric", "text", "numeric", "numeric", 
+                                                          "numeric", "numeric", "date", "date", 
+                                                          "date", "text", "text", "text", "text", 
+                                                          "numeric"))
 
-y<-smooth_y[120:280]
+seroprevalence <- MetaAnalysis_Data_New_Version %>%
+  filter(outcome == 'Seroprevalence') %>%
+  dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  mutate(virus = ifelse((virus == "Ebola" | 
+                           virus == "Marburg" | 
+                           virus == "Zaire Ebola"|
+                           virus == "Sudan virus" | 
+                           virus == "Zaire Ebolavirus" | 
+                           virus == "Zaire Ebola "|
+                           virus == "Reston Ebola"), "Filovirus", 
+                        ifelse(virus  == "Nipah" | virus == "Hendra" | virus  == "Henipavirus", "Henipavirus", virus))) %>%
+  filter(virus != 'Tioman') %>%
+  mutate(sampling_location = tolower(sampling_location)) %>%
+  mutate(country = stri_extract_first_regex(sampling_location, '[a-z]+')) %>%
+  mutate(species = tolower(species)) %>%
+  mutate(species = trimws(species)) %>%
+  mutate(species = stri_extract_first_regex(species, '[a-z]+ [a-z]+')) %>%
+  mutate(methodology = ifelse(methodology == 'PCR'| methodology == 'RT-PCR'| methodology == "RT-PCR  (urine)"| methodology == "RT-PCR (Oro-pharangyeal swab)", 'PCR based method', 
+                              ifelse(methodology == "ELISA" | methodology == "ELISA + WB" | methodology == "Luminex", 'non nAb based method',
+                                     ifelse(methodology == "VNT"| methodology == "SNT"| methodology == "Unclear, Presumably Neutralizing Antibodies", "nAb based method", methodology)))) %>%
+  mutate(successes = round((1/100)*seroprevalence_percentage * sample_size,0)) 
 
-smooth_yt <- as.data.frame((as.matrix(y))) %>%
-  mutate(x = row_number()) %>%
-  #mutate(x1 = (1.75*pi*(x/161))) %>%
-  #mutate(x2=.3*sin(x1-1.3)+.3) %>%
-  mutate(x1 = (2*pi*(x/161))) %>%
-  mutate(x2=sin(x1)) %>%
-  mutate(x3=x2)
+seroprevalence_total <- seroprevalence %>%
+  dplyr::select(title) %>% 
+  unique()
 
-plot(smooth_yt$x3, type='l')
-lines(smooth_yt$V1, type='l')
+explicit_longitudinal<-seroprevalence %>%
+  mutate(date_diff = end_of_sampling - start_of_sampling) %>%
+  filter(single_sampling_point == 1 | date_diff < 365/6) %>%
+  select(title, sampling_date_single_time_point, start_of_sampling, sampling_location, species) %>%
+  unique() %>%
+  group_by(title, sampling_location, species) %>%
+  summarise(counts= n()) %>%
+  filter(counts >= 2) %>%
+  ungroup() %>%
+  select(title) %>%
+  unique()
+ 
+single_time_points_but_decent_range<-seroprevalence %>%
+  mutate(date_diff = end_of_sampling - start_of_sampling) %>%
+  filter(single_sampling_point == 1 | date_diff < 365/6) %>%
+  select(title, sampling_date_single_time_point, start_of_sampling, sampling_location, species) %>%
+  unique() %>%
+  group_by(title, sampling_location, species) %>%
+  summarise(counts= n()) %>%
+  filter(counts == 1) %>%
+  ungroup() %>%
+  select(title) %>%
+  unique()
 
-smooth_yt %>%
-  ggplot(aes(x=x3, y= V1))+
-  geom_point() +
-  geom_line()
+pooled_estimates_just_horrible<-seroprevalence %>%
+  mutate(date_diff = end_of_sampling - start_of_sampling) %>%
+  filter(single_sampling_point == 0 & date_diff >= 365/6) %>%
+  select(title, sampling_date_single_time_point, date_diff, start_of_sampling, sampling_location, species) %>%
+  unique() %>%
+  group_by(title, sampling_location, species, date_diff) %>%
+  summarise(counts= n()) %>%
+  ungroup() %>%
+  select(title) %>%
+  unique()
 
-lm(V1~x2,data=smooth_yt) %>% summary()
+11+16+15
 
-#.........eh draw a circle i guess...............................
-library(plotrix)
-
-x<-seq(0,365,by=1)
-amp <- rnorm(n=length(x), mean=0, sd=.1)
-y<-sin(.04*x)+amp
-y<-y*sd(y)
-plot(y, type='l')
-
-y<-y[0:160]
-plot(y, type='l')
-
-smooth_yt <- as.data.frame((as.matrix(y))) %>%
-  mutate(V2 = V1 + abs(min(smooth_yt$V1))) %>%
-  mutate(x = row_number()) %>%
-  mutate(x1 = (2*pi*(x/161))) %>%
-  mutate(x2=sin(x1))
-
-plot(smooth_yt$x2)
-lines(smooth_yt$V1)
-plot(x=smooth_yt$x2, y = smooth_yt$V1)
-
-par(mar = c(4,4,4,4)) 
-plot(x=0,y=0,xlim=c(-1.5,1.5), ylim=c(-1.5,1.5))
-plot(x=0,y=0)
-draw.circle(y=0,x=0,radius=mean(smooth_yt$V2))
-points(x = smooth_yt$x2, y = smooth_yt$V1)
+unique(seroprevalence$title)
 
 
-n<-1000
-plot.new()
-frame()
-x<-runif(n,-1,1)
-y<-runif(n,-1,1)
-for (i in 1:n) { plot(x[i],y[i])}
-draw.circle(0,0,1,nv=1000,border=NULL,col=NA,lty=1,lwd=1)
+paper_breakdown_table <- matrix(c(
+                                  "Total Studies", nrow(seroprevalence_total), "-",
+                                  "Explicitly Longitudinal", nrow(explicit_longitudinal), round(nrow(explicit_longitudinal)/nrow(seroprevalence_total),3)*100,
+                                  "Single Time Point", nrow(single_time_points_but_decent_range), round(nrow(single_time_points_but_decent_range)/nrow(seroprevalence_total),3)*100,
+                                  "Study Longitudinal, Reported Single Time Point", nrow(pooled_estimates_just_horrible), round(nrow(pooled_estimates_just_horrible)/nrow(seroprevalence_total),3)*100)
+                                  , byrow=TRUE,ncol=3)
+paper_breakdown_table                                  
+                                  
+                                  
+kable(paper_breakdown_table, align = 'l', col.names = c('', 'Count', '%'))
+x
+cat(x)
+
+
+
+
+
+
 
 
 
