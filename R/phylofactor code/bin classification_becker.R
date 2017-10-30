@@ -104,9 +104,19 @@ barplot(prop.table(table(zdata$pr_vector,zdata$pfIsZ),margin=2),las=1,legend=T,
                          text.width=c(3,6,0)))
 
 ## slaughter and excrete
+zdata$pr_se=revalue(zdata$pr_se,c("0"="not slaughter/excretion","1"="slaughter/excretion"))
 par(mar=c(4.5,5,2.5,0.5),mfrow=c(1,1))
 barplot(prop.table(table(zdata$pr_se,zdata$pfIsZ),margin=2),las=1,legend=T,
         ylab="proportion of zoonotic viruses",
         xlab="phylofactor bin",
         args.legend=list(x="top",bty="n",horiz=T,inset=c(-0.125,-0.125),
                          text.width=c(3,6,0)))
+
+## combine everything
+zdata$cats=with(zdata,paste(pr_se,pr_vector,hh_trans))
+table(zdata$cats)
+
+## barplot
+barplot(prop.table(table(zdata$cats,zdata$pfIsZ),margin=2),las=1,legend=F,
+        ylab="proportion of zoonotic viruses",
+        xlab="phylofactor bin")
