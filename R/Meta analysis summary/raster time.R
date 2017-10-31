@@ -176,7 +176,6 @@ seroprevalence_x_final <- seroprevalence_x_final %>%
 
 #............plotting data ....................................
 
-
 lat <- c(min(seroprevalence_x_final$south_final, na.rm=TRUE) ,max(seroprevalence_x_final$north_final, na.rm=TRUE))
 lon <- c(min(seroprevalence_x_final$west_final, na.rm=TRUE),max(seroprevalence_x_final$east_final, na.rm=TRUE))
 
