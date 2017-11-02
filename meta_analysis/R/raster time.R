@@ -12,7 +12,6 @@ library(maptools)
 library(rgeos)
 library(sp)
 
-
 #raster fun
 
 MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
@@ -25,7 +24,7 @@ MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus m
                                                           "numeric", "text", "numeric", "numeric", 
                                                           "numeric", "numeric", "date", "date", 
                                                           "date", "text", "text", "text", "text", 
-                                                          "numeric"))
+                                                          "numeric", "text"))
 
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Seroprevalence') %>%
@@ -59,10 +58,18 @@ seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location))
 
 seroprevalence <- seroprevalence %>% unique()
 
+
+library(googleway)
+
+key <- "AIzaSyD40FLStnvp085UB-FKXbyONuxV3ke4umY"
+
+
+
 for(i in 1:nrow(seroprevalence_search))
 {
   query <- seroprevalence_search$sampling_location[i] 
   rd <- geocode(query, output = 'more', source = 'google')
+  Sys.sleep(4)
   if(is.atomic(rd)==FALSE)
   {
     if (is.na(rd$lon) == FALSE) 
@@ -86,10 +93,12 @@ seroprevalence_search_2 <- as.data.frame(unique(seroprevalence$sampling_location
   mutate(east_two=NA) %>%
   mutate(address_two = NA) 
 
+
 for(i in 1:nrow(seroprevalence_search_2))
 {
   query <- seroprevalence_search_2$sampling_location[i] 
   rd <- geocode(query, output = 'more', source = 'google')
+  Sys.sleep(10)
   if(is.atomic(rd)==FALSE)
   {
     if (is.na(rd$lon) == FALSE) 
@@ -112,17 +121,19 @@ seroprevalence <- seroprevalence %>%
   mutate(west_final = pmin(west, west_two, na.rm=TRUE)) %>%
   mutate(east_final = pmax(east, east_two, na.rm=TRUE)) 
   
-#x<-seroprevalence %>%
-#  filter(!is.na(west_two))
+x<-seroprevalence %>%
+  filter(is.na(west_final))
+geocode('ghana, tanoboase', output = 'more', source = 'google')
 
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/")
-save(seroprevalence, file='MetaAnalysis/seroprevalence.Rdata')
+
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+save(seroprevalence, file='data/seroprevalence.Rdata')
 
 
 #..............moving onto the ecoregions analyses.................................
 
-ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
-ecos <- shapefile('~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
+ecos <- shapefile('data/official_teow/wwf_terr_ecos.shp')
+#ecos <- shapefile('~/Desktop/BZDEL/meta_analysis/data/official_teow/wwf_terr_ecos.shp')
 
 #we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
@@ -166,7 +177,7 @@ seroprevalence_x_final <- full_join(seroprevalence_x, eco_regions_placeholder)
 y <- seroprevalence_x_final %>%
   filter(is.na(coordinate_box))
 
-save(seroprevalence_x_final, file ="~/Desktop/BDEL//BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
+save(seroprevalence_x_final, file ="data/seroprevalence_ecoregions_alternative.Rdata")
 
 
 seroprevalence_x_final <- seroprevalence_x_final %>%

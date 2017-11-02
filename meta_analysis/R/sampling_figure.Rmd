@@ -213,7 +213,7 @@ seroprevalence_ab <- seroprevalence %>%
                             ifelse(grepl('mfi' , assay_cutoff), 'Enzymatic Cutoff (MFI/OD)',
                             ifelse(grepl('od' , assay_cutoff), 'Enzymatic Cutoff (MFI/OD)',
                             ifelse(grepl('distribution' , assay_cutoff), 'distribution',
-                                   'else'))))))))) %>%
+                                   assay_cutoff))))))))) %>%
   group_by(methodology,assay_cutoff_cat) %>%
   summarise(count = n())
 
