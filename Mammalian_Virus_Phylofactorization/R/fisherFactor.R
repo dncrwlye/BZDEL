@@ -26,10 +26,6 @@ fisherFactor <- function(Z,tree,nfactors,TestFunction=NULL,ncores=NULL,cluster.d
       return(pvals^lambda)
     }
   }
-  treeList <- list(tree)
-  binList <- list(1:ape::Ntip(tree))
-  Grps=getGroups(tree)
-  output <- NULL
   
   if(null){
     p <- sum(Z)/length(Z)
@@ -44,6 +40,10 @@ fisherFactor <- function(Z,tree,nfactors,TestFunction=NULL,ncores=NULL,cluster.d
     }
   }
   
+  treeList <- list(tree)
+  binList <- list(1:ape::Ntip(tree))
+  Grps=getGroups(tree)
+  output <- NULL
   pfs=0
   while (pfs < min(length(Z)-1,nfactors)){
     
@@ -61,14 +61,17 @@ fisherFactor <- function(Z,tree,nfactors,TestFunction=NULL,ncores=NULL,cluster.d
     
     if (!random){
       best.grp <- Grps[[which.min(pvals)]]
-      P <- min(pvals)
+      P <- min(pvals,na.rm = T)
     } else {
       probs <- prob.fcn(pvals,lambda)
       ix <- sample(length(Grps),1,prob = probs)
       best.grp <- Grps[[ix]]
       P <- pvals[ix]
     }
-    
+    if (is.na(P)){
+      stop('WTF')
+      break
+    }
     output$pvals <- c(output$pvals,P)
     
     grp <- getLabelledGrp(tree=tree,Groups=best.grp)
@@ -79,6 +82,8 @@ fisherFactor <- function(Z,tree,nfactors,TestFunction=NULL,ncores=NULL,cluster.d
     
     pfs=pfs+1
   }
+  
+  
   if (!is.null(ncores)){
     parallel::stopCluster(cl)
     rm('cl')

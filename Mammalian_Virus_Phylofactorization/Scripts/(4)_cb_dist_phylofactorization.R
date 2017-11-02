@@ -1,5 +1,4 @@
 ############ Olival cb_dist_noHoSa_maxLn factorization
-setwd('~/Bozeman/Spillover_Phylofactorization/')
 library(phylofactor)
 library(xlsx)
 library(stringi)
@@ -10,26 +9,32 @@ library(ggpubr)
 library(viridis)
 source('R/fisherFactor.R')
 source('R/visualization_fcns.R')
-source("~/Bozeman/BZDEL/Data/Olival/R/model_reduction.R")
-source("~/Bozeman/BZDEL/Data/Olival/R/fit_gam.R")
-source("~/Bozeman/BZDEL/Data/Olival/R/relative_contributions.R")
-source("~/Bozeman/BZDEL/Data/Olival/R/cross_validation.R")
-source("~/Bozeman/BZDEL/Data/Olival/R/logp.R")
-parpf <- function(reps,pf){
+source("Olival/R/model_reduction.R")
+source("Olival/R/fit_gam.R")
+source("Olival/R/relative_contributions.R")
+source("Olival/R/cross_validation.R")
+source("Olival/R/logp.R")
+load('Workspaces/IsZoonotic_phylofactorization')
+db <- readRDS("Olival/intermediates/postprocessed_database.rds")
+WilcoxTest <- function(grps,tree,Z){
+  
+  s1 <- Z[tree$tip.label[grps[[1]]]] %>% na.omit
+  s2 <- Z[tree$tip.label[grps[[2]]]] %>% na.omit
+  pval <- tryCatch(wilcox.test(s1,s2)$p.value,
+                   error=function(e) 1)
+  return(pval)
+}
+parpf.cb <- function(reps,pf){
   Pvals <- matrix(NA,nrow=reps,ncol=pf$nfactors)
   for (nn in 1:reps){
     Z <- sample(pf$Data,size=length(pf$Data),replace=T)
     names(Z) <- pf$tree$tip.label
-    pf <- fisherFactor(Z,pf$tree,nfactors=9,TestFunction = WilcoxTest)
+    pf <- fisherFactor(Z,pf$tree,nfactors=pf$nfactors,TestFunction = WilcoxTest)
     Pvals[nn,] <- pf$pvals
   }
   return(Pvals)
 }
 
-
-load('Workspaces/el_jefe.rdata')
-db <- readRDS("~/Bozeman/BZDEL/Data/Olival/intermediates/postprocessed_database.rds")
-tree <- el_jefe_grande  %>% di2multi ## resolve polytomies
 all.equal(tree$tip.label,sapply(as.list(db$viruses$vVirusNameCorrected),toString))
 
 hosts <- db$hosts
@@ -46,44 +51,41 @@ Z <- data_set$cb_dist_noHoSa_maxLn
 names(Z) <- data_set$vVirusNameCorrected
 
 
-WilcoxTest <- function(grps,tree,Z){
-  s1 <- Z[tree$tip.label[grps[[1]]]]
-  s2 <- Z[tree$tip.label[grps[[2]]]]
-  pval <- tryCatch(wilcox.test(s1,s2)$p.value,
-                   error=function(e) 1)
-  return(pval)
-}
+
 
 pf.cb_dist_noHoSa_maxLn <- fisherFactor(Z,tree,nfactors=9,TestFunction = WilcoxTest)
 
 
+# Null Simulation ---------------------------------------------------------
 
-################ Null Simulation ##############
 ncores=7
 reps=50
 cl <- phyloFcluster(ncores)
 clusterExport(cl,varlist = c('fisherFactor','parpf','WilcoxTest'))
 reps=as.list(rep(reps,ncores))
-Ps <- parLapply(cl,reps,fun=parpf,pf=pf.cb_dist_noHoSa_maxLn)
+Ps <- parLapply(cl,reps,fun=parpf.cb,pf=pf.cb_dist_noHoSa_maxLn)
 stopCluster(cl)
 rm('cl')
 for (i in 1:length(Ps)){
-  if (i==1){Pvals <- Ps[[i]]} else{Pvals <- rbind(Pvals,Ps[[i]])}
+  if (i==1){Pvals.cb <- Ps[[i]]} else{Pvals.cb <- rbind(Pvals.cb,Ps[[i]])}
 }
 rm('Ps')
 
 
+# Visualization -----------------------------------------------------------
 
-################ Visualization #################
-
-GG <- pf.tree(pf.cb_dist_noHoSa_maxLn)
-ddf <- data.frame('Pvals'=c(t(Pvals)),'factor'=rep(1:pf.cb_dist_noHoSa_maxLn$nfactors,nrow(Pvals)),'replicate'=rep(1:nrow(Pvals),each=pf.cb_dist_noHoSa_maxLn$nfactors))
-obs <- data.frame('Pvals'=pf.cb_dist_noHoSa_maxLn$pvals,'factor'=1:9,'replicate'=NA)
+nfactors <- pf.cb_dist_noHoSa_maxLn$nfactors
+ddf <- data.frame('Pvals'=c(t(Pvals.cb)),
+                  'factor'=rep(1:nfactors,nrow(Pvals.cb)),
+                  'replicate'=rep(1:nrow(Pvals.cb),each=nfactors))
+obs <- data.frame('Pvals'=pf.cb_dist_noHoSa_maxLn$pvals,
+                  'factor'=1:nfactors,
+                  'replicate'=NA)
 ddf <- rbind(ddf,obs)
 
 cols <- c('Null Simulations'='black','Observed Phylofactorization'='red')
 
-PLOT <- ggplot(ddf,aes(factor,Pvals))+
+PLOT <- ggplot(ddf,aes(x=factor,y=Pvals))+
   stat_summary(data = ddf[!is.na(ddf$replicate),],
                geom='ribbon',
                fun.ymin=function(x) quantile(x,0.05),
@@ -108,12 +110,12 @@ ggsave(filename='Figures/Wilcox_factorization_cb_dist.tiff',height=8,width=16)
 
 
 
-# Bin-differences of cb_dist ----------------------------------------------
+# cb_dist by bin ----------------------------------------------
 
 B <- bins(pf.cb_dist_noHoSa_maxLn$basis)
 B_means <- sapply(B,FUN=function(b,z) mean(z[b],na.rm=T),z=Z)
 nms <- sapply(B,getName,VOlival=data_set)
-nms[5] <- "Order_Mononegavirales"
+nms[5] <- "Order_Mononegavirales"   #from manual look - some Rhabdoviruses were listed as "Unclassified".
 cbind(B_means,nms)
 nm.order <- nms[order(B_means,decreasing = T)]
 
@@ -122,26 +124,33 @@ GG <- pf.tree(pf.cb_dist_noHoSa_maxLn,Grps = B,color.fcn = colfcn,top.layer = 5,
 GTREE <- GG$ggplot+
   ggtitle('Phylogenetic Breadth Factorization')
 
-phylobin <- function(B){
-  bn <- numeric(sum(sapply(B,length)))
-  for (i in 1:length(B)){
-    bn[B[[i]]] <- i
-  }
-  return(bn)
-}
 
-DF <- data.frame('Phylogenetic_Breadth'=Z,'name'=factor(nms[phylobin(B)],levels = rev(nm.order)))
+cb.df <- data.frame('Phylogenetic_Breadth'=Z,'name'=factor(nms[phylobin(B)],levels = rev(nm.order)))
 
 cols <- rainbow(11)[order(B_means,decreasing = F)]
 alphas <- rep()
-PLOT <- ggplot(DF,aes(x=name,y=Phylogenetic_Breadth,fill=name))+
+PLOT <- ggplot(cb.df,aes(x=name,y=Phylogenetic_Breadth,fill=name))+
           geom_boxplot()+
           scale_fill_manual(values=cols,guide=guide_legend(reverse=T))+
           coord_flip()+
           ggtitle('Phylogenetic Breadth')
 
 ggarrange(GTREE,PLOT,ncol=2)
-ggsave('~/Bozeman/BZDEL/Figures/Olival phylofactorization/cb_dist_Phylofactorization.tiff',height=4,width=12)
-save(list=ls(),file='cb_dist_phylofactorization')
-save(list=ls(),file='~/Bozeman/BZDEL/Data/Olival/cb_dist_phylofactorization')  ##let's also put a copy in BZDEL
+ggsave('Figures/cb_dist_Phylofactorization.tiff',height=4,width=12)
 
+
+save(list=ls(),file='Workspaces/cb_dist_and_IsZoonotic_phylofactorization')
+
+
+
+
+# Appending Olival dataset with cb_dist phylobin --------------------------
+DF <- readRDS('Workspaces/Olival_w_phylobin')
+
+B <- bins(pf.cb_dist_noHoSa_maxLn$basis)
+nms <- sapply(B,getName,DF)
+phylobin.cbdist <- phylobin(B) %>% nms[.]
+DF$pfCBdist <- phylobin.cbdist
+
+write.xlsx(DF,'Datasets/Olival_w_phylobin_final.xlsx',sheetName = 'Viruses')
+saveRDS(DF,file='Workspaces/Olival_w_phylobins_final')
