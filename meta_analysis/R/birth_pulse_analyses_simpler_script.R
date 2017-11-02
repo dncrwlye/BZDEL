@@ -10,11 +10,11 @@ library(mgcv)
 library(visreg)
 library(stargazer)
 
-load("~/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternative.Rdata")
-load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternative.Rdata")
+load("~/BZDEL/meta_analysis/data/Bat_Birth_Pulse_Data_final_alternative.Rdata")
+load("~/Desktop/BDEL/BZDEL/meta_analysis/data/Bat_Birth_Pulse_Data_final_alternative.Rdata")
 #load("~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions.Rdata")
-load("~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
-load("~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
+load("~/BZDEL/meta_analysis/data/seroprevalence_ecoregions_alternative.Rdata")
+load("~/Desktop/BDEL/BZDEL/meta_analysis/data/seroprevalence_ecoregions_alternative.Rdata")
 
 x<-seroprevalence_x_final %>% #find out whats going with dates
   filter(is.na(single_sampling_point) & is.na(start_of_sampling))
@@ -202,7 +202,7 @@ seroprevalence_join5 <- seroprevalence_join4 %>%
 
 # ..................................... graphing ...............................
 x<-seroprevalence_join5 %>%
-  #filter(methodology == 'PCR based method') %>%
+  filter(last_name_of_first_author == 'Rahman') %>%
   #filter(birth_pulse_two_cat==TRUE) %>%
   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
   ggplot(aes(x= month.dc.birthpulse_original, y= seroprevalence_percentage, colour = substudy, group = substudy, text = paste('group', substudy))) +
