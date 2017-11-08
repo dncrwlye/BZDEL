@@ -17,7 +17,7 @@ library(readxl)
 ```{r, warning=FALSE, echo=FALSE}
 
 x<-seq(0,365,by=1)
-amp <- rnorm(n=length(x), mean=.2)
+#amp <- rnorm(n=length(x), mean=.2)
 amp <- runif(n=length(x))
 y<-amp*sin(.04*x)+amp
 y<-y*sd(y)
@@ -58,25 +58,15 @@ singe_time_point <- data.frame(
   ymax = 1
 )
 
-# ggplot() +
-#   geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
-#             fill='blue', alpha=0.2) +
-#   geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, show.legend = TRUE), 
-#             fill='green', alpha=0.4) +
-#   geom_rect(data=singe_time_point, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
-#             fill='black', alpha=0.4) +
-#   geom_line(data=smooth_yt, aes(y=V1, x=x)) +
-#   ylab('seroprevalence') +
-#   xlab('julian days') 
-  
-ggplot() +
-  geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
+
+x<- ggplot() +
+  geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
             fill='Multiple Sampling Events, Multiple Estimates'), color=NA, alpha=0.2) +
-  geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
-            fill='Multiple Sampling Events, Single Estimate'), color=NA, alpha=0.4) +
   geom_rect(data=singe_time_point, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
             fill='Single Sampling Event, Single Estimate'), color=NA, alpha=0.4) +
-  geom_line(data=smooth_yt, aes(y=V1, x=x)) +
+  geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
+            fill='Multiple Sampling Events, Single Estimate'), color=NA, alpha=0.4) +
+  geom_line(data=smooth_yt, aes(y=V1, x=x-20)) +
   ylab('seroprevalence') +
   xlab('julian days') +
   scale_fill_manual('Sampling & Reporting Strategy', values = c('green', 'blue', 'black'), guide=guide_legend(override.aes = list(alpha = 1))) + 
@@ -84,6 +74,7 @@ ggplot() +
   guides(fill=guide_legend(nrow=3,byrow=TRUE, title.position = 'top'))
   #ggtitle('sampling schemes of henipavirus/filovirus seroprevalence studies present in published literature') +
   
+ggsave(filename = '/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/sampling_plot.pdf', plot=last_plot())
 
 ```
 Sampling schemes present in published studies of henipavirus/filovirus sereprevalence in bats. Black represents a single sampling event. Blue represents a longitudinal sampling at bimonthly intervals. Green represents a potentially longitudinal sampling, but the study reports only a single mean estimate of seroprevalence for a given sample period.
@@ -95,18 +86,20 @@ Sampling schemes present in published studies of henipavirus/filovirus serepreva
 
 #.............ehhhh gonna make a table describing the amount of longitudinal studies.........
 
-MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-                                            col_types = c("text", "numeric", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "numeric", "numeric", 
-                                                          "numeric", "numeric", "numeric", 
-                                                          "numeric", "numeric", "numeric", 
-                                                          "numeric", "text", "numeric", "numeric", 
-                                                          "numeric", "numeric", "date", "date", 
-                                                          "date", "text", "text", "text", "text", 
-                                                          "numeric", "text"))
 
+MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx",
+                                            col_types = c("text", "numeric", "text",
+                                                          "text", "text", "text", "text", "text",
+                                                          "text", "text", "text", "text", "text",
+                                                          "text", "text", "text", "text", "numeric", "numeric",
+                                                          "numeric", "numeric", "numeric",
+                                                          "numeric", "numeric", "numeric",
+                                                          "numeric", "text", "numeric", "numeric",
+                                                          "numeric", "numeric", "date", "date",
+                                                          "date", "text", "text", "text", "text",
+                                                          "numeric", "text"))
+MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx")
+                                           
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(study_type == 'Observational ') %>%
   filter(outcome == 'Seroprevalence') %>%
@@ -219,6 +212,25 @@ seroprevalence_ab <- seroprevalence %>%
 
 unique(seroprevalence_ab$assay_cutoff_cat)
 unique(seroprevalence_ab$assay_cutoff)
+
+```
+
+```{r, warning=FALSE, echo=FALSE}
+
+load("~/Desktop/BDEL/BZDEL/meta_analysis/data/seroprevalence.Rdata")
+
+x<- seroprevalence %>%
+  filter(methodology != "PCR based method") %>%
+  select(c(species, title)) %>%
+  unique() %>%
+  group_by(species) %>%
+  summarise(n=n()) %>%
+  mutate(n_cat = ifelse(n==1, 1, 0))
+
+sum(x$n_cat)/nrow(x)
+
+hist(x$n)
+
 
 ```
 

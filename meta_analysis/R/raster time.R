@@ -112,8 +112,8 @@ for(i in 1:nrow(seroprevalence_search_2))
   }
 }
 
-seroprevalence <- full_join(seroprevalence, seroprevalence_search)
-seroprevalence <- full_join(seroprevalence, seroprevalence_search_2)
+seroprevalence <- full_join(seroprevalence, seroprevalence_search, by=c("sampling_location"))
+seroprevalence <- full_join(seroprevalence, seroprevalence_search_2, by=c('sampling_location_two'))
 
 seroprevalence <- seroprevalence %>%
   mutate(north_final = pmax(north, north_two, na.rm=TRUE)) %>%
@@ -123,8 +123,7 @@ seroprevalence <- seroprevalence %>%
   
 x<-seroprevalence %>%
   filter(is.na(west_final))
-geocode('ghana, tanoboase', output = 'more', source = 'google')
-
+#geocode('ghana, tanoboase', output = 'more', source = 'google')
 
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 save(seroprevalence, file='data/seroprevalence.Rdata')
@@ -175,7 +174,7 @@ for(i in 1:nrow(seroprevalence_x_unique))
 seroprevalence_x_final <- full_join(seroprevalence_x, eco_regions_placeholder)
 
 y <- seroprevalence_x_final %>%
-  filter(is.na(coordinate_box))
+  filter(is.na(ECO_NAME))
 
 save(seroprevalence_x_final, file ="data/seroprevalence_ecoregions_alternative.Rdata")
 

@@ -202,7 +202,7 @@ seroprevalence_join5 <- seroprevalence_join4 %>%
 
 # ..................................... graphing ...............................
 x<-seroprevalence_join5 %>%
-  filter(last_name_of_first_author == 'Rahman') %>%
+  #filter(last_name_of_first_author == 'Rahman') %>%
   #filter(birth_pulse_two_cat==TRUE) %>%
   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
   ggplot(aes(x= month.dc.birthpulse_original, y= seroprevalence_percentage, colour = substudy, group = substudy, text = paste('group', substudy))) +
@@ -233,13 +233,47 @@ df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seropre
   mutate(successes = 0)
 seroprevalence_join8 <- rbind(df.successes,df.failures)
 
-#gam8<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat)  + virus + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
-gam8<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat)  + substudy + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+#gam8_alt<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat)  + virus + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+
+
+gam8<-gam(successes ~ s(month.dc.birthpulse_original)  + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.1<-gam(successes ~ s(substudy, bs='re') , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.2<-gam(successes ~ s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.3<-gam(successes ~ s(month.dc.birthpulse_original), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.4<-gam(successes ~ 1, data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+
+dev.substudy <- (deviance(gam8.1)-deviance(gam8))/deviance(gam8.4) ## prop explained by
+dev.substudy
+dev.title <- (deviance(gam8.2)-deviance(gam8))/deviance(gam8.4) ## prop explained by
+dev.title
+dev.birth_pulse <- (deviance(gam8.3)-deviance(gam8))/deviance(gam8.4) ## prop explained by
+dev.birth_pulse
+
+gam8<-gam(successes ~ s(month.dc.birthpulse_original)  + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.1<-gam(successes ~ s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.2<-gam(successes ~ s(month.dc.birthpulse_original)+ s(title, bs='re') , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.3<-gam(successes ~ s(month.dc.birthpulse_original) + s(substudy, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.4<-gam(successes ~ 1, data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+summary(gam8)
+
+dev.substudy <- (deviance(gam8.1)-deviance(gam8))/deviance(gam8.4) ## prop explained by
+dev.substudy
+dev.title <- (deviance(gam8.2)-deviance(gam8))/deviance(gam8.4) ## prop explained by
+dev.title
+dev.birth_pulse <- (deviance(gam8.3)-deviance(gam8))/deviance(gam8.4) ## prop explained by
+dev.birth_pulse
+
+dev.substudy + dev.title + dev.birth_pulse
+summary(gam8)$dev.expl 
+
 #gam8b<-gam(successes ~ s(month.dc.birthpulse_original, by=virus) + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
 
 #very interesting, its just being driven by one paper! 
 summary(gam8)
-visreg(gam8, "month.dc.birthpulse_original", by = "birth_pulse_two_cat", gg=TRUE)
+summary(gam8_alt)
+visreg(gam8, "month.dc.birthpulse_original", gg=TRUE)
+visreg(gam8_alt, "month.dc.birthpulse_original", by = "birth_pulse_two_cat", gg=TRUE)
+
 plot(gam8)
 gam.check(gam8)
 
@@ -259,13 +293,29 @@ df.failures <- seroprevalence_join7a[rep(row.names(seroprevalence_join7a), serop
 seroprevalence_join8a <- rbind(df.successes,df.failures) %>%
   mutate(last_name_of_first_author = as.factor(last_name_of_first_author))
 
-gam8a<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat) + virus + methodology + s(title, bs='re'), select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
-#gam8a<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat) + virus + methodology + s(substudy,bs='re') + s(title, bs='re'), select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+#gam8a<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat) + virus + methodology + s(title, bs='re'), select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a<-gam(successes ~ s(month.dc.birthpulse_original) + s(substudy,bs='re') + s(methodology, bs='re') + s(virus, bs='re') + s(title, bs='re'), select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.1<-gam(successes ~ s(title, bs='re'), data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.2<-gam(successes ~ s(substudy, bs='re'), data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.3<-gam(successes ~ s(month.dc.birthpulse_original, bs='re'), data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.4<-gam(successes ~ s(methodology, bs='re'), data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.5<-gam(successes ~ s(virus, bs='re'), data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.6<-gam(successes ~ 1, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+
+dev.title <- (deviance(gam8a.1)-deviance(gam8a))/deviance(gam8a.6) ## prop explained by
+dev.title
+dev.substudy <- (deviance(gam8a.2)-deviance(gam8a))/deviance(gam8a.6) ## prop explained by
+dev.substudy
+dev.pulse <- (deviance(gam8a.3)-deviance(gam8a))/deviance(gam8a.6) ## prop explained by
+dev.pulse
 
 #in this if you disclude substudy as a RE then the model becomes signifigant 
 summary(gam8a)
 plot(gam8a)
 visreg(gam8a, "month.dc.birthpulse_original", by = "birth_pulse_two_cat")
+
+summary(gam8a)$dev.expl 
+
 
 #gam.check(gam8a)
 
@@ -287,19 +337,19 @@ visreg(gam8a, "month.dc.birthpulse_original", by = "birth_pulse_two_cat")
 #   filter(methodology == 'PCR based method') %>%
 #   mutate(failures = sample_size-successes) %>%
 #   data.frame()
-# # 
+# #
 # df.successes <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$successes), 1:34] %>%
 #   mutate(successes = 1)
 # df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$failures), 1:34] %>%
 #   mutate(successes = 0)
 # seroprevalence_join8 <- rbind(df.successes,df.failures)
-# # 
+# #
 # seroprevalence_join9 <- seroprevalence_join8 %>%
 #   mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
 # 
 # #test one
-# glm(successes ~ parabola, family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
-# 
+# glmer(successes ~ parabola, family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
+
 # x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$parabola)))
 # x<-x%>%
 #   spread(Var2, Freq) 
@@ -322,35 +372,25 @@ visreg(gam8a, "month.dc.birthpulse_original", by = "birth_pulse_two_cat")
 # 
 # #..........................trying for all  data.........................................
 # 
-# seroprevalence_join7 <- seroprevalence_join5 %>%
-#   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
-#   mutate(failures = sample_size-successes) %>%
-#   data.frame()
-# 
-# y <- seroprevalence_join7 %>%
-#   filter(seroprevalence_percentage > .5)
-# # 
-# df.successes <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$successes), 1:34] %>%
-#   mutate(successes = 1)
-# df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$failures), 1:34] %>%
-#   mutate(successes = 0)
-# seroprevalence_join8 <- rbind(df.successes,df.failures)
-# # 
+
 # seroprevalence_join9 <- seroprevalence_join8 %>%
 #   mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
 # 
+# seroprevalence_join9a <- seroprevalence_join8a %>%
+#   mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
+# # # 
 # library(lme4)
-# #first test
-# glm(successes ~ parabola + methodology, family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
-# 
+# # #first test
+# glmer(successes ~ parabola + (1|substudy) + (1|title), family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
+
 # # x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$parabola)))
 # # x<-x%>%
-# #   spread(Var2, Freq) 
+# #   spread(Var2, Freq)
 # # x%>%
 # #   mutate(p = `1`/`0`) %>%
 # #   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
 # #   geom_point()
-# 
+#
 # x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$month.dc.birthpulse_original)))
 # x<-x%>%
 #   spread(Var2, Freq) 
