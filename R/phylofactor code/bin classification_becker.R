@@ -142,18 +142,27 @@ cdata=data[which(data$IsZoonotic=="TRUE"),]
 
 ## sort bins
 cdata$pfCBdist=factor(cdata$pfCBdist,levels=c("Family_Togaviridae","Genus_Flavivirus","Family_Bunyaviridae",
-                                              "Family_Picornaviridae","Genus_Orthopoxvirus",))
+                                              "Family_Picornaviridae","Genus_Orthopoxvirus",
+                                              "Order_Mononegavirales","Genus_Arenavirus",
+                                              "Family_Reoviridae","Family_Herpesviridae",
+                                              "No Common Name"))
 
-## tabulate proportions for IsZoonotic
-psdata=cbind(t(prop.table(table(sdata$pr_vector,sdata$pfIsZS),margin=2)),
-             t(prop.table(table(sdata$pr_excrete,sdata$pfIsZS),margin=2)),
-             t(prop.table(table(sdata$pr_slaughter,sdata$pfIsZS),margin=2)),
-             t(prop.table(table(sdata$hh_trans,sdata$pfIsZS),margin=2)))
-psdata=data.frame(psdata)
-psdata=round(psdata,2)
+## tabulate proportions
+pcdata=cbind(t(prop.table(table(cdata$pr_vector,cdata$pfCBdist),margin=2)),
+             t(prop.table(table(cdata$pr_excrete,cdata$pfCBdist),margin=2)),
+             t(prop.table(table(cdata$pr_slaughter,cdata$pfCBdist),margin=2)),
+             t(prop.table(table(cdata$hh_trans,cdata$pfCBdist),margin=2)))
+pcdata=data.frame(pcdata)
+pcdata=round(pcdata,2)
+
+## transpose
+pcdata=t(pcdata)
+
+## fix row names
+rownames(pcdata)=c("v0","v1","v?","e0","e1","e?","s0","s1","s?","o0","o1","o?")
 
 ## write to csv
 setwd("~/Dropbox (MSU projects)/Phylofactor/bin classifications")
-write.csv(psdata,"pdataIsZS.csv")
-table(sdata$pfIsZS)
+write.csv(pcdata,"pfCBdist zoonotic classifications.csv")
+table(cdata$pfCBdist)
 
