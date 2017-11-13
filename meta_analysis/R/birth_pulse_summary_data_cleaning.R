@@ -52,11 +52,13 @@ for(i in 1:nrow(Bat_Birth_Pulse_Data_unique))
 
 Bat_Birth_Pulse_Data <- full_join(Bat_Birth_Pulse_Data, Bat_Birth_Pulse_Data_unique)
 
-save(Bat_Birth_Pulse_Data, file = "~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/bat_birth_pulse_geocode.Rdata")
+save(Bat_Birth_Pulse_Data, file = "~/Desktop/BDEL/BZDEL/meta_analysis/data/bat_birth_pulse_geocode.Rdata")
 
-################################################################
 
-ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
+#..............moving onto the ecoregions analyses.................................
+
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+ecos <- shapefile('data/official_teow/wwf_terr_ecos.shp')
 
 #we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
@@ -92,35 +94,31 @@ for(i in 1:nrow(Bat_Birth_Pulse_Data_unique))
 
 Bat_Birth_Pulse_Data_final <- full_join(Bat_Birth_Pulse_Data, eco_regions_placeholder)
 
-y <- seroprevalence_x_final %>%
-  filter(is.na(coordinate_box))
+save(Bat_Birth_Pulse_Data_final, file ="data/Bat_Birth_Pulse_Data_final_alternative.Rdata")
 
-save(Bat_Birth_Pulse_Data_final, file ="~/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_final_alternative.Rdata")
-
-
-
-coordinate_box <- list()
-
-for(i in 1:nrow(Bat_Birth_Pulse_Data_x_unique))
-{
-  if(is.na(Bat_Birth_Pulse_Data_x_unique[i,'north'])) next 
-  
-  x <- as(raster::extent(as.numeric(Bat_Birth_Pulse_Data_x_unique[i,3]), as.numeric(Bat_Birth_Pulse_Data_x_unique[i,4]), 
-                         as.numeric(Bat_Birth_Pulse_Data_x_unique[i,2]), as.numeric(Bat_Birth_Pulse_Data_x_unique[i,1])), "SpatialPolygons")
-  
-  #proj4string(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
-  proj4string(x) <- proj4string(ecos)
-  coordinate_box[[i]] <- x
-  
-  Bat_Birth_Pulse_Data_x_unique[i,'coordinate_box'] <- coordinate_box[[i]] %over% ecos[,'ECO_NAME']
-  
-  print(i)
-}
-
-Bat_Birth_Pulse_Data <- full_join(Bat_Birth_Pulse_Data, Bat_Birth_Pulse_Data_x_unique)
-
-save(Bat_Birth_Pulse_Data, file ="~/BZDEL/Data/MetaAnalysis/Bat_Birth_Pulse_Data_ecoregions.Rdata")
-
+# 
+# coordinate_box <- list()
+# 
+# for(i in 1:nrow(Bat_Birth_Pulse_Data_x_unique))
+# {
+#   if(is.na(Bat_Birth_Pulse_Data_x_unique[i,'north'])) next 
+#   
+#   x <- as(raster::extent(as.numeric(Bat_Birth_Pulse_Data_x_unique[i,3]), as.numeric(Bat_Birth_Pulse_Data_x_unique[i,4]), 
+#                          as.numeric(Bat_Birth_Pulse_Data_x_unique[i,2]), as.numeric(Bat_Birth_Pulse_Data_x_unique[i,1])), "SpatialPolygons")
+#   
+#   #proj4string(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+#   proj4string(x) <- proj4string(ecos)
+#   coordinate_box[[i]] <- x
+#   
+#   Bat_Birth_Pulse_Data_x_unique[i,'coordinate_box'] <- coordinate_box[[i]] %over% ecos[,'ECO_NAME']
+#   
+#   print(i)
+# }
+# 
+# Bat_Birth_Pulse_Data <- full_join(Bat_Birth_Pulse_Data, Bat_Birth_Pulse_Data_x_unique)
+# 
+# save(Bat_Birth_Pulse_Data, file ="data/Bat_Birth_Pulse_Data_ecoregions.Rdata")
+# 
 
 
 
