@@ -63,8 +63,6 @@ library(googleway)
 
 key <- "AIzaSyD40FLStnvp085UB-FKXbyONuxV3ke4umY"
 
-
-
 for(i in 1:nrow(seroprevalence_search))
 {
   query <- seroprevalence_search$sampling_location[i] 
@@ -128,7 +126,6 @@ x<-seroprevalence %>%
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 save(seroprevalence, file='data/seroprevalence.Rdata')
 
-
 #..............moving onto the ecoregions analyses.................................
 
 ecos <- shapefile('data/official_teow/wwf_terr_ecos.shp')
@@ -185,25 +182,25 @@ seroprevalence_x_final <- seroprevalence_x_final %>%
 #######################################################################################
 
 #............plotting data ....................................
-
-lat <- c(min(seroprevalence_x_final$south_final, na.rm=TRUE) ,max(seroprevalence_x_final$north_final, na.rm=TRUE))
-lon <- c(min(seroprevalence_x_final$west_final, na.rm=TRUE),max(seroprevalence_x_final$east_final, na.rm=TRUE))
-
-map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
-               maptype = "satellite", source = "google")
-
-m <- do.call(bind, coordinate_box)
-coordinate_box_fortified <- fortify(m)
-
-eco.points = fortify(ecos)
-
-
-### When you draw a figure, you limit lon and lat.      
-ggmap(map)+
-  scale_x_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
-  scale_y_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
-  geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
-  geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))
+# 
+# lat <- c(min(seroprevalence_x_final$south_final, na.rm=TRUE) ,max(seroprevalence_x_final$north_final, na.rm=TRUE))
+# lon <- c(min(seroprevalence_x_final$west_final, na.rm=TRUE),max(seroprevalence_x_final$east_final, na.rm=TRUE))
+# 
+# map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
+#                maptype = "satellite", source = "google")
+# 
+# m <- do.call(bind, coordinate_box)
+# coordinate_box_fortified <- fortify(m)
+# 
+# eco.points = fortify(ecos)
+# 
+# 
+# ### When you draw a figure, you limit lon and lat.      
+# ggmap(map)+
+#   scale_x_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
+#   scale_y_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
+#   geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
+#   geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))
 
 
 
