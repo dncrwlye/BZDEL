@@ -42,12 +42,13 @@ rect_sampling_point_unique <- data.frame(
   ymin = 0,
   ymax = 1
 )
+
 rect_sampling_point_long <- c(40)
 rect_sampling_point_long <- data.frame(
   xmin = rect_sampling_point_long,
   xmax = rect_sampling_point_long + 200,
-  ymin = .2,
-  ymax = .6
+  ymin = .15,
+  ymax = .5
 )
 
 singe_time_point <- c(300)
@@ -59,22 +60,19 @@ singe_time_point <- data.frame(
 )
 
 
-x<- ggplot() +
-  geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
-            fill='Multiple Sampling Events, Multiple Estimates'), color=NA, alpha=0.2) +
-  geom_rect(data=singe_time_point, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
-            fill='Single Sampling Event, Single Estimate'), color=NA, alpha=0.4) +
-  geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
-            fill='Multiple Sampling Events, Single Estimate'), color=NA, alpha=0.4) +
+x<-ggplot() +
+  #geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill='Multiple Sampling Events, Multiple Estimates'), color=NA, alpha=0.2) +
+  #geom_rect(data=singe_time_point, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill='Single Sampling Event, Single Estimate'), color=NA, alpha=0.4) +
+  geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill='Multiple Sampling Events, Single Estimate'), color=NA, alpha=0.4) +
   geom_line(data=smooth_yt, aes(y=V1, x=x-20)) +
   ylab('seroprevalence') +
   xlab('julian days') +
   scale_fill_manual('Sampling & Reporting Strategy', values = c('green', 'blue', 'black'), guide=guide_legend(override.aes = list(alpha = 1))) + 
   theme(legend.position="bottom", legend.justification  = 0, panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   guides(fill=guide_legend(nrow=3,byrow=TRUE, title.position = 'top'))
-  #ggtitle('sampling schemes of henipavirus/filovirus seroprevalence studies present in published literature') +
-  
-ggsave(filename = '/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/sampling_plot.pdf', plot=last_plot())
+
+ggsave(filename = '/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/sampling_plot.pdf', plot=x)
+
 
 ```
 Sampling schemes present in published studies of henipavirus/filovirus sereprevalence in bats. Black represents a single sampling event. Blue represents a longitudinal sampling at bimonthly intervals. Green represents a potentially longitudinal sampling, but the study reports only a single mean estimate of seroprevalence for a given sample period.
@@ -122,6 +120,7 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
                                      ifelse(methodology == "VNT"| methodology == "SNT"| methodology == "Unclear, Presumably Neutralizing Antibodies", "nAb based method", methodology)))) %>%
   mutate(successes = round((1/100)*seroprevalence_percentage * sample_size,0)) 
 
+x<-unique(seroprevalence$title)
 seroprevalence_total <- seroprevalence %>%
   dplyr::select(title) %>% 
   unique()
