@@ -116,45 +116,7 @@ seroprevalence_join3 <- seroprevalence_join2 %>%
   mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage), successes/sample_size, seroprevalence_percentage)) %>%
   filter(!is.na(seroprevalence_percentage)) 
 
-x <- seroprevalence_join3 %>%
-  filter(species == "cynopterus sphinx")
-
-table(seroprevalence_join3$species, seroprevalence_join3$birth_pulse_two_cat)
-#x <- seroprevalence_join2 %>%   filter(sampling_location=='annobon island') %>% select(-c(ECO_NAME, birth_pulse_1_quant, birth_pulse_2_quant))%>% unique()
-#x <- seroprevalence_join2 %>% filter(sampling_location=='annobon island') %>% group_by_at(vars(-ECO_NAME, -birth_pulse_1_quant, birth_pulse_2_quant)) %>% summarise(x = mean(birth_pulse_1_quant,na.rm=TRUE))
-
-# seroprevalence_single_time_point <- seroprevalence_join3 %>%
-#   filter(single_sampling_point == 1) %>%
-#   mutate(month = round_date(sampling_date_single_time_point, unit= 'months')) %>%
-#   mutate(month = as.numeric(format(month, "%m"))) %>%
-#   mutate(day = as.numeric(format(sampling_date_single_time_point, "%d"))) %>%
-#   mutate(year = as.numeric(format(sampling_date_single_time_point, "%Y"))) 
-# 
-# seroprevalence_unclear_time_point <- seroprevalence_join3 %>%
-#   filter(single_sampling_point == 0) %>%
-#   filter(!is.na(start_of_sampling)) %>%
-#   mutate(difftime = as.numeric(difftime(end_of_sampling, start_of_sampling))) %>%
-#   mutate(difftime = ifelse(difftime > 1000, 1000, difftime)) %>%
-#   filter(difftime < 365/12) %>% #total arbitrary filter, but we need to come up with some time point
-#   mutate(month_1 = ifelse(difftime < 364, as.numeric(format(start_of_sampling, "%m")), 1)) %>%
-#   mutate(month_2 = ifelse(difftime < 364, as.numeric(format(end_of_sampling, "%m")), 12)) %>%
-#   mutate(year = as.numeric(format(start_of_sampling, "%Y"))) %>%
-#   mutate(day = as.numeric(format(start_of_sampling, "%d"))) %>%
-#   select(-c(difftime)) %>%
-#   mutate(title = paste(title, "xc")) 
-# 
-# x <- seroprevalence_unclear_time_point[,c(1:24,26:ncol(seroprevalence_unclear_time_point))]
-# y <-seroprevalence_unclear_time_point[,c(1:23,25:ncol(seroprevalence_unclear_time_point))]
-# colnames(y) <- colnames(x)
-# seroprevalence_unclear_time_point <- rbind(y,x) %>%
-#   rename(month = month_2)
-# 
-# #colnames(seroprevalence_henipavirus_unclear_time_point) <- colnames(seroprevalence_henipavirus_single_time_point)
-# seroprevalence_join4 <- rbind(seroprevalence_unclear_time_point, seroprevalence_single_time_point)
-# 
-# rm(x,y, seroprevalence_single_time_point, seroprevalence_unclear_time_point)
-
-#.............................................making the adjustments to our time series data
+#.............................making the adjustments to our time series data
 
 # also join
 
@@ -170,8 +132,6 @@ seroprevalence_join4 <- seroprevalence_join3 %>%
   mutate(start_of_sampling_month = as.numeric(format(start_of_sampling_month, "%m"))) %>%
   mutate(month = ifelse(!is.na(end_of_sampling_month), (end_of_sampling_month + start_of_sampling_month)/2, month))
 
-x<-seroprevalence_join4 %>%
-  filter(is.na(birth_pulse_1_quant_new))
 seroprevalence_join5 <- seroprevalence_join4 %>%
   filter(!(is.na(birth_pulse_1_quant_new))) %>%
   mutate(month.dc.birthpulse_original = month - birth_pulse_1_quant_new) %>%
@@ -192,82 +152,34 @@ seroprevalence_join5 <- seroprevalence_join4 %>%
   mutate(species = as.factor(as.character(species))) %>%
   mutate(methodology = as.factor(as.character(methodology))) 
 
-# hist((seroprevalence_join5$logit))
-# hist(seroprevalence_join5$seroprevalence_percentage)
-
 # ..................................... random scatter of dates...............................
 
 # runif_month<-runif(n=nrow(seroprevalence_join5), -6,6)
 # seroprevalence_join5 <- cbind(seroprevalence_join5,runif_month) %>%
 #   mutate(runif_month1= round(as.numeric(runif_month)))
 
-#...................................metafor and vi..........................................
-
-#library(metafor)
-## convert to effect size (logit transformed)
-## xi is whatever your vector of successes are)
-## ni  is the vector of sample size
-## PLO tells this to calculate logit-transformed proportions (yi) and the corresponding sampling variance (vi)
-#data=data.frame(data,escalc(xi=round(data$serop*data$sample,0),ni=data$sample,measure="PLO"))
-
-#data=as.data.frame(escalc(xi=round(seroprevalence_join6$seroprevalence_percentage*seroprevalence_join6$sample_size,0),ni=seroprevalence_join6$sample_size,measure="PLO"))
-
-#seroprevalence_join6 <- cbind(seroprevalence_join6, data)
-
-# gam3<-gam(seroprevalence_percentage_lt ~ s(month.dc.birthpulse, by=birth_pulse_two_cat) + s(species, bs='re') + s(substudy, bs='re') + s(title, bs='re') + s(virus, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join5, method="REML", weights=sqrt(sample_size))
-# summary(gam3)
-# #plot(predict.gam(gam3))
-# visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat") 
-# gam.check(gam3)
-# qqPlot(gam3$residuals)
-
-# gam3<-gam(seroprevalence_percentage_lt ~ s(runif_month, by=birth_pulse_two_cat) + s(species, bs='re') + s(substudy, bs='re') + s(title, bs='re') + s(virus, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join5, method="REML", weights=(sample_size))
-# summary(gam3)
-# #plot(predict.gam(gam3))
-# visreg(gam3, "runif_month", by = "birth_pulse_two_cat") 
-
-# gam3<-gam(seroprevalence_percentage_lt ~ s(month.dc.birthpulse, by=birth_pulse_two_cat)  + s(substudy, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join6, method="REML", weights=inverse_variance)
-# summary(gam3)
-# #plot(predict.gam(gam3))
-# visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat") 
-# gam.check(gam3)
-
-# 
-# plot(1/(seroprevalence_join6$vi), seroprevalence_join6$sample_size)
-
-#........................becker vi yi thing...................................................
-# 
-# gam3<-gam(yi ~ s(month.dc.birthpulse, by=birth_pulse_two_cat)  + s(substudy, bs='re')+ s(methodology, bs='re'), data = seroprevalence_join6, method="REML", weights=vi)
-# summary(gam3)
-# #plot(predict.gam(gam3))
-# visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat") 
-# gam.check(gam3)
-# qqPlot(gam3$residuals)
-# 
-# gam3<-gam(yi ~ s(month.dc.birthpulse, by=birth_pulse_two_cat)  + s(substudy, bs='re') + s(species, bs='re') + s(methodology, bs='re'), data = seroprevalence_join6, method="REML", weights=(1/vi))
-# summary(gam3)
-# visreg(gam3, "month.dc.birthpulse", by = "birth_pulse_two_cat") 
-# gam.check(gam3)
-
 # ..................................... graphing ...............................
-# x<-seroprevalence_join5 %>%
-#   #filter(last_name_of_first_author == 'Rahman') %>%
-#   #filter(birth_pulse_two_cat==TRUE) %>%
-#   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
-#   ggplot(aes(x= month.dc.birthpulse_original, y= seroprevalence_percentage, colour = substudy, group = substudy, text = paste('group', substudy))) +
-#   geom_point(aes(size=sample_size)) +
-#   geom_line(size=1.5) +
-#   #geom_ribbon(alpha = .2, aes(x= month.dc.birthpulse,
-#   #                            ymin=seroprevalence_per_lower_bound,
-#   #                            ymax=seroprevalence_per_upper_bound,
-#   #                            fill= group)) +
-#   theme(legend.position="none") +
-#   ylab('change in seroprevalence from mean, adjusted by study') +
-#   xlab('month since (or until) birth pulse') +
-#   ggtitle(paste(c("Filovirus & Henipavirus Seroprevalence; Data from Meta Analysis"))) +
-#   facet_grid(methodology~birth_pulse_two_cat)
-# 
-# ggplotly(x)
+x<-seroprevalence_join5 %>%
+  filter(methodology == 'PCR based method') %>%
+  #filter(birth_pulse_two_cat==TRUE) %>%
+  mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
+  ggplot(aes(x= month.dc.birthpulse_original, y= seroprevalence_percentage, colour = substudy, group = substudy, text = paste('group', substudy))) +
+  geom_point(aes(size=sample_size)) +
+  geom_line(size=1.5) +
+  #geom_ribbon(alpha = .2, aes(x= month.dc.birthpulse,
+  #                            ymin=seroprevalence_per_lower_bound,
+  #                            ymax=seroprevalence_per_upper_bound,
+  #                            fill= group)) +
+  theme(legend.position="none") +
+  ylab('change in seroprevalence from mean, adjusted by study') +
+  xlab('month since (or until) birth pulse') +
+  ggtitle(paste(c("Filovirus & Henipavirus Seroprevalence; Data from Meta Analysis"))) +
+  facet_grid(methodology~birth_pulse_two_cat)
+
+xy<-x %>%
+  filter(sampling_location=='indonesia, sumatera')
+
+ggplotly(x)
 #.....................binomial stuffss for pcr...............................................
 
 seroprevalence_join7 <- seroprevalence_join5 %>%
@@ -285,29 +197,28 @@ seroprevalence_join8 <- rbind(df.successes,df.failures)
 #gam8_alt<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat)  + virus + s(substudy, bs='re') + s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
 
 
-gam8<-gam(successes   ~ s(month.dc.birthpulse_original)  + s(substudy, bs='re') + s(title, bs = 're'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
-gam8.1<-gam(successes ~                                  + s(substudy, bs='re') + s(title, bs = 're'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
-gam8.2<-gam(successes ~ s(month.dc.birthpulse_original)  + s(substudy, bs='re')                      , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
-gam8.3<-gam(successes ~ s(month.dc.birthpulse_original)                         + s(title, bs='re')  , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8<-gam(successes   ~ s(month.dc.birthpulse_original)  + s(substudy, bs='re') , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+#gam8.title<-gam(successes   ~ s(month.dc.birthpulse_original)  + s(substudy, bs='re') +s(title, bs='re'), data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+#gam8_alt<-gam(successes ~ s(month.dc.birthpulse_original, substudy, bs='fs')  + s(substudy, bs='re') , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.1<-gam(successes ~                                  + s(substudy, bs='re') , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+#gam8.2<-gam(successes ~ s(month.dc.birthpulse_original)  + s(substudy, bs='re')                       , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
+gam8.3<-gam(successes ~ s(month.dc.birthpulse_original)                         , data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
 gam8.null<-gam(successes ~ 1, data = seroprevalence_join8, method="REML", family=binomial(link='logit'))
 
+summary(gam8_alt)
 #basing this from one of simon woods suggestions: 
 #http://grokbase.com/t/r/r-help/11ba8hjbn5/r-sum-of-the-deviance-explained-by-each-term-in-a-gam-model-does-not-equal-to-the-deviance-explained-by-the-full-model
 
 dev.birth_pulse <- abs(deviance(gam8.1)-deviance(gam8))/deviance(gam8.null) ## prop explained by
-dev.title <- abs(deviance(gam8.2)-deviance(gam8))/deviance(gam8.null) ## prop explained by
+#dev.title <- abs(deviance(gam8.2)-deviance(gam8))/deviance(gam8.null) ## prop explained by
 dev.substudy <- abs(deviance(gam8.3)-deviance(gam8))/deviance(gam8.null) ## prop explained by
 
-dev.birth_pulse_rde <- round(100*dev.birth_pulse/(dev.title+dev.birth_pulse + dev.substudy),2)
-dev.substudy_rde <-round(100*dev.substudy/(dev.title+dev.birth_pulse + dev.substudy),2)
-dev.title_rde <- round(100*dev.title/(dev.title+dev.birth_pulse + dev.substudy),2)
+dev.birth_pulse_rde <- round(100*dev.birth_pulse/(dev.birth_pulse + dev.substudy),2)
+dev.substudy_rde <-round(100*dev.substudy/(dev.birth_pulse + dev.substudy),2)
+#dev.title_rde <- round(100*dev.title/(dev.title+dev.birth_pulse + dev.substudy),2)
 
 summary_gam8 <- summary(gam8)
 visreg(gam8, "month.dc.birthpulse_original", gg=TRUE)
-
-plot(predict(gam8, type="response"))
-
-plot(gam8)
 gam.check(gam8)
 
 # #.....................binomial stuffss for serology...............................................
@@ -325,41 +236,65 @@ df.failures <- seroprevalence_join7a[rep(row.names(seroprevalence_join7a), serop
 seroprevalence_join8a <- rbind(df.successes,df.failures) %>%
   mutate(last_name_of_first_author = as.factor(last_name_of_first_author))
 
-gam8a<-  gam(successes ~ s(month.dc.birthpulse_original) + s(substudy, bs='re') + s(title, bs='re') , select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
-gam8a.1<-gam(successes ~                                   s(substudy, bs='re') + s(title, bs='re') , select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
-gam8a.2<-gam(successes ~ s(month.dc.birthpulse_origina)  + s(substudy, bs='re')                     , select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
-gam8a.3<-gam(successes ~ s(month.dc.birthpulse_original) + s(substudy, bs = 're')                   , select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
-#gam8a.4<-gam(successes ~ s(month.dc.birthpulse_original, by=birth_pulse_two_cat) + s(substudy, bs='re')   , select=TRUE, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a     <-gam(successes ~ s(month.dc.birthpulse_original) + s(substudy, bs='re')    , data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
 
-gam8a.null<-gam(successes ~ 1, data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+
+gam8a     <-gam(successes ~ s(month.dc.birthpulse_original) + s(substudy, bs='re')    , data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+#gam8a_alt     <-gam(successes ~ s(month.dc.birthpulse_original, substudy, bs = 'fs')  + s(substudy, bs='re')   , data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.1   <-gam(successes ~                                   s(substudy, bs='re')    , data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.2   <-gam(successes ~ s(month.dc.birthpulse_original)                           , data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+#gam8a.3   <-gam(successes ~ s(month.dc.birthpulse_original) + s(substudy, bs = 're')                     , data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
+gam8a.null<-gam(successes ~ 1                                                                            , data = seroprevalence_join8a, method="REML", family=binomial(link='logit'))
 
 dev.birth_pulse_a <- abs(deviance(gam8a.1)-deviance(gam8a))/deviance(gam8a.null) ## prop explained by
 dev.substudy_a    <- abs(deviance(gam8a.2)-deviance(gam8a))/deviance(gam8a.null) ## prop explained by
-dev.title_a       <- abs(deviance(gam8a.3)-deviance(gam8a))/deviance(gam8a.null) ## prop explained by
+#dev.title_a       <- abs(deviance(gam8a.3)-deviance(gam8a))/deviance(gam8a.null) ## prop explained by
 
-dev.birth_pulse_rde_a <- round(100*dev.birth_pulse_a/(dev.title_a+dev.birth_pulse_a + dev.substudy_a),2)
-dev.substudy_rde_a <-round(100*dev.substudy_a/(dev.title_a+dev.birth_pulse_a + dev.substudy_a),2)
-dev.title_rde_a <- round(100*dev.title_a/(dev.title_a+dev.birth_pulse_a + dev.substudy_a),2)
+dev.birth_pulse_rde_a <- round(100*dev.birth_pulse_a/(dev.birth_pulse_a + dev.substudy_a),2)
+dev.substudy_rde_a <-round(100*dev.substudy_a/(dev.birth_pulse_a + dev.substudy_a),2)
+#dev.title_rde_a <- round(100*dev.title_a/(dev.title_a+dev.birth_pulse_a + dev.substudy_a),2)
 
 summary_gam8_a <- summary(gam8a)
 
 #.................................making regression table..............................................
 
+# study_table <- matrix(c(
+#   '','Term',"Value", "Z Statistic", "Chi-Sq Statistic", "P-value", "Effective DOF", "Total Deviance Explained", "Relative Deviance Explained",
+#   #...........................pcr data.........................................................
+#   paste("PCR Prevalence Data (n =", summary_gam8$n,")", sep=""),"","","","","","", paste(round(100*summary_gam8$dev.expl,2), "%") ,"",
+#                       "","Intercept", round(summary_gam8$p.table[1,1],2), round(summary_gam8$p.table[1,3],2),"","","","","",
+#   "","Months since birth event","","",round(summary_gam8$s.table[1,3],2), round(summary_gam8$s.table[1,4],2),round(summary_gam8$s.table[1,1],2),"", paste(dev.birth_pulse_rde,"%"),
+#                  "", "Substudy","","",round(summary_gam8$s.table[2,3],2), round(summary_gam8$s.table[2,4],2),round(summary_gam8$s.table[2,1],2),"", paste(dev.substudy_rde,"%"),
+#                  "",  "Title","","",  round(summary_gam8$s.table[3,3],2), round(summary_gam8$s.table[3,4],2),round(summary_gam8$s.table[3,1],2),"", paste(dev.title_rde,"%"),
+#   #..........................serology data.....................................................
+#   paste("Ab seroprevalence Data (n =", summary_gam8_a$n,")",sep=""),"","","","","","", paste(round(100*summary_gam8_a$dev.expl,2), "%") ,"",
+#                       "","Intercept", round(summary_gam8$p.table[1,1],2), round(summary_gam8_a$p.table[1,3],2),"","","","","",
+#   "","Months since birth event","","",round(summary_gam8_a$s.table[1,3],2),round(summary_gam8_a$s.table[1,4],2),round(summary_gam8_a$s.table[1,1],2),"", paste(dev.birth_pulse_rde_a,"%"),
+#                  "", "Substudy","","",round(summary_gam8_a$s.table[2,3],2),round(summary_gam8_a$s.table[2,4],2),round(summary_gam8_a$s.table[2,1],2),"", paste(dev.substudy_rde_a,"%"),
+#                  "",  "Title","","",  round(summary_gam8_a$s.table[3,3],2),round(summary_gam8_a$s.table[3,4],2),round(summary_gam8_a$s.table[3,1],2),"", paste(dev.title_rde_a,"%")), ncol = 9, byrow = TRUE)
+# 
+# study_table
+
+
 study_table <- matrix(c(
   '','Term',"Value", "Z Statistic", "Chi-Sq Statistic", "P-value", "Effective DOF", "Total Deviance Explained", "Relative Deviance Explained",
   #...........................pcr data.........................................................
   paste("PCR Prevalence Data (n =", summary_gam8$n,")", sep=""),"","","","","","", paste(round(100*summary_gam8$dev.expl,2), "%") ,"",
-                      "","Intercept", round(summary_gam8$p.table[1,1],2), round(summary_gam8$p.table[1,3],2),"","","","","",
+  "","Intercept", round(summary_gam8$p.table[1,1],2), round(summary_gam8$p.table[1,3],2),"",round(summary_gam8$p.table[1,4],2),"","","",
   "","Months since birth event","","",round(summary_gam8$s.table[1,3],2), round(summary_gam8$s.table[1,4],2),round(summary_gam8$s.table[1,1],2),"", paste(dev.birth_pulse_rde,"%"),
-                 "", "Substudy","","",round(summary_gam8$s.table[2,3],2), round(summary_gam8$s.table[2,4],2),round(summary_gam8$s.table[2,1],2),"", paste(dev.substudy_rde,"%"),
-                 "",  "Title","","",  round(summary_gam8$s.table[3,3],2), round(summary_gam8$s.table[3,4],2),round(summary_gam8$s.table[3,1],2),"", paste(dev.title_rde,"%"),
+  "", "Substudy","","",round(summary_gam8$s.table[2,3],2), round(summary_gam8$s.table[2,4],2),round(summary_gam8$s.table[2,1],2),"", paste(dev.substudy_rde,"%"),
+  #"",  "Title","","",  round(summary_gam8$s.table[3,3],2), round(summary_gam8$s.table[3,4],2),round(summary_gam8$s.table[3,1],2),"", paste(dev.title_rde,"%"),
   #..........................serology data.....................................................
   paste("Ab seroprevalence Data (n =", summary_gam8_a$n,")",sep=""),"","","","","","", paste(round(100*summary_gam8_a$dev.expl,2), "%") ,"",
-                      "","Intercept", round(summary_gam8$p.table[1,1],2), round(summary_gam8_a$p.table[1,3],2),"","","","","",
+  "","Intercept", round(summary_gam8_a$p.table[1,1],2), round(summary_gam8_a$p.table[1,3],2),"",round(summary_gam8_a$p.table[1,4],2),"","","",
   "","Months since birth event","","",round(summary_gam8_a$s.table[1,3],2),round(summary_gam8_a$s.table[1,4],2),round(summary_gam8_a$s.table[1,1],2),"", paste(dev.birth_pulse_rde_a,"%"),
-                 "", "Substudy","","",round(summary_gam8_a$s.table[2,3],2),round(summary_gam8_a$s.table[2,4],2),round(summary_gam8_a$s.table[2,1],2),"", paste(dev.substudy_rde_a,"%"),
-                 "",  "Title","","",  round(summary_gam8_a$s.table[3,3],2),round(summary_gam8_a$s.table[3,4],2),round(summary_gam8_a$s.table[3,1],2),"", paste(dev.title_rde_a,"%")), ncol = 9, byrow = TRUE)
+  "", "Substudy","","",round(summary_gam8_a$s.table[2,3],2),round(summary_gam8_a$s.table[2,4],2),round(summary_gam8_a$s.table[2,1],2),"", paste(dev.substudy_rde_a,"%")
+  #,"",  "Title","","",  round(summary_gam8_a$s.table[3,3],2),round(summary_gam8_a$s.table[3,4],2),round(summary_gam8_a$s.table[3,1],2),"", paste(dev.title_rde_a,"%")),
+  ), ncol = 9, byrow = TRUE)
 
+study_table
+
+write.csv(study_table, file= '/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/GAM.csv')
 # #...............................anti join...........................................
 # seroprevalence_join_no_month <- seroprevalence_join %>%
 #   filter(!(is.na(birth_pulse_1_quant)))
