@@ -74,6 +74,7 @@ data$pr_excrete=ifelse(is.na(data$pr_excrete),"unknown",data$pr_excrete)
 data$pr_slaughter=ifelse(is.na(data$pr_slaughter),"unknown",data$pr_slaughter)
 data$pr_vector=ifelse(is.na(data$pr_vector),"unknown",data$pr_vector)
 data$pr_se=ifelse(is.na(data$pr_se),"unknown",data$pr_se)
+data$Envelope=ifelse(is.na(data$Envelope),"unknown",data$Envelope)
 
 ## revalue
 data$hh_trans=revalue(data$hh_trans,c("no"="no onward transmission",
@@ -148,7 +149,9 @@ cdata$pfCBdist=factor(cdata$pfCBdist,levels=c("Family_Togaviridae","Genus_Flaviv
                                               "No Common Name"))
 
 ## tabulate proportions
-pcdata=cbind(t(prop.table(table(cdata$pr_vector,cdata$pfCBdist),margin=2)),
+pcdata=cbind(table(cdata$pfCBdist),
+             t(prop.table(table(cdata$Envelope,cdata$pfCBdist),margin=2)),
+             t(prop.table(table(cdata$pr_vector,cdata$pfCBdist),margin=2)),
              t(prop.table(table(cdata$pr_excrete,cdata$pfCBdist),margin=2)),
              t(prop.table(table(cdata$pr_slaughter,cdata$pfCBdist),margin=2)),
              t(prop.table(table(cdata$hh_trans,cdata$pfCBdist),margin=2)))
@@ -159,7 +162,7 @@ pcdata=round(pcdata,2)
 pcdata=t(pcdata)
 
 ## fix row names
-rownames(pcdata)=c("v0","v1","v?","e0","e1","e?","s0","s1","s?","o0","o1","o?")
+rownames(pcdata)=c("n","envelope0","envelope1","v0","v1","v?","e0","e1","e?","s0","s1","s?","o0","o1","o?")
 
 ## write to csv
 setwd("~/Dropbox (MSU projects)/Phylofactor/bin classifications")
