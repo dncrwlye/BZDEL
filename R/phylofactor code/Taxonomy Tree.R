@@ -6,6 +6,7 @@ library(readr)
 ########################################
 viruses <- read_csv("~/Desktop/BDEL/BZDEL/viruses.csv")
 
+
 taxonomy_tree <- function(order)
 {
 Mononegavirales<-viruses %>% #I did Monogavirales first, then turned this into a function. Just ignore names meaning, its just a variable/dataset name now
@@ -79,6 +80,7 @@ plot(Nidovirales_hc_phylo)
 viruses_no_order <- viruses %>%
   filter(vOrder == 'Unassigned')
 
+family = 'Parvoviridae'
 taxonomy_tree_alternative <- function(family)
 {
   viruses_no_order_subset<-viruses_no_order %>%
@@ -127,7 +129,9 @@ taxonomy_tree_alternative <- function(family)
   hc_phylo <- as.phylo(hc)
 }
 
-Parvoviridae_phylo <- taxonomy_tree_alternative('Parvoviridae')
+Parvoviridae_phylo <- taxonomy_tree_alternative('Herpesviridae')
+plot.phylo(Parvoviridae_phylo)
+
 Polyomaviridae_phylo <- taxonomy_tree_alternative("Polyomaviridae")
 Retroviridae_phylo <- taxonomy_tree_alternative('Retroviridae')
 Reoviridae_phlyo <- taxonomy_tree_alternative('Reoviridae')
@@ -256,7 +260,6 @@ plot(el_jefe_grande)
 save(el_jefe_grande,  
      file = 'el_jefe.rdata')
 
-
 ##########################################################################################
 ##########################################################################################
 ##########################################################################################
@@ -267,12 +270,10 @@ save(el_jefe_grande,
 ##########################################################################################
 ##########################################################################################
 
-
 taxonomy_tree_super_alt <- function()
 {
   #virus_names <- unique(olival_et_al_2017_reduced$virus_name_dc)
   virus_names <- (olival_et_al_2017_reduced$virus_name_dc)
-  
   
   matrix_mono <- matrix(500, length(virus_names), length(virus_names)) 
   colnames(matrix_mono) <- virus_names
