@@ -28,7 +28,7 @@ MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus m
 
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Seroprevalence') %>%
-  dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan', virus), 'Filovirus',
                  ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                  ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
@@ -43,9 +43,26 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   #mutate(methodology_old = ifelse(methodology == 'PCR'| methodology == 'RT-PCR'| methodology == "RT-PCR  (urine)"| methodology == "RT-PCR (Oro-pharangyeal swab)", 'PCR based method', 
   #                            ifelse(methodology == "ELISA" | methodology == "ELISA + WB" | methodology == "Luminex", 'non nAb based method',
   #                                   ifelse(methodology == "VNT"| methodology == "SNT"| methodology == "Unclear, Presumably Neutralizing Antibodies", "nAb based method", methodology)))) %>%
-  mutate(successes = round((1/100)*seroprevalence_percentage * sample_size,0)) 
+  mutate(successes = ifelse(is.na(number_positive), round((1/100)*seroprevalence_percentage * sample_size,0), number_positive)) %>% 
+  dplyr::select(-c(number_positive)) %>%
+  mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage), successes/sample_size, seroprevalence_percentage)) %>%
+  filter(!(is.na(seroprevalence_percentage)))
  
-table(seroprevalence$virus, seroprevalence$virus.dc)
+#some papers did repeat PCR or ELISA testing, but did like PCR urine, PCR blood...those aren't independent
+#im going to group by everything but those values and then take a weighted average of (sero)prevalence 
+
+#look at the x dataframe to see the difference the following lines do 
+
+# x<-seroprevalence%>%
+#   filter(title=='Prevalence of Henipavirus and Rubulavirus Antibodies in Pteropid Bats, Papau New Guinea')
+
+seroprevalence <- seroprevalence %>%
+ group_by_at(vars(-seroprevalence_percentage, -successes)) %>%
+ summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size))
+
+# x<-seroprevalence%>%
+#   filter(title=='Prevalence of Henipavirus and Rubulavirus Antibodies in Pteropid Bats, Papau New Guinea')
+
 
 
 seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location)) %>%
