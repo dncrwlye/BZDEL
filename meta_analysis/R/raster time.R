@@ -53,17 +53,15 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
 
 #look at the x dataframe to see the difference the following lines do 
 
-# x<-seroprevalence%>%
-#   filter(title=='Prevalence of Henipavirus and Rubulavirus Antibodies in Pteropid Bats, Papau New Guinea')
+#x<-seroprevalence%>%
+#filter(title=='Large serological survey showing cocirculation of Ebola and Marburg viruses in Gabonese bat populations , and a high seroprevalence of both viruses in Rousettus aegyptiacus')
 
 seroprevalence <- seroprevalence %>%
- group_by_at(vars(-seroprevalence_percentage, -successes)) %>%
- summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size))
+ group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
+ summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size))
 
 # x<-seroprevalence%>%
 #   filter(title=='Prevalence of Henipavirus and Rubulavirus Antibodies in Pteropid Bats, Papau New Guinea')
-
-
 
 seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location)) %>%
   rename(sampling_location = `unique(seroprevalence$sampling_location)`) %>%
@@ -137,8 +135,7 @@ seroprevalence <- seroprevalence %>%
   mutate(west_final = pmin(west, west_two, na.rm=TRUE)) %>%
   mutate(east_final = pmax(east, east_two, na.rm=TRUE)) 
   
-x<-seroprevalence %>%
-  filter(is.na(west_final))
+
 #geocode('ghana, tanoboase', output = 'more', source = 'google')
 
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
@@ -156,6 +153,7 @@ seroprevalence_x <- seroprevalence%>%
   mutate(coordinate_box = NA)
 
 seroprevalence_x_unique <- seroprevalence_x %>%
+  dplyr::ungroup() %>%
   dplyr::select(north_final, south_final, west_final, east_final) %>%
   unique()
 
@@ -167,7 +165,6 @@ coordinate_box <- list()
 for(i in 1:nrow(seroprevalence_x_unique))
 {
   if(is.na(seroprevalence_x_unique[i,'north_final'])) next 
-  
   x <- as(raster::extent(as.numeric(seroprevalence_x_unique[i,3]), as.numeric(seroprevalence_x_unique[i,4]), 
                          as.numeric(seroprevalence_x_unique[i,2]), as.numeric(seroprevalence_x_unique[i,1])), "SpatialPolygons")
   
