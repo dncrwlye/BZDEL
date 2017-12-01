@@ -21,6 +21,7 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
   mutate(sampling_location = tolower(sampling_location)) %>%
   mutate(country = stri_extract_first_regex(sampling_location, '[a-z]+')) %>%
+  filter(species != 'Feral Cats') %>% 
   mutate(species = tolower(species)) %>%
   mutate(species = trimws(species)) %>%
   mutate(species = stri_extract_first_regex(species, '[a-z]+ [a-z]+')) %>%
@@ -127,3 +128,7 @@ seroprevalence <- seroprevalence %>%
   unique()
 
 save(seroprevalence, file='data/seroprevalence.Rdata')
+
+load(file='data/seroprevalence.Rdata')
+x <- seroprevalence %>%
+  filter(is.na(species))
