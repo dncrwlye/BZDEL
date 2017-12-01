@@ -11,6 +11,8 @@ library(broom)
 library(maptools)
 library(rgeos)
 library(sp)
+library(googleway)
+key <- "AIzaSyD40FLStnvp085UB-FKXbyONuxV3ke4umY"
 
 #raster fun
 #.................load data from seroprevalence_clean_script.R........................
@@ -18,9 +20,14 @@ library(sp)
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 load(file='data/seroprevalence.Rdata')
 
-library(googleway)
-
-key <- "AIzaSyD40FLStnvp085UB-FKXbyONuxV3ke4umY"
+seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location)) %>%
+  rename(sampling_location = `unique(seroprevalence$sampling_location)`) %>%
+  mutate(sampling_location = as.character(sampling_location)) %>%
+  mutate(north=NA) %>%
+  mutate(south=NA) %>%
+  mutate(west=NA) %>%
+  mutate(east=NA) %>%
+  mutate(address = NA) 
 
 for(i in 1:nrow(seroprevalence_search))
 {
