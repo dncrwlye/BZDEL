@@ -13,67 +13,10 @@ library(rgeos)
 library(sp)
 
 #raster fun
+#.................load data from seroprevalence_clean_script.R........................
 
-MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-                                            col_types = c("text", "numeric", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "numeric", "numeric", 
-                                                          "numeric", "numeric", "numeric", 
-                                                          "numeric", "numeric", "numeric", 
-                                                          "numeric", "text", "numeric", "numeric", 
-                                                          "numeric", "numeric", "date", "date", 
-                                                          "date", "text", "text", "text", "text", 
-                                                          "numeric", "text"))
-
-seroprevalence <- MetaAnalysis_Data_New_Version %>%
-  filter(outcome == 'Seroprevalence') %>%
-  dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
-  mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan', virus), 'Filovirus',
-                 ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
-                 ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
-  mutate(sampling_location = tolower(sampling_location)) %>%
-  mutate(country = stri_extract_first_regex(sampling_location, '[a-z]+')) %>%
-  mutate(species = tolower(species)) %>%
-  mutate(species = trimws(species)) %>%
-  mutate(species = stri_extract_first_regex(species, '[a-z]+ [a-z]+')) %>%
-  mutate(methodology = ifelse(grepl('PCR', methodology), 'PCR based method',
-                          ifelse(grepl('ELISA|Luminex', methodology), 'non nAb based method',
-                          ifelse(grepl('VNT|SNT|Neutralizing', methodology), "nAb based method", methodology)))) %>%
-  #mutate(methodology_old = ifelse(methodology == 'PCR'| methodology == 'RT-PCR'| methodology == "RT-PCR  (urine)"| methodology == "RT-PCR (Oro-pharangyeal swab)", 'PCR based method', 
-  #                            ifelse(methodology == "ELISA" | methodology == "ELISA + WB" | methodology == "Luminex", 'non nAb based method',
-  #                                   ifelse(methodology == "VNT"| methodology == "SNT"| methodology == "Unclear, Presumably Neutralizing Antibodies", "nAb based method", methodology)))) %>%
-  mutate(successes = ifelse(is.na(number_positive), round((1/100)*seroprevalence_percentage * sample_size,0), number_positive)) %>% 
-  dplyr::select(-c(number_positive)) %>%
-  mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage), successes/sample_size, seroprevalence_percentage)) %>%
-  filter(!(is.na(seroprevalence_percentage)))
- 
-#some papers did repeat PCR or ELISA testing, but did like PCR urine, PCR blood...those aren't independent
-#im going to group by everything but those values and then take a weighted average of (sero)prevalence 
-
-#look at the x dataframe to see the difference the following lines do 
-
-#x<-seroprevalence%>%
-#filter(title=='Large serological survey showing cocirculation of Ebola and Marburg viruses in Gabonese bat populations , and a high seroprevalence of both viruses in Rousettus aegyptiacus')
-
-seroprevalence <- seroprevalence %>%
- group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
- summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size))
-
-# x<-seroprevalence%>%
-#   filter(title=='Prevalence of Henipavirus and Rubulavirus Antibodies in Pteropid Bats, Papau New Guinea')
-
-seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location)) %>%
-  rename(sampling_location = `unique(seroprevalence$sampling_location)`) %>%
-  mutate(sampling_location = as.character(sampling_location)) %>%
-  mutate(north=NA) %>%
-  mutate(south=NA) %>%
-  mutate(west=NA) %>%
-  mutate(east=NA) %>%
-  mutate(address = NA) 
-
-seroprevalence <- seroprevalence %>% unique()
-
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+load(file='data/seroprevalence.Rdata')
 
 library(googleway)
 
@@ -134,12 +77,13 @@ seroprevalence <- seroprevalence %>%
   mutate(south_final = pmin(south, south_two, na.rm=TRUE)) %>%
   mutate(west_final = pmin(west, west_two, na.rm=TRUE)) %>%
   mutate(east_final = pmax(east, east_two, na.rm=TRUE)) 
-  
+
 
 #geocode('ghana, tanoboase', output = 'more', source = 'google')
 
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
-save(seroprevalence, file='data/seroprevalence.Rdata')
+save(seroprevalence_geolocation, file='data/seroprevalence_geolocation.Rdata')
+
 
 #..............moving onto the ecoregions analyses.................................
 
@@ -189,46 +133,4 @@ y <- seroprevalence_x_final %>%
   filter(is.na(ECO_NAME))
 
 save(seroprevalence_x_final, file ="data/seroprevalence_ecoregions_alternative.Rdata")
-
-
-seroprevalence_x_final <- seroprevalence_x_final %>%
-  dplyr::select(-c(ECO_NAME)) %>%
-  unique()
-#######################################################################################
-
-#............plotting data ....................................
-# 
-# lat <- c(min(seroprevalence_x_final$south_final, na.rm=TRUE) ,max(seroprevalence_x_final$north_final, na.rm=TRUE))
-# lon <- c(min(seroprevalence_x_final$west_final, na.rm=TRUE),max(seroprevalence_x_final$east_final, na.rm=TRUE))
-# 
-# map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
-#                maptype = "satellite", source = "google")
-# 
-# m <- do.call(bind, coordinate_box)
-# coordinate_box_fortified <- fortify(m)
-# 
-# eco.points = fortify(ecos)
-# 
-# 
-# ### When you draw a figure, you limit lon and lat.      
-# ggmap(map)+
-#   scale_x_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
-#   scale_y_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
-#   geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
-#   geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))
-
-
-
-
-
-
-#sp<-readOGR('MetaAnalysis/official_teow')
-#sp <-tidy(sp)
-#plot(sp)
-#globe <- get_map('planet earth', zoom= 3)
-#ggmap(globe)
-
-#globe <- globe + geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=sp, alpha=0)
-#ggmap(globe)
-
 
