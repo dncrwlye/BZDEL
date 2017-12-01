@@ -140,8 +140,6 @@ seroprevalence_join4 <- seroprevalence_join3 %>%
 
 seroprevalence_join5 <- seroprevalence_join4 %>%
   filter(!(is.na(birth_pulse_1_quant_new))) %>%
-  dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
-  dplyr::rename(sample_size = sample_size.dc) %>%
   mutate(month.dc.birthpulse_original = month - birth_pulse_1_quant_new) %>%
   mutate(month.dc.birthpulse = month - birth_pulse_1_quant_new) %>%
   mutate(month.dc.birthpulse = ifelse(month.dc.birthpulse > 6, month.dc.birthpulse - 12,
@@ -172,8 +170,7 @@ x<-seroprevalence_join5%>%
 
 # ..................................... graphing ...............................
 x<-seroprevalence_join5 %>%
-  #filter(methodology == 'PCR based method') %>%
-  #filter(birth_pulse_two_cat==TRUE) %>%
+  #filter(last_name_of_first_author!="Wacharapluesadee") %>%
   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
   ggplot(aes(x= month.dc.birthpulse_original, y= seroprevalence_percentage, colour = substudy, group = substudy, text = paste('group', substudy))) +
   geom_point(aes(size=sample_size)) +
@@ -186,8 +183,9 @@ x<-seroprevalence_join5 %>%
   ylab('change in seroprevalence from mean, adjusted by study') +
   xlab('month since (or until) birth pulse') +
   ggtitle(paste(c("Filovirus & Henipavirus Seroprevalence; Data from Meta Analysis"))) +
-  facet_grid(~methodology)
-
+  facet_wrap(~methodology, scales="free")
+  #facet_grid(~methodology)
+x
 ggplotly(x)
 #.....................binomial stuffss for pcr...............................................
 
