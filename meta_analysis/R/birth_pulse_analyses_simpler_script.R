@@ -169,7 +169,7 @@ x<-seroprevalence_join5%>%
   filter(title=='Prevalence of Henipavirus and Rubulavirus Antibodies in Pteropid Bats, Papau New Guinea')
 
 # ..................................... graphing ...............................
-x<-seroprevalence_join5 %>%
+plot<-seroprevalence_join5 %>%
   #filter(last_name_of_first_author!="Wacharapluesadee") %>%
   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
   ggplot(aes(x= month.dc.birthpulse_original, y= seroprevalence_percentage, colour = substudy, group = substudy, text = paste('group', substudy))) +
@@ -185,8 +185,8 @@ x<-seroprevalence_join5 %>%
   ggtitle(paste(c("Filovirus & Henipavirus Seroprevalence; Data from Meta Analysis"))) +
   facet_wrap(~methodology, scales="free")
   #facet_grid(~methodology)
-x
-ggplotly(x)
+plot
+#ggplotly(x)
 #.....................binomial stuffss for pcr...............................................
 
 seroprevalence_join7 <- seroprevalence_join5 %>%
@@ -331,86 +331,37 @@ study_table
 
 ##................................trying alex's idea...................................
 
-# seroprevalence_join7 <- seroprevalence_join5 %>%
-#   mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
-#   filter(methodology == 'PCR based method') %>%
-#   mutate(failures = sample_size-successes) %>%
-#   data.frame()
-#  
-# df.successes <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$successes), 1:34] %>%
-#   mutate(successes = 1)
-# df.failures <- seroprevalence_join7[rep(row.names(seroprevalence_join7), seroprevalence_join7$failures), 1:34] %>%
-#   mutate(successes = 0)
-# seroprevalence_join8 <- rbind(df.successes,df.failures)
-# # #
-# seroprevalence_join9 <- seroprevalence_join8 %>%
-#   mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
-# 
-# #test one
-# glmer(successes ~ parabola + (1|title), family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
-# 
-# x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$parabola)))
-# x<-x%>%
-#   spread(Var2, Freq)
-# x %>%
-#   mutate(p = `1`/`0`) %>%
-#   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
-#   geom_point()
-# #
-# x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$month.dc.birthpulse_original)))
-# x<-x%>%
-#   spread(Var2, Freq)
-# 
-# x %>%
-#   mutate(p = `1`/`0`) %>%
-#   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
-#   geom_point()
+seroprevalence_join6c <- seroprevalence_join5 %>%
+  mutate(month.dc.birthpulse_original = ifelse(month.dc.birthpulse_original < 0, 12 - abs(month.dc.birthpulse_original), month.dc.birthpulse_original)) %>%
+  mutate(methodology = ifelse(methodology == 'PCR based method', 'PCR based method', "Antibody Based Method")) %>%
+  mutate(successes = sample_size * seroprevalence_percentage) %>%
+  mutate(failures = sample_size-successes) %>%
+  data.frame() 
 
-# y <-seroprevalence_join7 %>%
-#   filter(month.dc.birthpulse_original==0)
-# 
-# #..........................trying for all  data.........................................
-# 
-# 
-# seroprevalence_join9 <- seroprevalence_join8 %>%
-#   mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
-# 
-# seroprevalence_join9a <- seroprevalence_join8a %>%
-#   mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
-# # # 
-# library(lme4)
-# # #first test
-# glmer(successes ~ parabola + (1|substudy) + (1|title), family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
+a <- as.data.frame(table(seroprevalence_join6c$substudy)) %>%
+  rename(substudy = Var1)
 
-# # x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$parabola)))
-# # x<-x%>%
-# #   spread(Var2, Freq)
-# # x%>%
-# #   mutate(p = `1`/`0`) %>%
-# #   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
-# #   geom_point()
-#
-# x<-as.data.frame(t(table(seroprevalence_join9$successes, seroprevalence_join9$month.dc.birthpulse_original)))
-# x<-x%>%
-#   spread(Var2, Freq) 
-# x %>%
-#   mutate(p = `1`/`0`) %>%
-#   ggplot(aes(x=Var1, y= p, size=`1`+`0`)) +
-#   geom_point()
-# 
-# x<- seroprevalence_join3 %>%
-#   mutate(seroprevalence_percentage = round(seroprevalence_percentage)) %>%
-#   group_by(methodology) %>%
-#   mutate(sum = n()) %>%
-#   ungroup() %>%
-#   group_by(methodology, seroprevalence_percentage, sum) %>%
-#   summarise(n=n()) %>%
-#   mutate(n=n/sum) %>%
-#   filter(seroprevalence_percentage == 0)
-# 
-# seroprevalence_join3 %>%
-#   ggplot(aes(seroprevalence_percentage)) +
-#   geom_histogram() + 
-#   facet_grid(~methodology_kw) 
+seroprevalence_join7c <- full_join(seroprevalence_join6c, a) %>%
+  filter(Freq > 1)
 
+df.successes <- seroprevalence_join7c[rep(row.names(seroprevalence_join7c), seroprevalence_join7c$successes), 1:34] %>%
+  mutate(successes = 1)
+df.failures <- seroprevalence_join7c[rep(row.names(seroprevalence_join7c), seroprevalence_join7c$failures), 1:34] %>%
+  mutate(successes = 0)
+seroprevalence_join8c <- rbind(df.successes,df.failures)
+
+seroprevalence_join9c <- seroprevalence_join8c %>%
+  mutate(parabola = month.dc.birthpulse_original * (12-month.dc.birthpulse_original))
+
+#test one
+#glmer(successes ~ parabola + (1|substudy), family=binomial(link='logit'), data= seroprevalence_join9) %>% summary()
+
+seroprevalence_join9c %>%
+  ggplot(aes(x = parabola, y= seroprevalence_percentage, colour = substudy, group = substudy)) + 
+  geom_point(aes(size=sample_size)) +
+  geom_line(size=1.5) + 
+  theme(legend.position="none") + 
+  facet_wrap(~methodology, scales = 'free')
+
+glmer(successes ~ parabola + methodology + parabola*methodology + (1|substudy), family=binomial(link='logit'), data= seroprevalence_join9c) %>% summary()
 
