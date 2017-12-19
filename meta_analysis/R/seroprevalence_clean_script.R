@@ -1,5 +1,7 @@
 #............................script that will clean prevalence and seroprevalence data...................................................
-
+library(tidyverse)
+library(readxl)
+library(stringi)
 MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
                                             col_types = c("text", "numeric", "text", 
                                                           "text", "text", "text", "text", "text", 
@@ -33,6 +35,7 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   mutate(species = gsub('schreibersi' ,"schreibersii", species)) %>%
   mutate(species = gsub('schreibersiii' ,"schreibersii", species)) %>%
   mutate(species = gsub('minopterus' ,"miniopterus", species)) %>%
+  mutate(species = gsub('miniopertus' ,"miniopterus", species)) %>%
   mutate(species = gsub('myonicterus' ,"myonycteris", species)) %>%
   mutate(species = gsub('jagoli' ,"jagori", species)) %>%
   mutate(species = gsub('leschenaulti' ,"leschenaultii", species)) %>%
@@ -124,11 +127,11 @@ seroprevalence <- seroprevalence %>%
   mutate(study_type = ifelse(substudy_non_annual %in% explicit_longitudinal$substudy_non_annual, 'explicit_longitudinal',
                       ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, 'single_time_points_but_decent_range',
                       ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, 'pooled_estimates_just_horrible', NA )))) %>%
-  dplyr::select(-c(substudy_non_annual, date_diff, date_diff_cat)) %>%
+  dplyr::select(-c(date_diff, date_diff_cat)) %>%
   unique()
 
 save(seroprevalence, file='data/seroprevalence.Rdata')
 
-load(file='data/seroprevalence.Rdata')
-x <- seroprevalence %>%
-  filter(is.na(species))
+# load(file='data/seroprevalence.Rdata')
+# x <- seroprevalence %>%
+#   filter(is.na(species))
