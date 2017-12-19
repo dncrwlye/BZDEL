@@ -64,22 +64,4 @@ tiplabels(pch=21,col=afdata$data$survey_col,bg=afdata$data$survey_col,cex=1)
 
 
 
-#.............add in filovirus positivity....................
-# 
-# library(tidyverse)
-# setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
-# load(file='data/seroprevalence.Rdata')
-# seroprevalence_species <- seroprevalence %>%
-#   mutate(seroprevalence_percentage_cat = ifelse(seroprevalence_percentage == 0, 0, 1)) %>%
-#   filter(!(is.na(species))) %>%
-#   dplyr::group_by(species, virus, seroprevalence_percentage_cat) %>%
-#   summarise(count = n()) %>%
-#   ungroup() %>%
-#   filter(virus == 'Filovirus') %>%
-#   spread(seroprevalence_percentage_cat, count) %>%
-#   select(c(species, `1`, `0`)) %>%
-#   mutate(filovirus_positive_cat  = ifelse(is.na(`1`) & !is.na(`0`), 0, 
-#                                           ifelse(!is.na(`1`), 1, NA)))
-# 
-# batphy <- full_join(batphy, seroprevalence_species) %>%
-#   mutate(filovirus_positive_cat = ifelse(is.na(filovirus_positive_cat), 0, filovirus_positive_cat))
+
