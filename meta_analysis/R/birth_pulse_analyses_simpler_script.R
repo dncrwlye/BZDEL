@@ -363,5 +363,8 @@ seroprevalence_join9c %>%
   theme(legend.position="none") + 
   facet_wrap(~methodology, scales = 'free')
 
-glmer(successes ~ parabola + methodology + parabola*methodology + (1|substudy), family=binomial(link='logit'), data= seroprevalence_join9c) %>% summary()
+nore <- glm(successes ~ parabola + virus + methodology + parabola*methodology , family=binomial(link='logit'), data= seroprevalence_join9c)  
+re<- glmer(successes ~ parabola + virus + methodology + parabola*methodology + (1|substudy), family=binomial(link='logit'), data= seroprevalence_join9c)  
+anova( re, nore)
+
 
