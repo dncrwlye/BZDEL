@@ -74,12 +74,14 @@ cutoff <- seroprevalence %>%
   mutate(od2 = ifelse(grepl('OD', assay_cutoff), TRUE, FALSE)) %>%
   mutate(MFI = ifelse(grepl('MFI', assay_cutoff), as.numeric(stri_extract_first_regex(cutoff$assay_cutoff, '[0-9]+')), NA)) %>%
   mutate(MFI2 = ifelse(grepl('MFI', assay_cutoff), TRUE, FALSE)) %>%
-  mutate(titer = ifelse(grepl('[T|t]iter|[D|d]ilution', assay_cutoff), (stri_extract_first_regex(cutoff$assay_cutoff, '[0-9]:[1-9]+')), NA)) %>%
-  mutate(titer2 = ifelse(grepl('[T|t]iter|[D|d]ilution', assay_cutoff), TRUE, FALSE))   %>%
+  mutate(titer = ifelse(grepl('[D|d]ilution', assay_cutoff), as.numeric(stri_extract_first_regex(cutoff$assay_cutoff, '(?<=[0-9]:)[0-9]+')),
+                 ifelse(grepl('[T|t]iter', assay_cutoff), as.numeric((stri_extract_first_regex(cutoff$assay_cutoff, '[0-9]+'))), NA ))) %>%
+  mutate(titer2 = ifelse(grepl('[T|t]iter|[D|d]ilution', assay_cutoff), TRUE, FALSE)) %>%
   mutate(check = ifelse(od2 == FALSE & MFI2 == FALSE & titer2 == FALSE, FALSE, TRUE))
 
 hist(cutoff$od)
 hist(cutoff$MFI)
+hist(log(cutoff$titer))
 
 
 
