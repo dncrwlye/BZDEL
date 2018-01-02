@@ -69,20 +69,21 @@ rm(MetaAnalysis_Data_New_Version)
 cutoff <- seroprevalence %>%
   filter(methodology_cleaned != 'PCR based method')%>%
   select(methodology_cleaned, assay_cutoff) %>%
-  mutate(od = ifelse(grepl('OD', assay_cutoff), as.numeric(stri_extract_first_regex(cutoff$assay_cutoff, '.[0-9]+')), NA)) %>%
+  mutate(od = ifelse(grepl('OD', assay_cutoff) & !grepl('[N|n]o', assay_cutoff), as.numeric(stri_extract_first_regex(cutoff$assay_cutoff, '.[0-9]+')), NA)) %>%
   mutate(od = ifelse(od == 3.00, NA, od)) %>% #dont count 'od of 3' from the studies that used OD 3x above the mean
-  mutate(od2 = ifelse(grepl('OD', assay_cutoff), TRUE, FALSE)) %>%
+  mutate(od2 = ifelse(grepl('OD', assay_cutoff) & !grepl('[N|n]o', assay_cutoff), TRUE, FALSE)) %>%
   mutate(MFI = ifelse(grepl('MFI', assay_cutoff), as.numeric(stri_extract_first_regex(cutoff$assay_cutoff, '[0-9]+')), NA)) %>%
   mutate(MFI2 = ifelse(grepl('MFI', assay_cutoff), TRUE, FALSE)) %>%
   mutate(titer = ifelse(grepl('[D|d]ilution', assay_cutoff), as.numeric(stri_extract_first_regex(cutoff$assay_cutoff, '(?<=[0-9]:)[0-9]+')),
                  ifelse(grepl('[T|t]iter', assay_cutoff), as.numeric((stri_extract_first_regex(cutoff$assay_cutoff, '[0-9]+'))), NA ))) %>%
   mutate(titer2 = ifelse(grepl('[T|t]iter|[D|d]ilution', assay_cutoff), TRUE, FALSE)) %>%
-  mutate(check = ifelse(od2 == FALSE & MFI2 == FALSE & titer2 == FALSE, FALSE, TRUE))
-
+  mutate(unclear_none_given = ifelse(grepl('[U|u]nclear|some sort|None Given|just an explanation|endpoint titrations|see notes', assay_cutoff), TRUE, FALSE)) %>%
+  mutate(distribution = ifelse(grepl('distribution', assay_cutoff), TRUE, FALSE)) %>%
+  mutate(check = ifelse(od2 == FALSE & MFI2 == FALSE & titer2 == FALSE & unclear_none_given == FALSE & distribution == FALSE, FALSE, TRUE))
+  
 hist(cutoff$od)
 hist(cutoff$MFI)
-hist(log(cutoff$titer))
-
-
-
-
+cutoff %>%
+  ggplot(aes(x=titer)) +
+  geom_histogram()
+  
