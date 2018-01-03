@@ -12,36 +12,58 @@ library(tidyverse)
 library(taxize)
 
 #..............obtain a couple more outcome variables..................................
-load('data/bat_taxonomy_data.Rdata') 
+#................load bat phylogeny data...................................
 
+load('data/bat_taxonomy_data.Rdata') 
 load(file='data/seroprevalence.Rdata')
+
+rm(batphy)
+
 seroprevalence_filo_binary <- seroprevalence %>%
-  mutate(seroprevalence_percentage_cat = ifelse(seroprevalence_percentage == 0, 0, 1)) %>%
+  #mutate(seroprevalence_percentage_cat = ifelse(seroprevalence_percentage == 0, 0, 1)) %>%
   filter(!(is.na(species))) %>%
-  dplyr::group_by(species, virus, seroprevalence_percentage_cat) %>%
-  summarise(count = n()) %>%
+  #dplyr::group_by(species, virus, seroprevalence_percentage_cat) %>%
+  #summarise(count = n()) %>%
+  dplyr::group_by(species, virus) %>%
+  summarise(filovirus_positive_cat=mean(seroprevalence_percentage)) %>% #keep the same name as before just to make things easier
   ungroup() %>%
   filter(virus == 'Filovirus') %>%
-  spread(seroprevalence_percentage_cat, count) %>%
-  mutate(filovirus_positive_cat  = ifelse(is.na(`1`) & !is.na(`0`), 0,
-                                          ifelse(!is.na(`1`), 1, NA))) %>%
-  dplyr::select(c(species, filovirus_positive_cat)) %>%
-  unique()
+  select(-virus)#%>%
+  #spread(seroprevalence_percentage_cat, count) %>%
+  #mutate(filovirus_positive_cat  = ifelse(is.na(`1`) & !is.na(`0`), 0, ifelse(!is.na(`1`), 1, NA))) %>%
+  #dplyr::select(c(species, filovirus_positive_cat)) %>%
+  #unique()
 
 batphy1 <- left_join(batphy1, seroprevalence_filo_binary) 
 
+# seroprevalence_hnv_binary <- seroprevalence %>%
+#   mutate(seroprevalence_percentage_cat = ifelse(seroprevalence_percentage == 0, 0, 1)) %>%
+#   filter(!(is.na(species))) %>%
+#   dplyr::group_by(species, virus, seroprevalence_percentage_cat) %>%
+#   summarise(count = n()) %>%
+#   ungroup() %>%
+#   filter(virus == 'Henipavirus') %>%
+#   spread(seroprevalence_percentage_cat, count) %>%
+#   mutate(henipavirus_positive_cat  = ifelse(is.na(`1`) & !is.na(`0`), 0,
+#                                             ifelse(!is.na(`1`), 1, NA))) %>%
+#   dplyr::select(c(species, henipavirus_positive_cat)) %>%
+#   unique()
+
 seroprevalence_hnv_binary <- seroprevalence %>%
-  mutate(seroprevalence_percentage_cat = ifelse(seroprevalence_percentage == 0, 0, 1)) %>%
+  #mutate(seroprevalence_percentage_cat = ifelse(seroprevalence_percentage == 0, 0, 1)) %>%
   filter(!(is.na(species))) %>%
-  dplyr::group_by(species, virus, seroprevalence_percentage_cat) %>%
-  summarise(count = n()) %>%
+  #dplyr::group_by(species, virus, seroprevalence_percentage_cat) %>%
+  #summarise(count = n()) %>%
+  dplyr::group_by(species, virus) %>%
+  summarise(henipavirus_positive_cat=mean(seroprevalence_percentage)) %>%
   ungroup() %>%
   filter(virus == 'Henipavirus') %>%
-  spread(seroprevalence_percentage_cat, count) %>%
-  mutate(henipavirus_positive_cat  = ifelse(is.na(`1`) & !is.na(`0`), 0,
-                                            ifelse(!is.na(`1`), 1, NA))) %>%
-  dplyr::select(c(species, henipavirus_positive_cat)) %>%
-  unique()
+  select(-virus)
+  #%>%
+#spread(seroprevalence_percentage_cat, count) %>%
+#mutate(filovirus_positive_cat  = ifelse(is.na(`1`) & !is.na(`0`), 0, ifelse(!is.na(`1`), 1, NA))) %>%
+#dplyr::select(c(species, filovirus_positive_cat)) %>%
+#unique()
 
 batphy1 <- left_join(batphy1, seroprevalence_hnv_binary) 
 
@@ -51,8 +73,6 @@ batphy1 <- batphy1 %>%
   mutate(hnv_samps =  ifelse(is.na(hnv_samps), 0, hnv_samps)) 
 
 taxonomy<- batphy1[,c('species','tax')]
-
-n_factors = 10
 
 #....................................................................................
 #....................................................................................
@@ -64,8 +84,6 @@ n_factors = 10
 #....................................................................................
 #....................................................................................
 #.................comparison of henipa and filo......................................
-
-
 
 #........................henipaviruses...............................
 
@@ -267,20 +285,24 @@ ddf.filo %>%
 #Yinpterochiroptera is the group that is not Yangochiroptera 
 
 
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.................................................................................................
-#.............add in filovirus and henipavirus positivity....................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
+#.............add in filovirus and henipavirus POSITIVITY......................................
 
 #setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 
@@ -327,7 +349,7 @@ for (i in 2:(n_factors.hnv.pos+1))
    group_by(henipavirus_positive_cat) %>%
    summarise(n = n())
   
-  pf.hnv_pos.pval.storage[i] <-  (as.numeric(p[2,'n'] / (p[2,'n'] + p[1,'n'])))
+  pf.hnv_pos.pval.storage[i-1] <-  (as.numeric(p[2,'n'] / (p[2,'n'] + p[1,'n'])))
 }
 
 B.hnv.pos <- bins(pf.hnv_pos$basis[,1:n_factors.hnv.pos])
@@ -355,21 +377,24 @@ names(nms1.hnv.pos) <- probs.hnv.pos
 #..........................NULL SIMULATIONS for + HENIPAVIRUSES.................................................
 #..........................NULL SIMULATIONS for + HENIPAVIRUSES.................................................
 
+#only 3 bins are of interest, the rest are species single groups so for the null simulations lets set it to 3
+nfactors.hnv.random = 3 
+
 randomData <- function()
 {
   rbinom(nrow(Z.hnv_pos.hnv1), size = 1, prob = sum(Z.hnv_pos.hnv1$henipavirus_positive_cat)/nrow(Z.hnv_pos.hnv1))
 }
 NoReplicates <- 100
-p_storage <- matrix(0, NoReplicates, 10)
+p_storage <- matrix(0, NoReplicates, nfactors.hnv.random)
 
 for (replicate in 1:NoReplicates){
   Z <- randomData()  ## define how you want to make this random data
   DF <- Z.hnv_pos.hnv1 %>%
     mutate(henipavirus_positive_cat = Z) %>%
     rename(henipavirus_positive_cat_random = henipavirus_positive_cat)
-  pf <- gpf(DF,bat_tree.hnv.pos,frmla=henipavirus_positive_cat_random~hnv_samps+phylo,nfactors=10,mStableAgg=F)
+  pf <- gpf(DF,bat_tree.hnv.pos,frmla=henipavirus_positive_cat_random~hnv_samps+phylo,nfactors=nfactors.hnv.random,mStableAgg=F)
   
-  for (i in 2:11)
+  for (i in 2:(nfactors.hnv.random+1))
   {
     indexes = pf$bins[[i]]
     p<-DF[c(indexes),] 
@@ -379,9 +404,9 @@ for (replicate in 1:NoReplicates){
   }
 }
 
-pf.hnv_pos.pval.storage <- matrix(1,10,1) #in this case all the group pvals were 1
+pf.hnv_pos.pval.storage <- matrix(1,3,1) #in this case all the group pvals were 1
 
-obs <- data.frame('factor'=1:n_factors.hnv.pos,
+obs <- data.frame('factor'=1:nfactors.hnv.random,
                   'Pvals'=pf.hnv_pos.pval.storage) %>% t()
                   
 ddf.hnv.null.sim <- as.data.frame(t(rbind(obs, p_storage)))
@@ -412,8 +437,9 @@ colfcn.hnv.pos <- function(n) return(c("#33FF00FF"))
 
 pf.tree.hnv.pos <- pf.tree(pf.hnv_pos, lwd=1, factors =1, color.fcn = colfcn.hnv.pos, branch.length = "none")
 pf.tree.hnv.pos$ggplot +
-  ggtree::geom_tippoint(size=10*Z.hnv_pos.hnv1$henipavirus_positive_cat,col='blue')  
-
+  ggtree::geom_tippoint(size=10*Z.hnv_pos.hnv1$henipavirus_positive_cat,col='blue')  +
+  ggtree::geom_tippoint(size=2*log(Z.hnv_pos.hnv1$hnv_samps),col='red')  
+  
 Legend.hnv.pos <- pf.tree.hnv.pos$legend
 Legend.hnv.pos$names <- nms1.hnv.pos[1]
 P.hnv.pos <- sapply(probs.hnv.pos,FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
@@ -575,8 +601,9 @@ colfcn.filo.pos <- function(n) return(c("#33FF00FF"))
 
 pf.tree.filo.pos <- pf.tree(pf.filo_pos, lwd=1, factors =1, color.fcn = colfcn.filo.pos, branch.length = "none")
 pf.tree.filo.pos$ggplot +
-  ggtree::geom_tippoint(size=10*Z.joined.filo.pos.1$filovirus_positive_cat,col='blue')  
-
+  ggtree::geom_tippoint(size=10*Z.joined.filo.pos.1$filovirus_positive_cat,col='blue')  +
+  ggtree::geom_tippoint(size=log(Z.joined.filo.pos.1$filo_samps),col='red')  
+  
 Legend.filo.pos <- pf.tree.filo.pos$legend
 Legend.filo.pos$names <- nms1.filo.pos[1]
 P.filo.pos <- sapply(probs.filo.pos,FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
