@@ -1,4 +1,4 @@
-dc.null.sim.function <- function (Z, outcome, NoReplicates, tree, predictor, n.factors, fisher.storage, deviance.storage, aov.storage)
+dc.null.sim.function <- function (Z, sample, outcome, NoReplicates, tree, predictor, n.factors, fisher.storage, deviance.storage, aov.storage)
 {
   #Z.joined.filo.pos.1 = Z
   #filovirus_positive_cat = outcome
@@ -21,9 +21,17 @@ dc.null.sim.function <- function (Z, outcome, NoReplicates, tree, predictor, n.f
   for (replicate in 1:NoReplicates){
     outcome <- randomData()  ## define how you want to make this random data
     DF <- Z %>%
-      mutate(outcome = outcome) %>%
-      rename(outcome_random = outcome)
-    pf <- gpf(DF,tree,frmla=outcome_random~predictor+phylo,nfactors=n.factors,mStableAgg=F)
+      mutate(outcome_random = outcome) %>%
+      select(-c(outcome))
+
+    if (sample == 'filo')
+    {
+      pf <- gpf(DF,tree,frmla.phylo=outcome_random~log_filo_samps+phylo,nfactors=n.factors, algorithm='phylo',family=binomial)
+    }
+    if (sample == 'hnv')
+    {
+      pf <- gpf(DF,tree,frmla.phylo=outcome_random~log_hnv_samps+phylo,nfactors=n.factors, algorithm='phylo',family=binomial)
+    }
     
     for (i in 1:n.factors)
     {

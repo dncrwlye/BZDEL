@@ -47,7 +47,7 @@ sd(pooled_estimates_just_horrible$date_diff)
 
 paper_breakdown_table <- matrix(c(
   "","N","%","Mean","SD",
-  "Total Sampling Units", length(unique(seroprevalence$substudy_non_annual)), "","","",
+  "Total Sampling Sub Units", length(unique(seroprevalence$substudy_non_annual)), "","","",
   "Explicitly Longitudinal", nrow(explicit_longitudinal), round(nrow(explicit_longitudinal)/length(unique(seroprevalence$substudy_non_annual)),3)*100,"","",
   "Single Time Point", nrow(single_time_points_but_decent_range), round(nrow(single_time_points_but_decent_range)/length(unique(seroprevalence$substudy_non_annual)),3)*100,"","",
   "Study Longitudinal, Reported Single Time Point", nrow(pooled_estimates_just_horrible), round(nrow(pooled_estimates_just_horrible)/length(unique(seroprevalence$substudy_non_annual)),3)*100,round(mean(pooled_estimates_just_horrible$date_diff),1),round(sd(pooled_estimates_just_horrible$date_diff),1)

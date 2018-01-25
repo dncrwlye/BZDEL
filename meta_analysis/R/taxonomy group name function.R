@@ -2,14 +2,14 @@ taxonomy_group_name <- function(taxonomy_list)
 {
   colnames(taxonomy_list) <- 'tax'
   taxonomy_list <- taxonomy_list %>%
-    filter(!(is.na(tax))) 
+    dplyr::filter(!(is.na(tax))) 
   
   if (nrow(taxonomy_list) !=1)
   {
   taxonomy_list <- taxonomy_list %>%
     mutate(tax = as.character(tax)) %>%
-    filter(nchar(tax)>145) %>%
-    filter(grepl('Animalia', tax))
+    dplyr::filter(nchar(tax)>145) %>%
+    dplyr::filter(grepl('Animalia', tax))
   }
    
     if (nrow(taxonomy_list) ==1)
