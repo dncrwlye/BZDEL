@@ -25,7 +25,7 @@ MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus m
                                                           "numeric", "text", "numeric", "numeric", 
                                                           "numeric", "numeric", "date", "date", 
                                                           "date", "text", "text", "text", "text", 
-                                                          "numeric"))
+                                                          "numeric","text"))
 
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Seroprevalence') %>%
