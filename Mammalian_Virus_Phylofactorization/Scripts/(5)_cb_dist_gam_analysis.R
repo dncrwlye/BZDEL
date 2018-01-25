@@ -1,9 +1,7 @@
 
 # phylobin classificaiton -------------------------------------------------
-setwd('~/Bozeman/Spillover_Phylofactorization/')
 source('R/visualization_fcns.R')
-load('cb_dist_phylofactorization')
-setwd('~/Bozeman/BZDEL/Data/Olival/')
+load('Workspaces/cb_dist_and_IsZoonotic_phylofactorization')
 library(mgcv)
 library(stringi)
 library(dplyr)
@@ -15,8 +13,8 @@ library(ggpubr)
 library(plyr)
 library(ggplot2)
 library(multcompView)
-source("R/relative_contributions.R")
-load('intermediates/phylofactor_comparisons')
+source("Olival/R/relative_contributions.R")
+load('Workspaces/phylofactor_comparisons')  ## gams from before
 
 Vmod <- vtraits$model[[1]]
 Vmod_new <- vtraits_new$model[[1]]
@@ -24,11 +22,11 @@ Clade <- pf.cb_dist_noHoSa_maxLn$basis %>% bins %>% phylobin %>% nms[.] %>% fact
 vnames <- names(Z)
 
 for (original in c(T,F)){
-  db <- readRDS("intermediates/postprocessed_database.rds")
+  db <- readRDS("Olival/intermediates/postprocessed_database.rds")
   
   # our modification
   if (!original){
-    V <- read.xlsx('data/Olival_w_phylobin.xlsx',sheetIndex = 1)
+    V <- read.xlsx('Datasets/Olival_w_phylobin_final.xlsx',sheetIndex = 1)
     db$viruses <- cbind(db$viruses,V[,c('pfIsZ','pfIsZS','nonZ')])
     db$viruses <- db$viruses[!as.logical(db$viruses$nonZ),]
   }
@@ -132,4 +130,4 @@ ggplot(data=ddf,aes(x=Clade,y=IsZoonosis,fill=Clade))+
   geom_boxplot()+
   geom_text(data = labels.df, aes(x = Clade, y = V1, label = labels))
                                                        
-ggsave('~/Bozeman/BZDEL/Figures/Olival phylofactorization/cb_dist_Clades_IsZoonotic_by_original_model_selection.tiff',height=5,width=11)
+ggsave('Figures/cb_dist_Clades_IsZoonotic_by_original_model_selection.tiff',height=5,width=11)

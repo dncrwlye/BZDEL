@@ -11,8 +11,8 @@ library(readxl) ## alternative if xlsx fails (25 July 2017)
 library(plyr)
 
 ## load in data
-setwd("~/Desktop/BZDEL/Data/Olival/data")
-pfactor=read_excel("Olival_w_phylobin.xlsx")
+setwd("~/Desktop/BZDEL/Mammalian_Virus_Phylofactorization/Datasets")
+pfactor=read_excel("Olival_w_phylobin_final.xlsx")
 
 ## fix virus_name_dc
 library(dplyr)
@@ -28,7 +28,7 @@ pfactor_red <- pfactor %>%
   mutate(virus_name_dc = tolower(virus_name_dc)) 
 
 ## merge in zoonotic virus trait data
-setwd("~/Desktop/BZDEL/Data/Olival")
+setwd("~/Desktop/BZDEL/Mammalian_Virus_Phylofactorization/Olival")
 prelease=read.csv("pathogen release data_done.csv",header=T)
 
 ## retain just virus_name_dc, pr_vector, pr_slaughter, pr_excrete, pr_source, pr_notes
@@ -54,7 +54,7 @@ knames=c(names(hh),names(prelease))
 knames=unique(knames)
 
 ## add phylofactor bins and zoonotics
-keeps=c(knames,"IsZoonotic","IsZoonotic.stringent","pfIsZ","pfIsZS","nonZ")
+keeps=c(knames,"Envelope","IsZoonotic","IsZoonotic.stringent","pfIsZ","pfIsZS","nonZ","pfCBdist")
 data=data[keeps]
 
 ## convert columns to character
@@ -74,16 +74,17 @@ data$pr_excrete=ifelse(is.na(data$pr_excrete),"unknown",data$pr_excrete)
 data$pr_slaughter=ifelse(is.na(data$pr_slaughter),"unknown",data$pr_slaughter)
 data$pr_vector=ifelse(is.na(data$pr_vector),"unknown",data$pr_vector)
 data$pr_se=ifelse(is.na(data$pr_se),"unknown",data$pr_se)
+data$Envelope=ifelse(is.na(data$Envelope),"unknown",data$Envelope)
 
 ## revalue
 data$hh_trans=revalue(data$hh_trans,c("no"="no onward transmission",
                         "yes"="onward transmission"))
 
-## classify the zoonoses
-zdata=data[which(data$IsZoonotic==1),]
+## classify the zoonoses for IsZoonotic
+zdata=data[which(data$IsZoonotic=="TRUE"),]
 
 ## sort bins
-lvls=as.character(sort(unique(as.numeric(zdata$pfIsZ))))
+lvls=as.character(sort(unique(as.character(zdata$pfIsZ))))
 zdata$pfIsZ=factor(zdata$pfIsZ,levels=lvls)
 
 ## hh_trans
@@ -95,7 +96,7 @@ barplot(prop.table(table(zdata$hh_trans,zdata$pfIsZ),margin=2),las=1,legend=T,
                          text.width=c(3,6,0)))
 
 ## pr_vector
-zdata$pr_vector=revalue(zdata$pr_vector,c("0"="not vector","1"="vector-borne"))
+#zdata$pr_vector=revalue(zdata$pr_vector,c("0"="not vector","1"="vector-borne"))
 par(mar=c(4.5,5,2.5,0.5),mfrow=c(1,1))
 barplot(prop.table(table(zdata$pr_vector,zdata$pfIsZ),margin=2),las=1,legend=T,
         ylab="proportion of zoonotic viruses",
@@ -103,20 +104,68 @@ barplot(prop.table(table(zdata$pr_vector,zdata$pfIsZ),margin=2),las=1,legend=T,
         args.legend=list(x="top",bty="n",horiz=T,inset=c(-0.125,-0.125),
                          text.width=c(3,6,0)))
 
-## slaughter and excrete
-zdata$pr_se=revalue(zdata$pr_se,c("0"="not slaughter/excretion","1"="slaughter/excretion"))
-par(mar=c(4.5,5,2.5,0.5),mfrow=c(1,1))
-barplot(prop.table(table(zdata$pr_se,zdata$pfIsZ),margin=2),las=1,legend=T,
-        ylab="proportion of zoonotic viruses",
-        xlab="phylofactor bin",
-        args.legend=list(x="top",bty="n",horiz=T,inset=c(-0.125,-0.125),
-                         text.width=c(3,6,0)))
+## tabulate proportions for IsZoonotic
+pdata=cbind(t(prop.table(table(zdata$pr_vector,zdata$pfIsZ),margin=2)),
+      t(prop.table(table(zdata$pr_excrete,zdata$pfIsZ),margin=2)),
+      t(prop.table(table(zdata$pr_slaughter,zdata$pfIsZ),margin=2)),
+      t(prop.table(table(zdata$hh_trans,zdata$pfIsZ),margin=2)))
+pdata=data.frame(pdata)
+pdata=round(pdata,2)
 
-## combine everything
-zdata$cats=with(zdata,paste(pr_se,pr_vector,hh_trans))
-table(zdata$cats)
+## write to csv
+setwd("~/Dropbox (MSU projects)/Phylofactor/bin classifications")
+write.csv(pdata,"pdataIsZ.csv")
+table(zdata$pfIsZ)
 
-## barplot
-barplot(prop.table(table(zdata$cats,zdata$pfIsZ),margin=2),las=1,legend=F,
-        ylab="proportion of zoonotic viruses",
-        xlab="phylofactor bin")
+## repeat for zoonotic stringent
+sdata=data[which(data$IsZoonotic.stringent=="TRUE"),]
+
+## sort bins
+lvls=as.character(sort(unique(as.character(sdata$pfIsZS))))
+sdata$pfIsZS=factor(sdata$pfIsZS,levels=lvls)
+
+## tabulate proportions for IsZoonotic
+psdata=cbind(t(prop.table(table(sdata$pr_vector,sdata$pfIsZS),margin=2)),
+            t(prop.table(table(sdata$pr_excrete,sdata$pfIsZS),margin=2)),
+            t(prop.table(table(sdata$pr_slaughter,sdata$pfIsZS),margin=2)),
+            t(prop.table(table(sdata$hh_trans,sdata$pfIsZS),margin=2)))
+psdata=data.frame(psdata)
+psdata=round(psdata,2)
+psdata
+
+## write to csv
+setwd("~/Dropbox (MSU projects)/Phylofactor/bin classifications")
+write.csv(psdata,"pdataIsZS.csv")
+table(sdata$pfIsZS)
+
+## repeat for X
+cdata=data[which(data$IsZoonotic=="TRUE"),]
+
+## sort bins
+cdata$pfCBdist=factor(cdata$pfCBdist,levels=c("Family_Togaviridae","Genus_Flavivirus","Family_Bunyaviridae",
+                                              "Family_Picornaviridae","Genus_Orthopoxvirus",
+                                              "Order_Mononegavirales","Genus_Arenavirus",
+                                              "Family_Reoviridae","Family_Herpesviridae",
+                                              "No Common Name"))
+
+## tabulate proportions
+pcdata=cbind(table(cdata$pfCBdist),
+             t(prop.table(table(cdata$Envelope,cdata$pfCBdist),margin=2)),
+             t(prop.table(table(cdata$pr_vector,cdata$pfCBdist),margin=2)),
+             t(prop.table(table(cdata$pr_excrete,cdata$pfCBdist),margin=2)),
+             t(prop.table(table(cdata$pr_slaughter,cdata$pfCBdist),margin=2)),
+             t(prop.table(table(cdata$hh_trans,cdata$pfCBdist),margin=2)))
+pcdata=data.frame(pcdata)
+pcdata=round(pcdata,2)
+
+## transpose
+pcdata=t(pcdata)
+
+## fix row names
+rownames(pcdata)=c("n","envelope0","envelope1","v0","v1","v?","e0","e1","e?","s0","s1","s?","o0","o1","o?")
+
+## write to csv
+setwd("~/Dropbox (MSU projects)/Phylofactor/bin classifications")
+write.csv(pcdata,"pfCBdist zoonotic classifications.csv")
+table(cdata$pfCBdist)
+

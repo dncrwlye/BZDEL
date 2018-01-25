@@ -17,7 +17,7 @@ library(readxl)
 ```{r, warning=FALSE, echo=FALSE}
 
 x<-seq(0,365,by=1)
-amp <- rnorm(n=length(x), mean=.2)
+#amp <- rnorm(n=length(x), mean=.2)
 amp <- runif(n=length(x))
 y<-amp*sin(.04*x)+amp
 y<-y*sd(y)
@@ -42,12 +42,13 @@ rect_sampling_point_unique <- data.frame(
   ymin = 0,
   ymax = 1
 )
+
 rect_sampling_point_long <- c(40)
 rect_sampling_point_long <- data.frame(
   xmin = rect_sampling_point_long,
   xmax = rect_sampling_point_long + 200,
-  ymin = .2,
-  ymax = .6
+  ymin = .15,
+  ymax = .5
 )
 
 singe_time_point <- c(300)
@@ -58,32 +59,20 @@ singe_time_point <- data.frame(
   ymax = 1
 )
 
-# ggplot() +
-#   geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
-#             fill='blue', alpha=0.2) +
-#   geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, show.legend = TRUE), 
-#             fill='green', alpha=0.4) +
-#   geom_rect(data=singe_time_point, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
-#             fill='black', alpha=0.4) +
-#   geom_line(data=smooth_yt, aes(y=V1, x=x)) +
-#   ylab('seroprevalence') +
-#   xlab('julian days') 
-  
-ggplot() +
-  geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
-            fill='Multiple Sampling Events, Multiple Estimates'), color=NA, alpha=0.2) +
-  geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
-            fill='Multiple Sampling Events, Single Estimate'), color=NA, alpha=0.4) +
-  geom_rect(data=singe_time_point, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, 
-            fill='Single Sampling Event, Single Estimate'), color=NA, alpha=0.4) +
-  geom_line(data=smooth_yt, aes(y=V1, x=x)) +
+
+x<-ggplot() +
+  #geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill='Multiple Sampling Events, Multiple Estimates'), color=NA, alpha=0.2) +
+  #geom_rect(data=singe_time_point, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill='Single Sampling Event, Single Estimate'), color=NA, alpha=0.4) +
+  geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, fill='Multiple Sampling Events, Single Estimate'), color=NA, alpha=0.4) +
+  geom_line(data=smooth_yt, aes(y=V1, x=x-20)) +
   ylab('seroprevalence') +
   xlab('julian days') +
   scale_fill_manual('Sampling & Reporting Strategy', values = c('green', 'blue', 'black'), guide=guide_legend(override.aes = list(alpha = 1))) + 
   theme(legend.position="bottom", legend.justification  = 0, panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   guides(fill=guide_legend(nrow=3,byrow=TRUE, title.position = 'top'))
-  #ggtitle('sampling schemes of henipavirus/filovirus seroprevalence studies present in published literature') +
-  
+
+ggsave(filename = '/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/sampling_plot.pdf', plot=x)
+
 
 ```
 Sampling schemes present in published studies of henipavirus/filovirus sereprevalence in bats. Black represents a single sampling event. Blue represents a longitudinal sampling at bimonthly intervals. Green represents a potentially longitudinal sampling, but the study reports only a single mean estimate of seroprevalence for a given sample period.
@@ -95,16 +84,17 @@ Sampling schemes present in published studies of henipavirus/filovirus serepreva
 
 #.............ehhhh gonna make a table describing the amount of longitudinal studies.........
 
-MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-                                            col_types = c("text", "numeric", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "numeric", "numeric", 
-                                                          "numeric", "numeric", "numeric", 
-                                                          "numeric", "numeric", "numeric", 
-                                                          "numeric", "text", "numeric", "numeric", 
-                                                          "numeric", "numeric", "date", "date", 
-                                                          "date", "text", "text", "text", "text", 
+
+MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx",
+                                            col_types = c("text", "numeric", "text",
+                                                          "text", "text", "text", "text", "text",
+                                                          "text", "text", "text", "text", "text",
+                                                          "text", "text", "text", "text", "numeric", "numeric",
+                                                          "numeric", "numeric", "numeric",
+                                                          "numeric", "numeric", "numeric",
+                                                          "numeric", "text", "numeric", "numeric",
+                                                          "numeric", "numeric", "date", "date",
+                                                          "date", "text", "text", "text", "text",
                                                           "numeric", "text"))
 
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
@@ -130,6 +120,7 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
                                      ifelse(methodology == "VNT"| methodology == "SNT"| methodology == "Unclear, Presumably Neutralizing Antibodies", "nAb based method", methodology)))) %>%
   mutate(successes = round((1/100)*seroprevalence_percentage * sample_size,0)) 
 
+x<-unique(seroprevalence$title)
 seroprevalence_total <- seroprevalence %>%
   dplyr::select(title) %>% 
   unique()
@@ -176,7 +167,6 @@ pooled_estimates_just_horrible_mean_std<-seroprevalence %>%
   unique() %>%
   summarise(mean = mean(date_diff), sd= sd(date_diff))
   
-
 paper_breakdown_table <- matrix(c(
                                   "Total Studies", nrow(seroprevalence_total), "-", "","",
                                   "Multiple Sampling Events, Multiple Estimates", nrow(explicit_longitudinal), round(nrow(explicit_longitudinal)/nrow(seroprevalence_total),3)*100, "", "",
@@ -190,7 +180,7 @@ paper_breakdown_table_alternative <- matrix(c(
                                   "Total Studies", nrow(seroprevalence_total), "-", "","",
                                   "Multiple Sampling Events, Multiple Estimates", nrow(explicit_longitudinal), round(nrow(explicit_longitudinal)/nrow(seroprevalence_total),3)*100, "", "",
                                   "Single Sampling Event, Single Estimate", nrow(single_time_points_but_decent_range), round(nrow(single_time_points_but_decent_range)/nrow(seroprevalence_total),3)*100, "", "",
-                                  "Multiple Sampling Events, Single Estimate", nrow(pooled_estimates_just_horrible), round(nrow(pooled_estimates_just_horrible)/nrow(seroprevalence_total),3)*100, pooled_estimates_just_horrible_mean_std$mean, round(pooled_estimates_just_horrible_mean_std$sd,1)
+                                  "Multiple Sampling Events, Single Estimate", nrow(pooled_estimates_just_horrible), round(nrow(pooled_estimates_just_horrible)/nrow(seroprevalence_total),3)*100, round(pooled_estimates_just_horrible_mean_std$mean,1), round(pooled_estimates_just_horrible_mean_std$sd,1)
                                   )
                                   , byrow=TRUE,ncol=5)
 kable(paper_breakdown_table, align = 'l', col.names = c('', 'Count', '%', 'Mean', 'Std. Dev.'))
@@ -213,12 +203,35 @@ seroprevalence_ab <- seroprevalence %>%
                             ifelse(grepl('mfi' , assay_cutoff), 'Enzymatic Cutoff (MFI/OD)',
                             ifelse(grepl('od' , assay_cutoff), 'Enzymatic Cutoff (MFI/OD)',
                             ifelse(grepl('distribution' , assay_cutoff), 'distribution',
-                                   'else'))))))))) %>%
+                                   assay_cutoff))))))))) %>%
   group_by(methodology,assay_cutoff_cat) %>%
   summarise(count = n())
 
 unique(seroprevalence_ab$assay_cutoff_cat)
 unique(seroprevalence_ab$assay_cutoff)
+
+```
+
+```{r, warning=FALSE, echo=FALSE}
+
+x<- seroprevalence %>%
+  filter(methodology != "PCR based method") %>%
+  select(c(species, title)) %>%
+  unique() %>%
+  group_by(species) %>%
+  summarise(n=n()) %>%
+  mutate(n_cat = ifelse(n==1, 1, 0))
+
+x1<- seroprevalence %>%
+  filter(methodology != "PCR based method") %>%
+  select(c(species, title)) %>%
+  mutate(species = as.factor(species)) %>%
+  mutate(title = as.factor(title))%>%
+  unique() %>%
+  group_by(species, title) %>%
+  summarise(n=as.numeric(n())) %>%
+  ungroup() %>%
+  filter(!is.na(species))
 
 ```
 

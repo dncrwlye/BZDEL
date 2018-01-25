@@ -11,10 +11,16 @@ library(broom)
 library(maptools)
 library(rgeos)
 library(sp)
-
+library(googleway)
+key <- "AIzaSyD40FLStnvp085UB-FKXbyONuxV3ke4umY"
 
 #raster fun
+#.................load data from seroprevalence_clean_script.R........................
 
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+load(file='data/seroprevalence.Rdata')
+
+<<<<<<< HEAD
 MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
                                             col_types = c("text", "numeric", "text", 
                                                           "text", "text", "text", "text", "text", 
@@ -48,6 +54,8 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
                                      ifelse(methodology == "VNT"| methodology == "SNT"| methodology == "Unclear, Presumably Neutralizing Antibodies", "nAb based method", methodology)))) %>%
   mutate(successes = round((1/100)*seroprevalence_percentage * sample_size,0)) 
  
+=======
+>>>>>>> 19aad849023aaff3297d536f141832cca6898ada
 seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location)) %>%
   rename(sampling_location = `unique(seroprevalence$sampling_location)`) %>%
   mutate(sampling_location = as.character(sampling_location)) %>%
@@ -57,12 +65,11 @@ seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location))
   mutate(east=NA) %>%
   mutate(address = NA) 
 
-seroprevalence <- seroprevalence %>% unique()
-
 for(i in 1:nrow(seroprevalence_search))
 {
   query <- seroprevalence_search$sampling_location[i] 
   rd <- geocode(query, output = 'more', source = 'google')
+  Sys.sleep(4)
   if(is.atomic(rd)==FALSE)
   {
     if (is.na(rd$lon) == FALSE) 
@@ -86,10 +93,12 @@ seroprevalence_search_2 <- as.data.frame(unique(seroprevalence$sampling_location
   mutate(east_two=NA) %>%
   mutate(address_two = NA) 
 
+
 for(i in 1:nrow(seroprevalence_search_2))
 {
   query <- seroprevalence_search_2$sampling_location[i] 
   rd <- geocode(query, output = 'more', source = 'google')
+  Sys.sleep(10)
   if(is.atomic(rd)==FALSE)
   {
     if (is.na(rd$lon) == FALSE) 
@@ -103,26 +112,26 @@ for(i in 1:nrow(seroprevalence_search_2))
   }
 }
 
-seroprevalence <- full_join(seroprevalence, seroprevalence_search)
-seroprevalence <- full_join(seroprevalence, seroprevalence_search_2)
+seroprevalence <- full_join(seroprevalence, seroprevalence_search, by=c("sampling_location"))
+seroprevalence <- full_join(seroprevalence, seroprevalence_search_2, by=c('sampling_location_two'))
 
 seroprevalence <- seroprevalence %>%
   mutate(north_final = pmax(north, north_two, na.rm=TRUE)) %>%
   mutate(south_final = pmin(south, south_two, na.rm=TRUE)) %>%
   mutate(west_final = pmin(west, west_two, na.rm=TRUE)) %>%
   mutate(east_final = pmax(east, east_two, na.rm=TRUE)) 
-  
-#x<-seroprevalence %>%
-#  filter(!is.na(west_two))
 
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/Data/")
-save(seroprevalence, file='MetaAnalysis/seroprevalence.Rdata')
+
+#geocode('ghana, tanoboase', output = 'more', source = 'google')
+
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+save(seroprevalence_geolocation, file='data/seroprevalence_geolocation.Rdata')
 
 
 #..............moving onto the ecoregions analyses.................................
 
-ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
-ecos <- shapefile('~/Desktop/BDEL/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
+ecos <- shapefile('data/official_teow/wwf_terr_ecos.shp')
+#ecos <- shapefile('~/Desktop/BZDEL/meta_analysis/data/official_teow/wwf_terr_ecos.shp')
 
 #we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
@@ -131,6 +140,7 @@ seroprevalence_x <- seroprevalence%>%
   mutate(coordinate_box = NA)
 
 seroprevalence_x_unique <- seroprevalence_x %>%
+  dplyr::ungroup() %>%
   dplyr::select(north_final, south_final, west_final, east_final) %>%
   unique()
 
@@ -142,7 +152,6 @@ coordinate_box <- list()
 for(i in 1:nrow(seroprevalence_x_unique))
 {
   if(is.na(seroprevalence_x_unique[i,'north_final'])) next 
-  
   x <- as(raster::extent(as.numeric(seroprevalence_x_unique[i,3]), as.numeric(seroprevalence_x_unique[i,4]), 
                          as.numeric(seroprevalence_x_unique[i,2]), as.numeric(seroprevalence_x_unique[i,1])), "SpatialPolygons")
   
@@ -164,49 +173,7 @@ for(i in 1:nrow(seroprevalence_x_unique))
 seroprevalence_x_final <- full_join(seroprevalence_x, eco_regions_placeholder)
 
 y <- seroprevalence_x_final %>%
-  filter(is.na(coordinate_box))
+  filter(is.na(ECO_NAME))
 
-save(seroprevalence_x_final, file ="~/Desktop/BDEL//BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
-
-
-seroprevalence_x_final <- seroprevalence_x_final %>%
-  dplyr::select(-c(ECO_NAME)) %>%
-  unique()
-#######################################################################################
-
-#............plotting data ....................................
-
-lat <- c(min(seroprevalence_x_final$south_final, na.rm=TRUE) ,max(seroprevalence_x_final$north_final, na.rm=TRUE))
-lon <- c(min(seroprevalence_x_final$west_final, na.rm=TRUE),max(seroprevalence_x_final$east_final, na.rm=TRUE))
-
-map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
-               maptype = "satellite", source = "google")
-
-m <- do.call(bind, coordinate_box)
-coordinate_box_fortified <- fortify(m)
-
-eco.points = fortify(ecos)
-
-
-### When you draw a figure, you limit lon and lat.      
-ggmap(map)+
-  scale_x_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
-  scale_y_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
-  geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
-  geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))
-
-
-
-
-
-
-#sp<-readOGR('MetaAnalysis/official_teow')
-#sp <-tidy(sp)
-#plot(sp)
-#globe <- get_map('planet earth', zoom= 3)
-#ggmap(globe)
-
-#globe <- globe + geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=sp, alpha=0)
-#ggmap(globe)
-
+save(seroprevalence_x_final, file ="data/seroprevalence_ecoregions_alternative.Rdata")
 
