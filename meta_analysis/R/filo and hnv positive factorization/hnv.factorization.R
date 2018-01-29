@@ -1,9 +1,13 @@
 library(phylofactor)
 library(parallel)
-setwd('/Users/buckcrowley/Desktop/')
 
-load('Z.hnv_pos.hnv1')
-load('bat_tree.hnv.pos')
+
+setwd('/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis')
+
+
+load('R/filo and hnv positive factorization/Z.hnv.pos')
+load('R/filo and hnv positive factorization/bat_tree.hnv.pos')
+
 
 tree <- bat_tree.hnv.pos
 Data <- Z.hnv_pos.hnv1
@@ -84,4 +88,81 @@ for (rr in 1:140){
 points(deviances,col='red',pch=16,cex=2)
 
 ecdf(S[,1])(Obj[1])
-save(list=ls(),file='hnv_workspace')
+save(list=ls(),file='R/filo and hnv positive factorization/hnv_workspace')
+load(file='R/filo and hnv positive factorization/hnv_workspace')
+
+names.storage <- list()
+
+for (i in 2:(11))
+{
+  indexes = pf$bins[[i]]
+  species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
+  group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
+  names.storage[i-1] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+  print(i)
+}
+
+#............................define our colors....................................................
+#.................................................................................................
+#............................1:  Yangochiroptera....."#FF0000FF"..................................
+#............................2:  Myotis.............."#FF9900FF"..................................
+#............................3:  Miniopterus........."#CCFF00FF"..................................
+#............................4:  Pteropodidae........"#33FF00FF"..................................
+#............................5:  Emballonuroidea....."#00FF66FF"..................................
+#............................6:  Rhinolophus........."#00FFFFFF"..................................
+#............................7:  Pipistrellini......."#0066FFFF"..................................
+#............................8:  Pteropus............"#3300FFFF"..................................
+#............................9:  Pteropodinae........"#CC00FFFF".................................
+#............................10: Scotophilus kuhlii.."#FF0099FF"..................................
+#............................11: Eidolon............."#FF0099FF"..................................
+#............................12: Hipposideros........"#00FF66FF"..................................
+#............................13: C. perspicillata...."#00FFFFFF"..................................
+#............................14: D. rotundus........."#00FFFFFF"..................................
+#............................14: Carollia............"#FF9900FF"..................................
+
+B <- bins(pf$basis[,1:10])
+B <- B[2:11]
+Z <- Data$Z
+probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+colfcn <- function(n) return(c("#CC00FFFF"))
+
+pf.tree <- pf.tree(pf, lwd=1, factors = 7, color.fcn=colfcn, branch.length = "none")
+
+d <- data.frame(x=pf.tree$ggplot$data[1:55,'x'] + .5,
+                xend=pf.tree$ggplot$data[1:55,'x'] + 1+ Data$log_hnv_samps,
+                y=pf.tree$ggplot$data[1:55,'y'],
+                yend=pf.tree$ggplot$data[1:55,'y'] )
+pf.tree$ggplot +
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue')  +
+  geom_segment(inherit.aes= TRUE, data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_hnv_samps, col = 'red'))
+
+
+
+
+
+geom_segment(aes(x = 2, y = 15, xend = 3, yend = 15))
+
+
+ggplot(df, aes(xmin='x', xmax='x+1', ymin='y', ymax='y+2')) +\
+geom_rect()
+
+#5
+
+Legend <- pf.tree$legend
+Legend$names <- names.storage[1]
+P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
+Legend$names <- mapply(paste,Legend$names,P)
+plot.new()
+plot.new()
+legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
+
+
+
+
+
+
+
+
+
+
