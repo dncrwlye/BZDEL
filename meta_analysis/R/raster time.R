@@ -20,6 +20,42 @@ key <- "AIzaSyD40FLStnvp085UB-FKXbyONuxV3ke4umY"
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 load(file='data/seroprevalence.Rdata')
 
+<<<<<<< HEAD
+MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
+                                            col_types = c("text", "numeric", "text", 
+                                                          "text", "text", "text", "text", "text", 
+                                                          "text", "text", "text", "text", "text", 
+                                                          "text", "text", "text", "text", "numeric", "numeric", 
+                                                          "numeric", "numeric", "numeric", 
+                                                          "numeric", "numeric", "numeric", 
+                                                          "numeric", "text", "numeric", "numeric", 
+                                                          "numeric", "numeric", "date", "date", 
+                                                          "date", "text", "text", "text", "text", 
+                                                          "numeric","text"))
+
+seroprevalence <- MetaAnalysis_Data_New_Version %>%
+  filter(outcome == 'Seroprevalence') %>%
+  dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  mutate(virus = ifelse((virus == "Ebola" | 
+                           virus == "Marburg" | 
+                           virus == "Zaire Ebola"|
+                           virus == "Sudan virus" | 
+                           virus == "Zaire Ebolavirus" | 
+                           virus == "Zaire Ebola"|
+                           virus == "Reston Ebola"), "Filovirus", 
+                        ifelse(virus  == "Nipah" | virus == "Hendra" | virus  == "Henipavirus", "Henipavirus", virus))) %>%
+  mutate(sampling_location = tolower(sampling_location)) %>%
+  mutate(country = stri_extract_first_regex(sampling_location, '[a-z]+')) %>%
+  mutate(species = tolower(species)) %>%
+  mutate(species = trimws(species)) %>%
+  mutate(species = stri_extract_first_regex(species, '[a-z]+ [a-z]+')) %>%
+  mutate(methodology = ifelse(methodology == 'PCR'| methodology == 'RT-PCR'| methodology == "RT-PCR  (urine)"| methodology == "RT-PCR (Oro-pharangyeal swab)", 'PCR based method', 
+                              ifelse(methodology == "ELISA" | methodology == "ELISA + WB" | methodology == "Luminex", 'non nAb based method',
+                                     ifelse(methodology == "VNT"| methodology == "SNT"| methodology == "Unclear, Presumably Neutralizing Antibodies", "nAb based method", methodology)))) %>%
+  mutate(successes = round((1/100)*seroprevalence_percentage * sample_size,0)) 
+ 
+=======
+>>>>>>> 19aad849023aaff3297d536f141832cca6898ada
 seroprevalence_search <- as.data.frame(unique(seroprevalence$sampling_location)) %>%
   rename(sampling_location = `unique(seroprevalence$sampling_location)`) %>%
   mutate(sampling_location = as.character(sampling_location)) %>%
