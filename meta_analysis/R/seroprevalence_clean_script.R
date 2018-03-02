@@ -2,27 +2,29 @@
 library(tidyverse)
 library(readxl)
 library(stringi)
+#library(dplyr)
 MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
                                             col_types = c("text", "numeric", "text", 
                                                           "text", "text", "text", "text", "text", 
                                                           "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "numeric", "numeric", 
-                                                          "numeric", "numeric", "numeric", 
-                                                          "numeric", "numeric", "numeric", 
-                                                          "numeric", "text", "numeric", "numeric", 
-                                                          "numeric", "numeric", "date", "date", 
-                                                          "date", "text", "text", "text", "text", 
-                                                          "numeric", "text"))
+                                                          "text", "text", "text", "text", "text", 
+                                                          "text", "text", "text", "text", "text", 
+                                                          "text", "text", "text", "text", "text", 
+                                                          "text", "text", "text", "text", "date", 
+                                                          "date", "date", "text", "text", "text", 
+                                                          "text", "text", "text"))                                            
+                                            
 
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
-  filter(outcome == 'Seroprevalence') %>%
-  filter(outcome != "Experimental ") %>%
+  filter(outcome == 'Prevalence_Seroprevalence') %>%
+  filter(study_type != "Experimental ") %>%
   dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan', virus), 'Filovirus',
                         ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
   mutate(sampling_location = tolower(sampling_location)) %>%
-  mutate(country = stri_extract_first_regex(sampling_location, '[a-z]+')) %>%
+  filter(virus != 'Tioman') %>%
+  #mutate(country = stri_extract_first_regex(sampling_location, '[a-z]+')) %>%
   filter(species != 'Feral Cats') %>% 
   mutate(species = tolower(species)) %>%
   mutate(species = trimws(species)) %>%
@@ -43,6 +45,9 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   mutate(species = gsub('khuli' ,"kuhlii", species)) %>%
   mutate(species = gsub('roussetus' ,"roussettus", species)) %>%
   mutate(species = gsub('lavartus' ,"larvatus", species)) %>%
+  mutate(number_positive = as.numeric(number_positive)) %>%
+  mutate(seroprevalence_percentage = as.numeric(seroprevalence_percentage)) %>%
+  mutate(sample_size = as.numeric(sample_size)) %>%
   mutate(successes = ifelse(is.na(number_positive), round((1/100)*seroprevalence_percentage * sample_size,0), number_positive)) %>% 
   dplyr::select(-c(number_positive)) %>%
   mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage), successes/sample_size, seroprevalence_percentage)) %>%
@@ -69,7 +74,7 @@ seroprevalence <- seroprevalence %>%
   mutate(date_diff = end_of_sampling - start_of_sampling) %>%
   mutate(date_diff_cat = ifelse(single_sampling_point == 1 | date_diff < 365/12, 'not horrible', 
                          ifelse(single_sampling_point == 0 | date_diff > 365/12, 'horrible', NA))) %>%
-  mutate(substudy_non_annual = paste(title, study_design, species, sex, methodology, age_class, sampling_location, sep = ', '))
+  mutate(substudy_non_annual = paste(title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
   
 explicit_longitudinal<-seroprevalence %>%
   mutate(date_diff = end_of_sampling - start_of_sampling) %>%

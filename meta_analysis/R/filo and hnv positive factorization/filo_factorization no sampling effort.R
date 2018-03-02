@@ -86,7 +86,6 @@ points(deviances,col='red',pch=16,cex=2)
 save(list=ls(),file='filo_workspace_no_sampling_effort')
 load(file='R/filo and hnv positive factorization/filo_workspace_no_sampling_effort')
 
-
 names.storage <- list()
 
 for (i in 2:(11))

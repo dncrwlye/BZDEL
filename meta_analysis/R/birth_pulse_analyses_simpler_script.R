@@ -339,7 +339,8 @@ seroprevalence_join6c <- seroprevalence_join5 %>%
   data.frame() 
 
 a <- as.data.frame(table(seroprevalence_join6c$substudy)) %>%
-  rename(substudy = Var1)
+  mutate(substudy = Var1) %>%
+  select(-c(Var1))
 
 seroprevalence_join7c <- full_join(seroprevalence_join6c, a) %>%
   filter(Freq > 1)

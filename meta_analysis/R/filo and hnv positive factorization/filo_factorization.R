@@ -12,7 +12,7 @@ Data <- Z.joined.filo.pos.1
 names(Data)[c(1,2)] <- c('effort','Z')
 Data$effort <- log(Data$effort)
 
-pf <- gpf(Data,tree,frmla.phylo=Z~phylo,nfactors=10,family=binomial,algorithm='phylo')
+pf <- gpf(Data,tree,frmla.phylo=Z~effort+phylo,nfactors=10,family=binomial,algorithm='phylo')
 pf$factors
 # 
 getDV <- function(ss) ss['phylo','Deviance']
@@ -81,7 +81,9 @@ for (rr in 1:140){
 
 points(deviances,col='red',pch=16,cex=2)
 
-save(list=ls(),file='filo_workspace')
+ecdf(S[,1])(Obj[1])
+
+save(list=ls(),file='R/filo and hnv positive factorization/filo_workspace')
 load('R/filo and hnv positive factorization/filo_workspace')
 
 names.storage <- list()
@@ -123,7 +125,7 @@ colfcn <- function(n) return(c("#CC00FFFF"))
 pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none")
 
 d <- data.frame(x=pf.tree$ggplot$data[1:65,'x'] + .5,
-                xend=pf.tree$ggplot$data[1:65,'x'] + Data$log_filo_samps,
+                xend=pf.tree$ggplot$data[1:65,'x'] + 1+ Data$log_filo_samps,
                 y=pf.tree$ggplot$data[1:65,'y'],
                 yend=pf.tree$ggplot$data[1:65,'y'] )
 pf.tree$ggplot +
