@@ -2,7 +2,6 @@
 library(tidyverse)
 library(readxl)
 library(stringi)
-#library(dplyr)
 MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
                                             col_types = c("text", "numeric", "text", 
                                                           "text", "text", "text", "text", "text", 
@@ -15,11 +14,13 @@ MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus m
                                                           "text", "text", "text"))                                            
                                             
 
+
+
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Prevalence_Seroprevalence') %>%
-  filter(study_type != "Experimental ") %>%
+  filter(study_type == "Observational") %>%
   dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
-  mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan', virus), 'Filovirus',
+  mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan|Lloviu', virus), 'Filovirus',
                         ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
   mutate(sampling_location = tolower(sampling_location)) %>%
@@ -28,7 +29,7 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(species != 'Feral Cats') %>% 
   mutate(species = tolower(species)) %>%
   mutate(species = trimws(species)) %>%
-  mutate(species = stri_extract_first_regex(species, '[a-z]+ [a-z]+')) %>%
+  #mutate(species = stri_extract_first_regex(species, '[a-z]+ [a-z]+')) %>%
   mutate(methodology = ifelse(grepl('PCR', methodology), 'PCR based method',
                               ifelse(grepl('ELISA|Luminex', methodology), 'non nAb based method',
                                      ifelse(grepl('VNT|SNT|Neutralizing', methodology), "nAb based method", methodology)))) %>%
@@ -56,10 +57,19 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
 #some papers did repeat PCR or ELISA testing, but did like PCR urine, PCR blood...those aren't independent
 #im going to group by everything but those values and then take a weighted average of (sero)prevalence 
 
-#look at the x dataframe to see the difference the following lines do 
+seroprevalence.x <- seroprevalence %>%
+  mutate(row.unique = paste(sample_size, title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
 
-#x<-seroprevalence%>%
-#filter(title=='Large serological survey showing cocirculation of Ebola and Marburg viruses in Gabonese bat populations , and a high seroprevalence of both viruses in Rousettus aegyptiacus')
+seroprevalence.y <- seroprevalence %>%
+  group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
+  summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
+  dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
+  dplyr::rename(sample_size = sample_size.dc) %>%
+  ungroup() %>%
+  mutate(row.unique.w = paste(sample_size, title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
+  
+seroprevalence.w <- seroprevalence.x %>%
+  filter(!(row.unique %in% seroprevalence.y$row.unique.w))
 
 seroprevalence <- seroprevalence %>%
   group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
@@ -72,28 +82,60 @@ seroprevalence <- seroprevalence %>%
 
 seroprevalence <- seroprevalence %>%
   mutate(date_diff = end_of_sampling - start_of_sampling) %>%
-  mutate(date_diff_cat = ifelse(single_sampling_point == 1 | date_diff < 365/12, 'not horrible', 
-                         ifelse(single_sampling_point == 0 | date_diff > 365/12, 'horrible', NA))) %>%
+  mutate(date_diff_cat = ifelse(single_sampling_point == 1 | date_diff < 365/12, '<30.4 days', 
+                         ifelse(single_sampling_point == 0 | date_diff >= 365/12, '>30.4 days', NA))) %>%
   mutate(substudy_non_annual = paste(title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
   
 explicit_longitudinal<-seroprevalence %>%
-  mutate(date_diff = end_of_sampling - start_of_sampling) %>%
-  filter(single_sampling_point == 1 | date_diff < 365/12) %>%
-  dplyr::select(substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
+  filter(single_sampling_point == TRUE | date_diff < 365/12) %>%
+  dplyr::select(title, substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
   unique() %>%
-  group_by(substudy_non_annual) %>%
+  group_by(substudy_non_annual, title) %>%
   summarise(counts= n()) %>%
   filter(counts >= 2) %>%
   ungroup() %>%
   #dplyr::select(title) %>%
   unique()
 
+explicit_longitudinal.a<-seroprevalence %>%
+  filter(single_sampling_point == TRUE | date_diff < 365/12) %>%
+  dplyr::select(title, substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
+  unique() %>%
+  group_by(substudy_non_annual, title) %>%
+  summarise(counts= n()) %>%
+  filter(counts >= 2) %>%
+  ungroup() %>%
+  #dplyr::select(title) %>%
+  unique()
+
+explicit_longitudinal.b<-seroprevalence %>%
+  filter(single_sampling_point == TRUE | date_diff < 365/12) %>%
+  dplyr::select(title, substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
+  unique() %>%
+  group_by(substudy_non_annual, title) %>%
+  summarise(counts= n()) %>%
+  filter(counts >= 3) %>%
+  ungroup() %>%
+  #dplyr::select(title) %>%
+  unique()
+
+explicit_longitudinal.c<-seroprevalence %>%
+  filter(single_sampling_point == TRUE | date_diff < 365/12) %>%
+  dplyr::select(title, substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
+  unique() %>%
+  group_by(substudy_non_annual, title) %>%
+  summarise(counts= n()) %>%
+  filter(counts >= 4) %>%
+  ungroup() %>%
+  #dplyr::select(title) %>%
+  unique()
+
 single_time_points_but_decent_range<-seroprevalence %>%
   mutate(date_diff = end_of_sampling - start_of_sampling) %>%
-  filter(single_sampling_point == 1 | date_diff < 365/12) %>%
-  dplyr::select(substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
+  filter(single_sampling_point == TRUE | date_diff < 365/12) %>%
+  dplyr::select(title, substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
   unique() %>%
-  group_by(substudy_non_annual) %>%
+  group_by(title, substudy_non_annual) %>%
   summarise(counts= n()) %>%
   filter(counts == 1) %>%
   ungroup() %>%
@@ -102,38 +144,29 @@ single_time_points_but_decent_range<-seroprevalence %>%
 
 pooled_estimates_just_horrible<-seroprevalence %>%
   mutate(date_diff = end_of_sampling - start_of_sampling) %>%
-  filter(single_sampling_point == 0 & date_diff >= 365/12) %>%
-  dplyr::select(substudy_non_annual, sampling_date_single_time_point, start_of_sampling, date_diff) %>%
+  filter(single_sampling_point == FALSE & date_diff >= 365/12) %>%
+  dplyr::select(title, substudy_non_annual, sampling_date_single_time_point, start_of_sampling, date_diff) %>%
   unique() %>%
-  group_by(substudy_non_annual, date_diff) %>%
+  group_by(title, substudy_non_annual, date_diff) %>%
   summarise(counts= n()) %>%
   ungroup() %>%
   unique()
 
-# sum(pooled_estimates_just_horrible$counts) + sum(explicit_longitudinal$counts) + sum(single_time_points_but_decent_range$counts)
-# nrow(seroprevalence)
-# xy <- seroprevalence %>%
-#   filter(!(seroprevalence$substudy_non_annual %in% explicit_longitudinal$substudy_non_annual) &
-#          !(seroprevalence$substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual) &
-#          !(seroprevalence$substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual))
-# l <- seroprevalence %>%
-#   filter((seroprevalence$substudy_non_annual %in% explicit_longitudinal$substudy_non_annual))
-# m <- seroprevalence %>%
-#   filter((seroprevalence$substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual))
-# n <- seroprevalence %>%
-#   filter((seroprevalence$substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual))
-# l$substudy_non_annual %in% m$substudy_non_annual 
-# l$substudy_non_annual %in% n$substudy_non_annual
-# m$substudy_non_annual %in% n$substudy_non_annual
-# l.x <- l %>%
-#   filter(l$substudy_non_annual %in% n$substudy_non_annual)
+#.....................................improving how we tell which papers fall into multiple categories.......
 
-seroprevalence <- seroprevalence %>%
-  mutate(study_type = ifelse(substudy_non_annual %in% explicit_longitudinal$substudy_non_annual, 'explicit_longitudinal',
-                      ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, 'single_time_points_but_decent_range',
-                      ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, 'pooled_estimates_just_horrible', NA )))) %>%
-  dplyr::select(-c(date_diff, date_diff_cat)) %>%
-  unique()
+seroprevalence.compare <- seroprevalence %>%
+  mutate(good = ifelse(substudy_non_annual %in% explicit_longitudinal$substudy_non_annual, TRUE, FALSE)) %>%
+  mutate(okay = ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, TRUE, FALSE)) %>%
+  mutate(bad = ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, TRUE, FALSE)) 
+  
+
+seroprevalence.compare.filter <- seroprevalence.compare %>%
+  filter(good == FALSE & bad == FALSE & okay == FALSE) 
+         
+explicit_longitudinal$substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual
+explicit_longitudinal$substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual
+single_time_points_but_decent_range$substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual
+        
 
 save(seroprevalence, file='data/seroprevalence.Rdata')
 
