@@ -46,6 +46,12 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   mutate(species = gsub('khuli' ,"kuhlii", species)) %>%
   mutate(species = gsub('roussetus' ,"roussettus", species)) %>%
   mutate(species = gsub('lavartus' ,"larvatus", species)) %>%
+  mutate(species = gsub('horsfieldi' ,"horsfieldii", species)) %>%
+  mutate(species = gsub('horsfieldiii' ,"horsfieldii", species)) %>%
+  mutate(species = gsub('veldkampi' ,"veldkampii", species)) %>%
+  mutate(species = gsub('veldkampiiii' ,"veldkampii", species)) %>%
+  mutate(species = gsub('ferrum-equinum' ,"ferrumequinum", species)) %>%
+  mutate(species = gsub('roussettus' ,"rousettus", species)) %>%
   mutate(number_positive = as.numeric(number_positive)) %>%
   mutate(seroprevalence_percentage = as.numeric(seroprevalence_percentage)) %>%
   mutate(sample_size = as.numeric(sample_size)) %>%
@@ -103,7 +109,7 @@ explicit_longitudinal.a<-seroprevalence %>%
   unique() %>%
   group_by(substudy_non_annual, title) %>%
   summarise(counts= n()) %>%
-  filter(counts >= 2) %>%
+  filter(counts == 2| counts == 3) %>%
   ungroup() %>%
   #dplyr::select(title) %>%
   unique()
@@ -114,20 +120,8 @@ explicit_longitudinal.b<-seroprevalence %>%
   unique() %>%
   group_by(substudy_non_annual, title) %>%
   summarise(counts= n()) %>%
-  filter(counts >= 3) %>%
-  ungroup() %>%
-  #dplyr::select(title) %>%
-  unique()
-
-explicit_longitudinal.c<-seroprevalence %>%
-  filter(single_sampling_point == TRUE | date_diff < 365/12) %>%
-  dplyr::select(title, substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
-  unique() %>%
-  group_by(substudy_non_annual, title) %>%
-  summarise(counts= n()) %>%
   filter(counts >= 4) %>%
   ungroup() %>%
-  #dplyr::select(title) %>%
   unique()
 
 single_time_points_but_decent_range<-seroprevalence %>%
@@ -155,19 +149,33 @@ pooled_estimates_just_horrible<-seroprevalence %>%
 #.....................................improving how we tell which papers fall into multiple categories.......
 
 seroprevalence.compare <- seroprevalence %>%
-  mutate(good = ifelse(substudy_non_annual %in% explicit_longitudinal$substudy_non_annual, TRUE, FALSE)) %>%
+  mutate(great = ifelse(substudy_non_annual %in% explicit_longitudinal.a$substudy_non_annual, TRUE, FALSE)) %>%
+  mutate(good = ifelse(substudy_non_annual %in% explicit_longitudinal.b$substudy_non_annual, TRUE, FALSE)) %>%
   mutate(okay = ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, TRUE, FALSE)) %>%
   mutate(bad = ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, TRUE, FALSE)) 
   
 
-seroprevalence.compare.filter <- seroprevalence.compare %>%
+seroprevalence.compare %>%
   filter(good == FALSE & bad == FALSE & okay == FALSE) 
+
+
+yy <- seroprevalence.compare %>%
+  filter(great == TRUE) 
+
+%>%
+  nrow()
+
+
+
+
+
          
 explicit_longitudinal$substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual
 explicit_longitudinal$substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual
 single_time_points_but_decent_range$substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual
-        
-
+    
+unique(seroprevalence$substudy_non_annual)
+    
 save(seroprevalence, file='data/seroprevalence.Rdata')
 
 # load(file='data/seroprevalence.Rdata')
