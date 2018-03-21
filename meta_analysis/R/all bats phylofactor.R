@@ -11,7 +11,7 @@ source('R/bat filo and hnv sampling phylogeny update.R')
 library(tidyverse)
 library(taxize)
 
-#..............obtain a couple more outcome variables..................................
+#..................obtain a couple more outcome variables..................................
 load('data/bat_taxonomy_data.Rdata') 
 
 load(file='data/seroprevalence.Rdata')
