@@ -154,29 +154,24 @@ seroprevalence.compare <- seroprevalence %>%
   mutate(okay = ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, TRUE, FALSE)) %>%
   mutate(bad = ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, TRUE, FALSE)) 
   
-
-seroprevalence.compare %>%
-  filter(good == FALSE & bad == FALSE & okay == FALSE) 
-
-
-yy <- seroprevalence.compare %>%
-  filter(great == TRUE) 
-
-%>%
-  nrow()
-
-
-
-
-
-         
 explicit_longitudinal$substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual
 explicit_longitudinal$substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual
 single_time_points_but_decent_range$substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual
     
 unique(seroprevalence$substudy_non_annual)
+
+seroprevalence <- seroprevalence %>%
+  mutate(sampling.strategy = ifelse(substudy_non_annual %in% explicit_longitudinal.a$substudy_non_annual, "> 4 repeated sampling events",
+                                ifelse(substudy_non_annual %in% explicit_longitudinal.b$substudy_non_annual, "2-3 repeated sampling events",
+                                  ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, "1 sampling event (<30 days)",
+                                         ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, "pooled multiple sampling events (>30 days)", "unclear sampling strategy")))))
+         
+
     
 save(seroprevalence, file='data/seroprevalence.Rdata')
+
+
+
 
 # load(file='data/seroprevalence.Rdata')
 # x <- seroprevalence %>%
