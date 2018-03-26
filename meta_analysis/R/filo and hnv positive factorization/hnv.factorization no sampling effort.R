@@ -95,8 +95,8 @@ points(deviances,col='red',pch=16,cex=2)
 ecdf(S[,1])(Obj[1])
 
 save(list=ls(),file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
-load(file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
 
+rm(list=ls())
 
 #............................define our colors....................................................
 #.................................................................................................
@@ -115,7 +115,10 @@ load(file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
 #............................13: C. perspicillata...."#00FFFFFF"..................................
 #............................14: D. rotundus........."#00FFFFFF"..................................
 #............................14: Carollia............"#FF9900FF"..................................
-# 
+
+
+# load(file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
+
 # names.storage <- list()
 # 
 # for (i in 2:(11))

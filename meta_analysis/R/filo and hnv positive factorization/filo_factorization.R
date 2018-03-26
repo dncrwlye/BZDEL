@@ -104,7 +104,7 @@ ecdf(S[,1])(Obj[1])
 
 save(list=ls(),file='data/phylofactor work spaces/filo_workspace')
 
-load('data/phylofactor work spaces/filo_workspace')
+rm(list=ls())
 
 
 #............................define our colors....................................................
@@ -124,7 +124,9 @@ load('data/phylofactor work spaces/filo_workspace')
 #............................13: C. perspicillata...."#00FFFFFF"..................................
 #............................14: D. rotundus........."#00FFFFFF"..................................
 #............................14: Carollia............"#FF9900FF"..................................
-# 
+
+# load('data/phylofactor work spaces/filo_workspace')
+
 # names.storage <- list()
 # 
 # for (i in 2:(11))
