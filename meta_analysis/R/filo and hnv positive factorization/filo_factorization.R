@@ -1,13 +1,28 @@
 library(phylofactor)
 library(parallel)
+library(stringi)
 setwd('/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis')
 
-load('R/filo and hnv positive factorization/Z.filo.pos')
-load('R/filo and hnv positive factorization/bat_tree.filo.pos')
+#load('R/filo and hnv positive factorization/Z.filo.pos')
+# load('R/filo and hnv positive factorization/bat_tree.filo.pos')
+# 
+# save(bat_tree, file = 'data/phylofactor work spaces/bat_tree')
 
-tree <- bat_tree.filo.pos
-Data <- Z.joined.filo.pos.1
+load('data/phylofactor work spaces/bat_tree')
+load("data/bat_taxonomy_data.Rdata")
 
+Data <- batphy1 %>%
+  filter(filo_samps > 0) %>%
+  mutate(log_filo_samps = log(filo_samps)) %>%
+  select(c(filo_samps, filo_positive, species, log_filo_samps)) %>%
+  rename(Species = species) %>%
+  mutate(Species = gsub(" ", "_", Species)) %>%
+  mutate(Species = stri_trans_totitle(Species)) %>%
+  mutate(Sample = 1)
+
+tree <- ape::drop.tip(bat_tree,bat_tree$tip.label[!(bat_tree$tip.label %in% Data$Species)])
+
+rm(batphy1, bat_tree)
 
 names(Data)[c(1,2)] <- c('effort','Z')
 Data$effort <- log(Data$effort)
@@ -19,7 +34,7 @@ getDV <- function(ss) ss['phylo','Deviance']
 summaries <- lapply(pf$models,anova)
 deviances <- sapply(summaries,getDV)
 
- plot(deviances,type='o',lwd=2,cex=2)
+plot(deviances,type='o',lwd=2,cex=2)
 
 pb <- phylofactor:::phylobin
 
@@ -49,7 +64,6 @@ randomPFs <- function(reps,pf){
   }
   return(obj)
 }
-
 
 reps <- as.list(rep(20,7))
 cl <- phyloFcluster(ncores=1)
