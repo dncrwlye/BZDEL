@@ -1,14 +1,22 @@
 library(phylofactor)
 library(parallel)
-setwd('/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/R/filo and hnv positive factorization/')
+library(tidyverse)
+library(stringi)
+load('data/phylofactor work spaces/bat_tree')
+load("data/bat_taxonomy_data.Rdata")
 
-load('Z.filo.pos')
-load('bat_tree.filo.pos')
+Data <- batphy1 %>%
+  filter(filo_samps > 0) %>%
+  mutate(log_filo_samps = log(filo_samps)) %>%
+  select(c(filo_samps, filo_positive, species, log_filo_samps)) %>%
+  rename(Species = species) %>%
+  mutate(Species = gsub(" ", "_", Species)) %>%
+  mutate(Species = stri_trans_totitle(Species)) %>%
+  mutate(Sample = 1)
 
-tree <- bat_tree.filo.pos
-Data <- Z.joined.filo.pos.1
+tree <- ape::drop.tip(bat_tree,bat_tree$tip.label[!(bat_tree$tip.label %in% Data$Species)])
 
-
+rm(batphy1, bat_tree)
 names(Data)[c(1,2)] <- c('effort','Z')
 Data$effort <- log(Data$effort)
 
@@ -82,20 +90,9 @@ for (rr in 1:140){
 
 points(deviances,col='red',pch=16,cex=2)
 
+save(list=ls(),file='data/phylofactor work spaces/filo_workspace_no_sampling_effort')
+load(file='data/phylofactor work spaces/filo_workspace_no_sampling_effort')
 
-save(list=ls(),file='filo_workspace_no_sampling_effort')
-load(file='R/filo and hnv positive factorization/filo_workspace_no_sampling_effort')
-
-names.storage <- list()
-
-for (i in 2:(11))
-{
-  indexes = pf$bins[[i]]
-  species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
-  group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
-  names.storage[i-1] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
-  print(i)
-}
 
 #............................define our colors....................................................
 #.................................................................................................
@@ -114,38 +111,49 @@ for (i in 2:(11))
 #............................13: C. perspicillata...."#00FFFFFF"..................................
 #............................14: D. rotundus........."#00FFFFFF"..................................
 #............................14: Carollia............"#FF9900FF"..................................
-
-B <- bins(pf$basis[,1:10])
-B <- B[2:11]
-Z <- Data$Z
-probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-
-colfcn <- function(n) return(c("#CC00FFFF"))
-
-pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none")
-
-pf.tree$ggplot +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
-
-  
-geom_segment(aes(x = 2, y = 15, xend = 3, yend = 15))
-
-
-ggplot(df, aes(xmin='x', xmax='x+1', ymin='y', ymax='y+2')) +\
-geom_rect()
-
-#5
-
-Legend <- pf.tree$legend
-Legend$names <- names.storage[1]
-P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
-Legend$names <- mapply(paste,Legend$names,P)
-plot.new()
-plot.new()
-legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
-
-
-
+# 
+# names.storage <- list()
+# 
+# for (i in 2:(11))
+# {
+#   indexes = pf$bins[[i]]
+#   species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
+#   group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
+#   names.storage[i-1] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+#   print(i)
+# }
+# 
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
+# Z <- Data$Z
+# probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+# 
+# colfcn <- function(n) return(c("#CC00FFFF"))
+# 
+# pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none")
+# 
+# pf.tree$ggplot +
+#   ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
+# 
+#   
+# geom_segment(aes(x = 2, y = 15, xend = 3, yend = 15))
+# 
+# 
+# ggplot(df, aes(xmin='x', xmax='x+1', ymin='y', ymax='y+2')) +\
+# geom_rect()
+# 
+# #5
+# 
+# Legend <- pf.tree$legend
+# Legend$names <- names.storage[1]
+# P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
+# Legend$names <- mapply(paste,Legend$names,P)
+# plot.new()
+# plot.new()
+# legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
+# 
+# 
+# 
 
 
 
