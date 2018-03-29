@@ -172,6 +172,7 @@ rm(list=ls())
 
 # 1 factor 
 
+rm(list=ls())
 load(file='data/phylofactor work spaces/hnv_workspace')
 load("data/bat_taxonomy_data.Rdata")
 source('R/taxonomy group name function.R')
@@ -204,22 +205,26 @@ names.storage[[1]]
 
 colfcn <- function(n) return(c("#00EEEE"))
 
-pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none")
-
 d <- data.frame(x=pf.tree$ggplot$data[1:143,'x'] + .5,
                 xend=pf.tree$ggplot$data[1:143,'x'] + 1+ Data$log_effort,
                 y=pf.tree$ggplot$data[1:143,'y'],
                 yend=pf.tree$ggplot$data[1:143,'y'] )
 
-jpeg(filename = 'figures/hnv sampling effort tree.jpg', width = 1480, height = 1480)
+pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
+  ggtree::theme_tree(bgcolor = NA) +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue')  +
   geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
-  #+
-  #ggtree::geom_tiplab(aes(angle=angle)) 
 
-dev.off()
+ggsave("figures/hnv sampling effort tree.png", bg = "transparent", height = 18, width = 18)
+
+
+
+
+
+
+
 
 #something strange is going on, we have a factor 2 that is only one tip, but 
 #in the bins it contains many many species. This is odd....
@@ -267,16 +272,15 @@ colfcn <- function(n) return(c("#7FFFD4"))
 pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
-  ggtree::theme_tree(bgcolor = NA) +
+  ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
   
 ggsave("figures/hnv no sampling effort tree.png", bg = "transparent")
 
-#ggsave("figures/hnv no sampling effort tree.eps", device=cairo_ps,  bg = "transparent")
 
-#dev.copy(png,filename = 'figures/hnv no sampling effort tree.jpg',width = 1480, height = 1480)
-#dev.off()
-
+ggtree::theme_tree(bgcolor = NA,fgcolor = NA)
+  + #panel.background = element_rect(fill = "transparent",colour = NA),
+    + ggtree::geom_tippoint(size=10*Data$Z,col='blue')
 
 
 
