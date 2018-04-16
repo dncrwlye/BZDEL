@@ -34,3 +34,7 @@ pf <- gpf(Data,tree,frmla=Z~offset(effort.fit),
             algorithm='phylo')
 
 source('R/filo and hnv positive factorization/null simulations script.R')
+
+save(list=ls(),file='data/phylofactor work spaces/filo_workspace')
+
+rm(list=ls())

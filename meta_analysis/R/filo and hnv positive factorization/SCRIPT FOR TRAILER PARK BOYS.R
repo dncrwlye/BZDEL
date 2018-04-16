@@ -1,6 +1,9 @@
 #......Alex all you should need to do is change the working directory
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
-ncores = 7
+#setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+
+setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
+
+ncores = 3
 tot.reps=500
 reps.per.worker=round(tot.reps/ncores)
 
@@ -16,13 +19,13 @@ ncores = 7
 tot.reps=500
 reps.per.worker=round(tot.reps/ncores)
 
-source('R/filo and hnv positive factorization/hnv_factorization.R')
+source('R/filo and hnv positive factorization/hnv.factorization.R')
 
 ncores = 7
 tot.reps=500
 reps.per.worker=round(tot.reps/ncores)
 
-source('R/filo and hnv positive factorization/hnv_factorization no sampling effort.R')
+source('R/filo and hnv positive factorization/hnv.factorization no sampling effort.R')
 
 
 

@@ -59,6 +59,4 @@ mx <- max(c(c(S),Obj))
 
 ecdf(S[,1])(Obj[1])
 
-save(list=ls(),file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
 
-rm(list=ls())

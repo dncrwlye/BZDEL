@@ -24,3 +24,7 @@ pf <- gpf(Data,tree,frmla.phylo=Z~phylo,nfactors=10,family=binomial,algorithm='p
 pf$factors
 # 
 source('R/filo and hnv positive factorization/null simulations script.R')
+
+save(list=ls(),file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
+
+rm(list=ls())

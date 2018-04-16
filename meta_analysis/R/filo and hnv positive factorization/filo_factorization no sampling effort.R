@@ -26,3 +26,6 @@ pf$factors
 
 source('R/filo and hnv positive factorization/null simulations script.R')
 
+save(list=ls(),file='data/phylofactor work spaces/filo_workspace_no_sampling_effort')
+
+rm(list=ls())

@@ -31,7 +31,7 @@ for (i in 1:10)
 #1 factor 
 
 plot((Obj), type = 'o')
-for (rr in 1:140){
+for (rr in 1:500){
   lines((S[rr,]),col=rgb(0,0,0,0.2))
 }
 
