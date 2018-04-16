@@ -14,7 +14,7 @@ load(file='data/phylofactor work spaces/hnv_workspace')
 
 jpeg(filename = 'figures/hnv sampling effort factors.jpg')
 plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,15))
-for (rr in 1:140){
+for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
@@ -27,11 +27,15 @@ for (i in 1:10)
 {
   print(ecdf(bb[,i])(Ojb.bb[i]))
 }
-
 #1 factor 
 
+plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,15))
+for (rr in 1:497){
+  lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
+}
+
 plot((Obj), type = 'o')
-for (rr in 1:500){
+for (rr in 1:497){
   lines((S[rr,]),col=rgb(0,0,0,0.2))
 }
 
@@ -39,9 +43,10 @@ for (i in 1:10)
 {
 print(ecdf(S[,i])(Obj[i]))
 }
-#3 factors 
 
-#going to go with 1 factor! 
+#2 factors 
+
+#going to go with 1 or 2 factor! 
 
 rm(list=ls())
 
@@ -51,14 +56,14 @@ load(file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
 jpeg(filename = 'figures/hnv no sampling effort factors.jpg')
 
 plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,40))
-for (rr in 1:140){
+for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
 dev.off()
 
 plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,40))
-for (rr in 1:140){
+for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
@@ -83,8 +88,7 @@ for (i in 1:10)
 
 rm(list=ls())
 
-#going to say....1 factor!
-
+#going to say....1 factor i guess? 
 
 # filo SE+ factors-----------------------------------------------
 
@@ -92,14 +96,14 @@ load(file='data/phylofactor work spaces/filo_workspace')
 jpeg(filename = 'figures/filo with sampling effort factors.jpg')
 
 plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,15))
-for (rr in 1:140){
+for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
 dev.off()
 
 plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,15))
-for (rr in 1:140){
+for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
@@ -134,14 +138,14 @@ load(file='data/phylofactor work spaces/filo_workspace_no_sampling_effort')
 jpeg(filename = 'figures/filo no sampling effort factors.jpg')
 
 plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,25))
-for (rr in 1:140){
+for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
 dev.off()
 
 plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,25))
-for (rr in 1:140){
+for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
@@ -196,16 +200,20 @@ for (i in 1)
   names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
 }
 
-B <- bins(pf$basis[,1:10])
-B <- B[2:11]
+B <- pf$groups[[1]][[1]]
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+sum(probs)/length(probs)
+# 0.547619 for Pteropodidae
 
 names.storage[[1]]
 
 #colors 1 "Pteropodidae"  #CC00FFFF
 
-colfcn <- function(n) return(c("#00EEEE"))
+colfcn <- function(n) return(c("#00FFFF"))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
@@ -224,8 +232,8 @@ ggsave("figures/hnv sampling effort tree.png", bg = "transparent", height = 18, 
 #something strange is going on, we have a factor 2 that is only one tip, but 
 #in the bins it contains many many species. This is odd....
 Legend <- pf.tree$legend
-Legend$names <- names.storage[1:2]
-P <- sapply(probs[1:2],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
+Legend$names <- names.storage[1]
+P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
 plot.new()
 plot.new()
@@ -255,10 +263,14 @@ for (i in 1)
   print(i)
 }
 
-B <- bins(pf$basis[,1:10])
-B <- B[2:11]
+B <- pf$groups[[1]][[1]]
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+sum(probs)/length(probs)
+#Pteropodinae 0.8666667
 
 #colors 1 "Pteropodidae"  #00FFFF
 #colors 2 "Pteropodinae"  #7FFFD4
@@ -268,7 +280,8 @@ pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "no
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_tiplab(aes(angle=angle))
   
 ggsave("figures/hnv no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
@@ -282,7 +295,7 @@ legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
 
 # filo SE + figure 1 --------------------------------------------------------------------------------------
 
-#1 figure again 
+#1 factor again 
 rm(list=ls())
 
 load(file='data/phylofactor work spaces/filo_workspace')
@@ -305,10 +318,13 @@ for (i in 1)
   print(i)
 }
 
+B <- pf$groups[[1]][[1]]
 # B <- bins(pf$basis[,1:10])
 # B <- B[2:11]
-# Z <- Data$Z
-# probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+Z <- Data$Z
+probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+sum(probs)/length(probs)
+#Rhinolophoidea at  0.125
 
 #colors 1 "Pteropodidae"  #00FFFF
 #colors 2 "Pteropodinae"  #7FFFD4
@@ -329,7 +345,6 @@ pf.tree$ggplot +
   geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
 
 ggsave("figures/filo sampling effort tree.png", bg = "transparent", height = 18, width = 18)
-
 
 Legend <- pf.tree$legend
 Legend$names <- names.storage[1]
@@ -365,10 +380,10 @@ for (i in 1)
   print(i)
 }
 
-B <- bins(pf$basis[,1:10])
-B <- B[2:11]
-Z <- Data$Z
-probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
+# Z <- Data$Z
+# probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 
 #colors 1 "Pteropodidae"  #00FFFF
 #colors 2 "Pteropodinae"  #7FFFD4
