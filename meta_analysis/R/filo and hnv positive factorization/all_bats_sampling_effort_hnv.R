@@ -5,8 +5,8 @@ library(tidyverse)
 library(stringi)
 load('data/phylofactor work spaces/bat_tree')
 load("data/bat_taxonomy_data.Rdata")
-ncores = 3
-tot.reps=500
+ncores = 4
+tot.reps=200
 reps.per.worker=round(tot.reps/ncores)
 
 Data <- batphy1 %>%
@@ -27,20 +27,30 @@ rm(batphy1, bat_tree)
 
 names(Data) <- c('Z', 'Species', 'log_effort', 'Sample')
 
-pf <- gpf(Data,tree,frmla.phylo=Z~phylo,nfactors=10,family=binomial,algorithm='phylo')
-pf$factors
-# 
-source('R/filo and hnv positive factorization/null simulations script all bats.R')
+n_factors = 10
+
+pf <- phylofactor::twoSampleFactor(Data$Z, tree, method='Fisher', n_factors ,ncores = 3)
+
+
+source('R/filo and hnv positive factorization/null simulations script all bats try 2.R')
 
 save(list=ls(),file='data/phylofactor work spaces/hnv_workspace_sample_no_sample_all_bat_dataset')
+
+
+
+
+
+
+
 
 rm(list=ls())
 
 load('data/phylofactor work spaces/bat_tree')
 load("data/bat_taxonomy_data.Rdata")
-ncores = 3
-tot.reps=500
+ncores = 4
+tot.reps=200
 reps.per.worker=round(tot.reps/ncores)
+n_factors = 10
 
 Data <- batphy1 %>%
   mutate(filo_surv_bin = ifelse(is.na(filo_surv), 0, filo_surv)) %>%
@@ -60,42 +70,56 @@ rm(batphy1, bat_tree)
 
 names(Data) <- c('Z', 'Species', 'log_effort', 'Sample')
 
-pf <- gpf(Data,tree,frmla.phylo=Z~phylo,nfactors=10,family=binomial,algorithm='phylo')
+#pf <- gpf(Data,tree,frmla.phylo=Z~phylo,nfactors=10,family=binomial,algorithm='phylo')
+pf <- phylofactor::twoSampleFactor(Data$Z, tree, method='Fisher', n_factors ,ncores = 3)
+
 pf$factors
 # 
-source('R/filo and hnv positive factorization/null simulations script all bats.R')
+source('R/filo and hnv positive factorization/null simulations script all bats try 2.R')
 
 save(list=ls(),file='data/phylofactor work spaces/filo_workspace_sample_no_sample_all_bat_dataset')
 
 rm(list=ls())
 
 
+#............................................ visualization
+
+load(file='data/phylofactor work spaces/filo_workspace_sample_no_sample_all_bat_dataset')
 
 
-ncores = 3
-tot.reps=500
-reps.per.worker=round(tot.reps/ncores)
+plot(pf$pvals, type = 'l')
 
-source('R/filo and hnv positive factorization/filo_factorization.R', echo=TRUE, print.eval=TRUE)
-
-ncores = 7
-tot.reps=500
-reps.per.worker=round(tot.reps/ncores)
-
-source('R/filo and hnv positive factorization/filo_factorization no sampling effort.R')
-
-ncores = 7
-tot.reps=500
-reps.per.worker=round(tot.reps/ncores)
-
-source('R/filo and hnv positive factorization/hnv.factorization.R')
-
-ncores = 7
-tot.reps=500
-reps.per.worker=round(tot.reps/ncores)
-
-source('R/filo and hnv positive factorization/hnv.factorization no sampling effort.R')
+x<- cbind(as.matrix(OBJ[[1]]),as.matrix(OBJ[[2]]))
 
 
+x<-rbind(as.data.frame(OBJ[[1]]),as.data.frame(OBJ[[2]]),as.data.frame(OBJ[[3]]),as.data.frame(OBJ[[4]]))
 
+x <- t(x)
+
+plot(pf$pvals, type='l',ylim = c(0,.05), col='red')
+
+for (i in 1:200)
+{
+  lines(x[,i])
+}
+
+
+load(file='data/phylofactor work spaces/hnv_workspace_sample_no_sample_all_bat_dataset')
+
+
+plot(pf$pvals, type = 'l')
+
+x<- cbind(as.matrix(OBJ[[1]]),as.matrix(OBJ[[2]]))
+
+
+x<-rbind(as.data.frame(OBJ[[1]]),as.data.frame(OBJ[[2]]),as.data.frame(OBJ[[3]]),as.data.frame(OBJ[[4]]))
+
+x <- t(x)
+
+plot(pf$pvals, type='l',ylim = c(0,.05), col='red')
+
+for (i in 1:200)
+{
+  lines(x[,i])
+}
 
