@@ -18,7 +18,7 @@ Obj <- sapply(1:pf$nfactors,globalObj,pf=pf)
 
 plot(Obj,type='o',lwd=2,cex=2)
 
-fit.effort <- glm(Z~effort,data=Data,family=binomial)
+fit.effort <- glm(Z~log_effort,data=Data,family=binomial)
 Z.probs <- predict(fit.effort,type='response')
 
 randomPF <- function(pf){

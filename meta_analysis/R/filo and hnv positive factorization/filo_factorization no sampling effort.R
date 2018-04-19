@@ -17,8 +17,7 @@ Data <- batphy1 %>%
 tree <- ape::drop.tip(bat_tree,bat_tree$tip.label[!(bat_tree$tip.label %in% Data$Species)])
 
 rm(batphy1, bat_tree)
-names(Data)[c(1,2)] <- c('effort','Z')
-Data$effort <- log(Data$effort)
+names(Data) <- c('effort','Z', 'Species','log_effort', 'Sample')
 
 pf <- gpf(Data,tree,frmla.phylo=Z~phylo,nfactors=10,family=binomial,algorithm='phylo')
 pf$factors
