@@ -18,8 +18,17 @@ Obj <- sapply(1:pf$nfactors,globalObj,pf=pf)
 
 plot(Obj,type='o',lwd=2,cex=2)
 
+if (sampling_effort == TRUE)
+{
 fit.effort <- glm(Z~log_effort,data=Data,family=binomial)
 Z.probs <- predict(fit.effort,type='response')
+}
+
+if (sampling_effort == FALSE)
+{
+  fit.effort <- glm(Z~1,data=Data,family=binomial)
+  Z.probs <- predict(fit.effort,type='response')
+}
 
 randomPF <- function(pf){
   pf$Data$Z <- rbinom(nrow(pf$Data),size=1,prob=Z.probs)
