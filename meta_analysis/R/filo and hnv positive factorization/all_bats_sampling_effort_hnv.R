@@ -17,7 +17,10 @@ Data <- batphy1 %>%
   rename(Species = species) %>%
   mutate(Species = gsub(" ", "_", Species)) %>%
   mutate(Species = stri_trans_totitle(Species)) %>%
-  mutate(Sample = 1)
+  mutate(Sample = 1) %>%
+  unique()
+
+Data[duplicated(Data$Species),]
 
 tree<-bat_tree
 tree <- ape::drop.tip(tree,tree$tip.label[!(tree$tip.label %in% Data$Species)])
@@ -60,7 +63,10 @@ Data <- batphy1 %>%
   rename(Species = species) %>%
   mutate(Species = gsub(" ", "_", Species)) %>%
   mutate(Species = stri_trans_totitle(Species)) %>%
-  mutate(Sample = 1)
+  mutate(Sample = 1) %>%
+  unique()
+
+Data[duplicated(Data$Species),]
 
 tree<-bat_tree
 tree <- ape::drop.tip(tree,tree$tip.label[!(tree$tip.label %in% Data$Species)])
@@ -83,43 +89,3 @@ rm(list=ls())
 
 
 #............................................ visualization
-
-load(file='data/phylofactor work spaces/filo_workspace_sample_no_sample_all_bat_dataset')
-
-
-plot(pf$pvals, type = 'l')
-
-x<- cbind(as.matrix(OBJ[[1]]),as.matrix(OBJ[[2]]))
-
-
-x<-rbind(as.data.frame(OBJ[[1]]),as.data.frame(OBJ[[2]]),as.data.frame(OBJ[[3]]),as.data.frame(OBJ[[4]]))
-
-x <- t(x)
-
-plot(pf$pvals, type='l',ylim = c(0,.05), col='red')
-
-for (i in 1:200)
-{
-  lines(x[,i])
-}
-
-
-load(file='data/phylofactor work spaces/hnv_workspace_sample_no_sample_all_bat_dataset')
-
-
-plot(pf$pvals, type = 'l')
-
-x<- cbind(as.matrix(OBJ[[1]]),as.matrix(OBJ[[2]]))
-
-
-x<-rbind(as.data.frame(OBJ[[1]]),as.data.frame(OBJ[[2]]),as.data.frame(OBJ[[3]]),as.data.frame(OBJ[[4]]))
-
-x <- t(x)
-
-plot(pf$pvals, type='l',ylim = c(0,.05), col='red')
-
-for (i in 1:200)
-{
-  lines(x[,i])
-}
-
