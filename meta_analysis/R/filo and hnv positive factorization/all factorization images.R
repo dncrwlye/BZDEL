@@ -7,7 +7,7 @@ library(phylofactor)
 library(parallel)
 library(tidyverse)
 library(stringi)
-
+library(Cairo)
 par(family="Times")   
 CairoFonts(regular = 'Times-12')
 
@@ -218,6 +218,15 @@ for (i in 1:10)
   names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
 }
 
+#usefull little thing
+#group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; Yinpterochiroptera; Pteropodidae; ", 
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list %>% table()
+
+
 B <- lapply(pf$groups, function(l) l[[1]])
 
 # B <- bins(pf$basis[,1:10])
@@ -260,14 +269,16 @@ ggsave("figures/hnv global sampling effort tree.png", bg = "transparent", height
 #something strange is going on, we have a factor 2 that is only one tip, but 
 #in the bins it contains many many species. This is odd....
 Legend <- pf.tree$legend
-Legend$names <- names.storage[1:10]
+
+Legend$names <- c('Pteropodidae: Rousettus, Epomophorus, ...', names.storage[2:10])
+
 P <- sapply(probs[1:10],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
 
 Cairo(file='figures/hnv global sampling effort legend.jpg', 
       type="png",
       units="in", 
-      width=5, 
+      width=6, 
       height=4, 
       pointsize=12, 
       dpi=200)
@@ -301,6 +312,20 @@ for (i in 1:10)
   names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
 }
 
+#usefull little thing
+#group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; Yinpterochiroptera; Pteropodidae; ", 
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+replacement = "", 
+                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list %>% table()
+
+#5
+#Nyctimene, Dobsonia, Pteropus, ...
+
+#7
+#Rousettus, Epomophorus, ...
+
 B <- lapply(pf$groups, function(l) l[[1]])
 
 # B <- bins(pf$basis[,1:10])
@@ -331,9 +356,9 @@ colfcn <- function(n) return(c("#FF0066FF", #Yangochiroptera ~ similar to Vesper
                                "#B4DE2CFF", #Molossinae
                                "#FDE725FF", #Miniopterus
                                "#31688EFF", #Myotis ~ Myotis
-                               "#440154FF", #Pteropodidae ~ Pteropodidae
+                               "#440154FF", #Pteropodidae: Nyctimene, Dobsonia, Pteropus, ...
                                "#FF0000FF", #Taphozoinae
-                               "#6DCD59FF", #Pteropodidae 2
+                               "#6DCD59FF", #Pteropodidae: Rousettus, Epomophorus, ...
                                "#FF9900FF", #Vespertilionini
                                "#CCFF00FF", #Pteropus 
                                "#33FF00FF"  #Macroglossus 
@@ -351,13 +376,16 @@ ggsave("figures/filo global sampling effort.png", bg = "transparent", height = 1
 #in the bins it contains many many species. This is odd....
 Legend <- pf.tree$legend
 Legend$names <- names.storage[1:10]
+
+Legend$names <- c(names.storage[1:4], 'Pteropodidae: Nyctimene, Dobsonia, Pteropus, ...',names.storage[6], 'Pteropodidae: Rousettus, Epomophorus, ...', names.storage[8:10])
+
 P <- sapply(probs[1:10],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
 
 Cairo(file='figures/filo global sampling effort legend.jpg', 
       type="png",
       units="in", 
-      width=5, 
+      width=6, 
       height=4, 
       pointsize=12, 
       dpi=200)
@@ -365,7 +393,6 @@ plot.new()
 plot.new()
 legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
-
 
 # hnv SE+ figure 1 ----
 
@@ -670,9 +697,11 @@ pf.tree$ggplot +
 ggsave("figures/filo no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
 Legend <- pf.tree$legend
-Legend$names <- names.storage[1:2]
+Legend$names <- c(names.storage[1], "Pteropodinae") #megaloglossus woermanni isn't contained within the Pteropodinae according to our taxonomy search, but it clearly is according to the tree so going to override that 
 P <- sapply(probs[1:2],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
+
+
 
 Cairo(file='figures/filo no sampling effort tree legend.jpg', 
       type="png",
@@ -686,3 +715,44 @@ plot.new()
 legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
 
+
+
+
+
+
+
+# supplemental anlayses --------------------------------------------------------------------------------------
+
+rm(list=ls())
+
+load("~/Desktop/BDEL/BZDEL/meta_analysis/data/seroprevalence.phylo.analysis.Rdata")
+load(file='data/phylofactor work spaces/filo_workspace')
+load("data/bat_taxonomy_data.Rdata")
+source('R/taxonomy group name function.R')
+
+taxonomy <- batphy1 %>%
+  select(c(species, tax)) 
+
+names.storage <- list()
+
+i <- 1
+indexes = pf$groups[[i]][[1]]
+rhino.spp <- gsub("_", " ", tolower(tree$tip.label[indexes]))
+
+rhino <- seroprevalence.phylo.analysis %>%
+  filter(virus == 'Filovirus') %>%
+  filter(species %in% rhino.spp) 
+
+sum(rhino$sample_size) #how many of these bats have been sampled
+sum(rhino$sample_size * rhino$seroprevalence_percentage/100) #how many have returned positive
+unique(rhino$sampling_location)
+unique(rhino$title)
+
+rhino.pos <- rhino %>% 
+  filter(seroprevalence_percentage > 0)
+
+unique(rhino.pos$title)
+
+rhino.2 <- batphy1 %>%
+  filter(species %in% rhino.spp)%>%
+  filter(filo_positive == 1)
