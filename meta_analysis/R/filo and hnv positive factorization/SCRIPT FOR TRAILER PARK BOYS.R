@@ -6,25 +6,25 @@ setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
 ncores = 3
 tot.reps=500
 reps.per.worker=round(tot.reps/ncores)
-
+sampling_effort = TRUE
 source('R/filo and hnv positive factorization/filo_factorization.R', echo=TRUE, print.eval=TRUE)
 
 ncores = 7
 tot.reps=500
 reps.per.worker=round(tot.reps/ncores)
-
-source('R/filo and hnv positive factorization/filo_factorization no sampling effort.R')
-
-ncores = 7
-tot.reps=500
-reps.per.worker=round(tot.reps/ncores)
-
+sampling_effort = TRUE
 source('R/filo and hnv positive factorization/hnv.factorization.R')
 
 ncores = 7
 tot.reps=500
 reps.per.worker=round(tot.reps/ncores)
+sampling_effort = FALSE 
+source('R/filo and hnv positive factorization/filo_factorization no sampling effort.R')
 
+ncores = 7
+tot.reps=500
+reps.per.worker=round(tot.reps/ncores)
+sampling_effort = FALSE 
 source('R/filo and hnv positive factorization/hnv.factorization no sampling effort.R')
 
 
