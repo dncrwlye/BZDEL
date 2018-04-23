@@ -8,6 +8,9 @@ library(parallel)
 library(tidyverse)
 library(stringi)
 
+par(family="Times")   
+CairoFonts(regular = 'Times-12')
+
 # hnv all bats factors-----------------------------------------------
 
 load(file='data/phylofactor work spaces/hnv_workspace_sample_no_sample_all_bat_dataset')
@@ -123,7 +126,7 @@ for (i in 1:10)
 
 rm(list=ls())
 
-#going to say....1 factor
+#going to say....3 factors!!!
 
 # filo SE+ factors-----------------------------------------------
 
@@ -185,9 +188,10 @@ for (i in 1:10)
 
 rm(list=ls())
 
-#looks like....0 factors?
+#looks like....2 factors?
 
 # FIGURE MAKING ----
+
 # hnv all bats+ figure 1 ----
 
 # all the factors....
@@ -221,13 +225,37 @@ B <- lapply(pf$groups, function(l) l[[1]])
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 
-pf.tree <- pf.tree(pf, lwd=1, factors = 1:10, branch.length = "none", bg.color = NA)
+# 1       Pteropodidae          1 #440154FF
+# 2       Vespertilionoidea     1 #482878FF
+# 3       Pipistrellini         1 #3E4A89FF
+# 4       Myotis                1 #31688EFF
+# 5       Pteropus              1 #26828EFF
+# 6       Rhinolophus           1 #1F9E89FF
+# 7       Pteropus 2????        1 #35B779FF
+# 8       Phyllostomini         1 #6DCD59FF
+# 9       Molossus              1 #B4DE2CFF
+# 10      Carollia              1 #FDE725FF
+
+colfcn <- function(n) return(c("#440154FF",  
+                               "#FF0066FF", 
+                               "#3E4A89FF", 
+                               "#31688EFF",
+                               "#26828EFF", 
+                               "#1F9E89FF", 
+                               "#35B779FF",
+                               "#6DCD59FF",
+                               "#B4DE2CFF", 
+                               "#FDE725FF"  
+))
+
+
+pf.tree <- pf.tree(pf, lwd=1, color.fcn = colfcn, factors = 1:10, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue')
 
-ggsave("figures/hnv sampling effort tree.png", bg = "transparent", height = 18, width = 18)
+ggsave("figures/hnv global sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
 #something strange is going on, we have a factor 2 that is only one tip, but 
 #in the bins it contains many many species. This is odd....
@@ -236,12 +264,17 @@ Legend$names <- names.storage[1:10]
 P <- sapply(probs[1:10],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
 
-jpeg(filename = 'figures/hnv sampling effort legend.jpg')
+Cairo(file='figures/hnv global sampling effort legend.jpg', 
+      type="png",
+      units="in", 
+      width=5, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
 plot.new()
 plot.new()
-legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
-
 # filo all bats+ figure 1 ----
 
 # all the factors....
@@ -292,8 +325,9 @@ probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 # 12      Miniopterus           1 #FDE725FF
 # 13      Vespertilionini       1 #FF9900FF
 # 14      Macroglossus          1 #33FF00FF
+#@colfcn <- function(n) return(c("#00FF66FF", "#440154FF"))
 
-colfcn <- function(n) return(c("#482878FF", #Yangochiroptera ~ similar to Vespertilionoidea 
+colfcn <- function(n) return(c("#FF0066FF", #Yangochiroptera ~ similar to Vespertilionoidea 
                                "#B4DE2CFF", #Molossinae
                                "#FDE725FF", #Miniopterus
                                "#31688EFF", #Myotis ~ Myotis
@@ -311,7 +345,7 @@ pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue')
 
-ggsave("figures/filo sampling effort tree.png", bg = "transparent", height = 18, width = 18)
+ggsave("figures/filo global sampling effort.png", bg = "transparent", height = 18, width = 18)
 
 #something strange is going on, we have a factor 2 that is only one tip, but 
 #in the bins it contains many many species. This is odd....
@@ -320,10 +354,16 @@ Legend$names <- names.storage[1:10]
 P <- sapply(probs[1:10],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
 
-jpeg(filename = 'figures/filo sampling effort legend.jpg')
+Cairo(file='figures/filo global sampling effort legend.jpg', 
+      type="png",
+      units="in", 
+      width=5, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
 plot.new()
 plot.new()
-legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
 
 
@@ -402,10 +442,16 @@ Legend <- pf.tree$legend
 Legend$names <- names.storage[1]
 P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
-jpeg(filename = 'figures/hnv sampling effort tree legend.jpg')
+Cairo(file='figures/hnv sampling effort tree legend.jpg', 
+      type="png",
+      units="in", 
+      width=5, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
 plot.new()
 plot.new()
-legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
 # hnv SE- figure 1 --------------------------------------------------------------------------------------
 
@@ -420,7 +466,7 @@ taxonomy <- batphy1 %>%
 
 names.storage <- list()
 
-for (i in 1)
+for (i in 1:10)
 {
   indexes = pf$groups[[i]][[1]]
   species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
@@ -429,13 +475,12 @@ for (i in 1)
   print(i)
 }
 
-B <- pf$groups[[1]][[1]]
+B <- lapply(pf$groups, function(l) l[[1]])
 # B <- bins(pf$basis[,1:10])
 # B <- B[2:11]
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 
-probs <- sum(probs)/length(probs)
 #Pteropodinae 0.8666667
 
 # factor group    colors
@@ -453,25 +498,31 @@ probs <- sum(probs)/length(probs)
 # 12      Miniopterus           1 #FDE725FF
 # 13      Vespertilionini       1 #FF9900FF
 # 14      Macroglossus          1 #33FF00FF
-
-colfcn <- function(n) return(c("#440154FF"))
-pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none", bg.color = NA)
+# 15      Pteropodinae          1 #33FF00FF
+# 15      Hipposideros          1 #FF9900FF
+colfcn <- function(n) return(c("#33FF00FF", "#440154FF", "#FF9900FF"))
+pf.tree <- pf.tree(pf, lwd=1, factors = 1:3, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
-  ggtree::geom_tiplab(aes(angle=angle))
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
   
 ggsave("figures/hnv no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
 Legend <- pf.tree$legend
-Legend$names <- names.storage[1]
-P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
+Legend$names <- names.storage[1:3]
+P <- sapply(probs[1:3],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
-jpeg(filename = 'figures/hnv no sampling effort tree legend.jpg')
+Cairo(file='figures/hnv no sampling effort tree legend.jpg', 
+      type="png",
+      units="in", 
+      width=5, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
 plot.new()
 plot.new()
-legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
 
 # filo SE + figure 1 --------------------------------------------------------------------------------------
@@ -521,6 +572,8 @@ probs <- sum(probs)/length(probs)
 # 13      Vespertilionini       1 #FF9900FF
 # 14      Macroglossus          1 #33FF00FF
 # 15      Rhinolophoidea        1 #00FF66FF
+# 16      Pteropodinae          1 #33FF00FF
+# 17      Hipposideros          1 #FF9900FF
 
 #colors 3 "Rhinolophoidea (Rhinolophidae & Hipposideridae)"  #00FF66FF
 
@@ -544,15 +597,21 @@ Legend <- pf.tree$legend
 Legend$names <- names.storage[1]
 P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
-jpeg(filename = 'figures/filo sampling effort tree legend.jpg')
+Cairo(file='figures/filo sampling effort tree legend.jpg', 
+      type="png",
+      units="in", 
+      width=5, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
 plot.new()
 plot.new()
-legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
 
 # filo SE- figure 1 --------------------------------------------------------------------------------------
 
-#likely zero factors 
+#likely 2 factors 
 
 rm(list=ls())
 
@@ -565,7 +624,7 @@ taxonomy <- batphy1 %>%
 
 names.storage <- list()
 
-for (i in 1)
+for (i in 1:10)
 {
   indexes = pf$groups[[i]][[1]]
   species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
@@ -574,10 +633,35 @@ for (i in 1)
   print(i)
 }
 
-# NO FACTORS
+B <- lapply(pf$groups, function(l) l[[1]])
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
+Z <- Data$Z
+probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 
-colfcn <- function(n) return(c("#7FFFD4"))
-pf.tree <- pf.tree(pf, lwd=1, factors = 7, color.fcn=colfcn, branch.length = "none", bg.color = NA)
+
+# factor group    colors
+# 1       Pteropodidae          1 #440154FF
+# 2       Vespertilionoidea     1 #482878FF
+# 3       Pipistrellini         1 #3E4A89FF
+# 4       Myotis                1 #31688EFF
+# 5       Pteropus              1 #26828EFF
+# 6       Rhinolophus           1 #1F9E89FF
+# 7       Pteropus 2????        1 #35B779FF
+# 8       Phyllostomini         1 #6DCD59FF
+# 9       Molossus              1 #B4DE2CFF
+# 10      Carollia              1 #FDE725FF
+# 11      Molossinae            1 #B4DE2CFF
+# 12      Miniopterus           1 #FDE725FF
+# 13      Vespertilionini       1 #FF9900FF
+# 14      Macroglossus          1 #33FF00FF
+# 15      Rhinolophoidea        1 #00FF66FF
+# 16      Pteropodinae          1 #33FF00FF
+# 17      Hipposideros          1 #FF9900FF
+
+colfcn <- function(n) return(c("#00FF66FF", "#440154FF"))
+
+pf.tree <- pf.tree(pf, lwd=1, factors = 1:2, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
@@ -585,10 +669,20 @@ pf.tree$ggplot +
 
 ggsave("figures/filo no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
-# Legend <- pf.tree$legend
-# Legend$names <- names.storage[1]
-# P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
-# Legend$names <- mapply(paste,Legend$names,P)
-# plot.new()
-# plot.new()
-# legend('topleft',legend=Legend$names,fill=Legend$colors,cex=1)
+Legend <- pf.tree$legend
+Legend$names <- names.storage[1:2]
+P <- sapply(probs[1:2],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
+Legend$names <- mapply(paste,Legend$names,P)
+
+Cairo(file='figures/filo no sampling effort tree legend.jpg', 
+      type="png",
+      units="in", 
+      width=5, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
+plot.new()
+plot.new()
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
+dev.off()
+
