@@ -2,7 +2,7 @@
 
 # Libraries ---------------------------------------------------------------
 
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+setwd("~/BZDEL/meta_analysis/")
 library(phylofactor)
 library(parallel)
 library(tidyverse)
@@ -229,10 +229,10 @@ group_taxonomy_list %>% table()
 
 B <- lapply(pf$groups, function(l) l[[1]])
 
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
+B <- c(B,as.vector(pf$bins[1]))
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+lengths(B)
 
 # 1       Pteropodidae          1 #440154FF
 # 2       Vespertilionoidea     1 #482878FF
@@ -284,7 +284,7 @@ Cairo(file='figures/hnv global sampling effort legend.jpg',
       dpi=200)
 plot.new()
 plot.new()
-legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
+legend('topleft', legend=Legend[,3:4],fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
 # filo all bats+ figure 1 ----
 
@@ -328,11 +328,11 @@ group_taxonomy_list %>% table()
 
 B <- lapply(pf$groups, function(l) l[[1]])
 
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
+B <- c(B,as.vector(pf$bins[1]))
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-
+lengths(B)
+probs
 #factors from image 1 
 
 # factor group    colors
@@ -418,13 +418,13 @@ for (i in 1)
   names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
 }
 
-B <- pf$groups[[1]][[1]]
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
+B <- lapply(pf$groups[1], function(l) l[[1]])
+B <- c(B, list(unlist(pf$bins[c(1,3:10)])))
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+lengths(B)
 
-probs <- sum(probs)/length(probs)
+
 # 0.547619 for Pteropodidae
 
 names.storage[[1]]
@@ -502,11 +502,13 @@ for (i in 1:10)
   print(i)
 }
 
-B <- lapply(pf$groups, function(l) l[[1]])
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
+
+B <- lapply(pf$groups[1:3], function(l) l[[1]])
+B <- c(B, list(unlist(pf$bins[c(1,5:10)])))
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+lengths(B)
+probs
 
 #Pteropodinae 0.8666667
 
@@ -575,12 +577,12 @@ for (i in 1)
   print(i)
 }
 
-B <- pf$groups[[1]][[1]]
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
+B <- lapply(pf$groups[1], function(l) l[[1]])
+B <- c(B, list(unlist(pf$bins[c(1,3:11)])))
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-probs <- sum(probs)/length(probs)
+lengths(B)
+probs
 #Rhinolophoidea at  0.125
 
 # factor group    colors
@@ -660,12 +662,12 @@ for (i in 1:10)
   print(i)
 }
 
-B <- lapply(pf$groups, function(l) l[[1]])
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
+B <- lapply(pf$groups[1:2], function(l) l[[1]])
+B <- c(B, list(unlist(pf$bins[c(1,4:11)])))
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-
+lengths(B)
+probs
 
 # factor group    colors
 # 1       Pteropodidae          1 #440154FF
