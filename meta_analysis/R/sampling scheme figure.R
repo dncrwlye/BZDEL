@@ -6,7 +6,8 @@ library(dplyr)
 
 
 x<-seq(0,365,by=1)
-amp <- rnorm(n=length(x), mean=.2)
+x <- c(rep(-2, 60), x[1:100], rep(-2, 200), x[150:250], rep(-2, 60))
+
 amp <- runif(n=length(x))
 y<-amp*sin(.04*x)+amp
 y<-y*sd(y)
@@ -27,45 +28,39 @@ lines(smooth_y, col='red', lwd=5)
 smooth_yt <- as.data.frame((as.matrix(smooth_y))) %>%
   mutate(x = row_number())
 
-rect_sampling_point_unique <- c(30, 30*3,  30*5,  30*7,  30*9, 30*11)
-rect_sampling_point_unique <- data.frame(
-  xmin = rect_sampling_point_unique,
-  xmax = rect_sampling_point_unique + 8,
-  ymin = 0,
-  ymax = 1
-)
-rect_sampling_point_long <- c(40)
-rect_sampling_point_long <- data.frame(
-  xmin = rect_sampling_point_long,
-  xmax = rect_sampling_point_long + 200,
-  ymin = .2,
-  ymax = .6
-)
+longitudinal_sampling_point <-  smooth_yt[seq(1, nrow(smooth_yt)/2, 30),]
+single_point <-  smooth_yt[275,]
+longitudinal_pooled_sampling_point <-  smooth_yt[sample((nrow(smooth_yt)/2):nrow(smooth_yt), size=6),]
 
-singe_time_point <- c(300)
-singe_time_point <- data.frame(
-  xmin = singe_time_point,
-  xmax = singe_time_point + 10,
-  ymin = 0,
-  ymax = 1
+longitudinal_pooled_sampling_point_box <- data.frame(
+  xmin = min(longitudinal_pooled_sampling_point$x),
+  xmax = max(longitudinal_pooled_sampling_point$x),
+  ymin = mean(longitudinal_pooled_sampling_point$V1)-var(longitudinal_pooled_sampling_point$V1),
+  ymax = mean(longitudinal_pooled_sampling_point$V1+var(longitudinal_pooled_sampling_point$V1))
 )
-
 ggplot() +
-  geom_rect(data=rect_sampling_point_unique, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
-            fill='blue', alpha=0.2) +
-  geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
-            fill='green', alpha=0.4) +
-  geom_rect(data=singe_time_point, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
-            fill='black', alpha=0.4) +
-  geom_line(data=smooth_yt, aes(y=V1, x=x, col='seroprevalence')) +
-  ylab('seroprevalence') +
-  xlab('julian days') +
-  #ggtitle('sampling schemes of henipavirus/filovirus seroprevalence studies present in published literature') +
-  labs(caption = "Sampling schemes present in published studies of henipavirus/filoviru sereprevalence in bats.
-                  Black represents a single sampling event.
-                  Blue represents a longitudinal sampling at bimonthly intervals. 
-                  Green represents a potentially longitudinal sampling, but the study reports only a single mean estimate of seroprevalence for a given sample period.", parse = TRUE)
+  # geom_rect(data=rect_sampling_point_long, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+  #           fill='green', alpha=0.4) +
+  geom_line(aes(longitudinal_sampling_point$x,longitudinal_sampling_point$V1), col= 'blue', alpha=0.5, size = 1) + 
+  geom_line(data=smooth_yt, aes(y=V1, x=x), col='orange') +
+  ylab('') +
+  xlab('') +
+  geom_point(aes(longitudinal_sampling_point$x,longitudinal_sampling_point$V1), col= 'blue', alpha=0.8, size = 5) + 
+  geom_point(aes(longitudinal_pooled_sampling_point$x,longitudinal_pooled_sampling_point$V1), col= 'green', alpha=0.8, size = 5) + 
+  geom_point(aes(single_point$x,single_point$V1), col= 'black', alpha=0.8, size = 5) + 
+  geom_rect(data=longitudinal_pooled_sampling_point_box, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+  fill='green', alpha=0.4) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
+  
+  
+  
+  #+
+  # labs(caption = "Sampling schemes present in published studies of henipavirus/filoviru sereprevalence in bats.
+  #                 Black represents a single sampling event.
+  #                 Blue represents a longitudinal sampling at bimonthly intervals. 
+  #                 Green represents a potentially longitudinal sampling, but the study reports only a single mean estimate of seroprevalence for a given sample period.", parse = TRUE)
 
 #.............ehhhh gonna make a table describing the amount of longitudinal studies.........
 library(tidyverse)
