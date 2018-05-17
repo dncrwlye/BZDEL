@@ -394,6 +394,115 @@ plot.new()
 legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
 
+# Africa only filo figure 1 ----
+
+# all the factors....
+
+rm(list=ls())
+load(file='data/phylofactor work spaces/filo_workspace_sample_no_sample_all_african_bat_dataset')
+load("data/bat_taxonomy_data.Rdata")
+source('R/taxonomy group name function.R')
+
+taxonomy <- batphy1 %>%
+  select(c(species, tax)) 
+
+names.storage <- list()
+
+for (i in 1:10)
+{
+  indexes = pf$groups[[i]][[1]]
+  species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
+  if(is.na(match(species,taxonomy[,1])))
+  {
+    break
+  }
+  group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
+  names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+}
+
+#usefull little thing
+#group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; Yinpterochiroptera; Pteropodidae; ", 
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list %>% table()
+
+#5
+#Nyctimene, Dobsonia, Pteropus, ...
+
+#7
+#Rousettus, Epomophorus, ...
+
+B <- lapply(pf$groups, function(l) l[[1]])
+
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
+Z <- Data$Z
+probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+#factors from image 1 
+
+# factor group    colors
+# 1       Pteropodidae          1 #440154FF
+# 2       Vespertilionoidea     1 #482878FF
+# 3       Pipistrellini         1 #3E4A89FF
+# 4       Myotis                1 #31688EFF
+# 5       Pteropus              1 #26828EFF
+# 6       Rhinolophus           1 #1F9E89FF
+# 7       Pteropus 2????        1 #35B779FF
+# 8       Phyllostomini         1 #6DCD59FF
+# 9       Molossus              1 #B4DE2CFF
+# 10      Carollia              1 #FDE725FF
+# 11      Molossinae            1 #B4DE2CFF
+# 12      Miniopterus           1 #FDE725FF
+# 13      Vespertilionini       1 #FF9900FF
+# 14      Macroglossus          1 #33FF00FF
+#@colfcn <- function(n) return(c("#00FF66FF", "#440154FF"))
+
+colfcn <- function(n) return(c("#FF0066FF", #Yangochiroptera ~ similar to Vespertilionoidea 
+                               "#B4DE2CFF", #Molossinae
+                               "#FDE725FF", #Miniopterus
+                               "#31688EFF", #Myotis ~ Myotis
+                               "#440154FF", #Pteropodidae: Nyctimene, Dobsonia, Pteropus, ...
+                               "#FF0000FF", #Taphozoinae
+                               "#6DCD59FF", #Pteropodidae: Rousettus, Epomophorus, ...
+                               "#FF9900FF", #Vespertilionini
+                               "#CCFF00FF", #Pteropus 
+                               "#33FF00FF"  #Macroglossus 
+))
+
+pf.tree <- pf.tree(pf, lwd=1, factors = 1:10,  color.fcn=colfcn, branch.length = "none", bg.color = NA)
+
+pf.tree$ggplot +
+  ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue')
+
+ggsave("figures/filo global sampling effort.png", bg = "transparent", height = 18, width = 18)
+
+#something strange is going on, we have a factor 2 that is only one tip, but 
+#in the bins it contains many many species. This is odd....
+Legend <- pf.tree$legend
+Legend$names <- names.storage[1:10]
+
+Legend$names <- c(names.storage[1:4], 'Pteropodidae: Nyctimene, Dobsonia, Pteropus, ...',names.storage[6], 'Pteropodidae: Rousettus, Epomophorus, ...', names.storage[8:10])
+
+P <- sapply(probs[1:10],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
+Legend$names <- mapply(paste,Legend$names,P)
+
+Cairo(file='figures/filo global sampling effort legend.jpg', 
+      type="png",
+      units="in", 
+      width=6, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
+plot.new()
+plot.new()
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
+dev.off()
+
+
 # hnv SE+ figure 1 ----
 
 # 1 factor 
@@ -426,6 +535,13 @@ lengths(B)
 
 
 # 0.547619 for Pteropodidae
+
+B <- lapply(pf$groups, function(l) l[[1]])
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
+Z <- Data$Z
+probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
 
 names.storage[[1]]
 
@@ -502,9 +618,22 @@ for (i in 1:10)
   print(i)
 }
 
+<<<<<<< HEAD
 
 B <- lapply(pf$groups[1:3], function(l) l[[1]])
 B <- c(B, list(unlist(pf$bins[c(1,5:10)])))
+=======
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list %>% table()
+
+
+B <- lapply(pf$groups, function(l) l[[1]])
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
+>>>>>>> 8f02d1907df45c48858879ff05209b406e683710
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 lengths(B)
@@ -539,7 +668,7 @@ pf.tree$ggplot +
 ggsave("figures/hnv no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
 Legend <- pf.tree$legend
-Legend$names <- names.storage[1:3]
+Legend$names <- c('Pteropodinae: Pteropus, Eidolon...' ,names.storage[2:3])
 P <- sapply(probs[1:3],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
 Legend$names <- mapply(paste,Legend$names,P)
 Cairo(file='figures/hnv no sampling effort tree legend.jpg', 
@@ -662,8 +791,20 @@ for (i in 1:10)
   print(i)
 }
 
+<<<<<<< HEAD
 B <- lapply(pf$groups[1:2], function(l) l[[1]])
 B <- c(B, list(unlist(pf$bins[c(1,4:11)])))
+=======
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list %>% table()
+
+B <- lapply(pf$groups, function(l) l[[1]])
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
+>>>>>>> 8f02d1907df45c48858879ff05209b406e683710
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 lengths(B)
@@ -749,6 +890,11 @@ sum(rhino$sample_size) #how many of these bats have been sampled
 sum(rhino$sample_size * rhino$seroprevalence_percentage/100) #how many have returned positive
 unique(rhino$sampling_location)
 unique(rhino$title)
+
+rhino %>%
+  group_by(sampling_location) %>%
+  summarize(n=sum(sample_size))
+
 
 rhino.pos <- rhino %>% 
   filter(seroprevalence_percentage > 0)
