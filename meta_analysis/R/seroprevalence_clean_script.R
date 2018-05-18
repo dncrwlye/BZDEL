@@ -14,12 +14,13 @@ MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus m
                                                           "text", "text", "text"))                                            
                                             
 
-
+## save old virus
+MetaAnalysis_Data_New_Version$virusold=MetaAnalysis_Data_New_Version$virus
 
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Prevalence_Seroprevalence') %>%
   filter(study_type == "Observational") %>%
-  dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  dplyr::select(title, last_name_of_first_author, virus, virusold, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan|Lloviu', virus), 'Filovirus',
                         ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
