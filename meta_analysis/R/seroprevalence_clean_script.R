@@ -3,23 +3,25 @@ library(tidyverse)
 library(readxl)
 library(stringi)
 MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-                                            col_types = c("text", "numeric", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "date", 
-                                                          "date", "date", "text", "text", "text", 
-                                                          "text", "text", "text"))                                            
+                                            +     col_types = c("text", "numeric", "text", 
+                                                                         "text", "text", "text", "text", "text", 
+                                                                         "text", "text", "text", "text", "text", 
+                                                                         "text", "text", "text", "text", "text", 
+                                                                         "text", "text", "numeric", "text", 
+                                                                         "text", "text", "text", "text", "text", 
+                                                                         "numeric", "text", "text", "text", 
+                                                                         "text", "text", "text", "date", "date", 
+                                                                         "date", "text", "text", "text", "text", 
+                                                                         "text", "text"))                                      
                                             
+## save old virus
+MetaAnalysis_Data_New_Version$virusold=MetaAnalysis_Data_New_Version$virus
 
-
-
+# Cleaning ----
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Prevalence_Seroprevalence') %>%
   filter(study_type == "Observational") %>%
-  dplyr::select(title, last_name_of_first_author, virus, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  dplyr::select(title, last_name_of_first_author, virus, virusold, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan|Lloviu', virus), 'Filovirus',
                         ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
@@ -166,13 +168,5 @@ seroprevalence <- seroprevalence %>%
                                   ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, "1 sampling event (<30 days)",
                                          ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, "pooled multiple sampling events (>30 days)", "unclear sampling strategy")))))
          
-
-    
 save(seroprevalence, file='data/seroprevalence.Rdata')
 
-
-
-
-# load(file='data/seroprevalence.Rdata')
-# x <- seroprevalence %>%
-#   filter(is.na(species))
