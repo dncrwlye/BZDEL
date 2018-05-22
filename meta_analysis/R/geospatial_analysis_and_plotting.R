@@ -12,8 +12,8 @@ library(plotly)
 library(sp)
 
 # Which polygon is our point in? ------------------------------------------
-
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
+#setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 load("data/seroprevalence_ecoregions_final.Rdata")
 ecos <- shapefile('data/official_teow/wwf_terr_ecos.shp')
 
@@ -68,8 +68,8 @@ save(seroprevalence_x_final, file ="~/BZDEL/Data/MetaAnalysis/seroprevalence_eco
 #............plotting data ....................................
 
 
-lat <- c(min(seroprevalence_x_final$south_final, na.rm=TRUE) ,max(seroprevalence_x_final$north_final, na.rm=TRUE))
-lon <- c(min(seroprevalence_x_final$west_final, na.rm=TRUE),max(seroprevalence_x_final$east_final, na.rm=TRUE))
+lat <- c(min(seroprevalence_geolocation_final$south_final, na.rm=TRUE) ,max(seroprevalence_geolocation_final$north_final, na.rm=TRUE))
+lon <- c(min(seroprevalence_geolocation_final$west_final, na.rm=TRUE),max(seroprevalence_geolocation_final$east_final, na.rm=TRUE))
 
 map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
                maptype = "satellite", source = "google")
@@ -79,14 +79,11 @@ coordinate_box_fortified <- fortify(m)
 
 eco.points = fortify(ecos)
 
-location = c(lon = mean(lon), lat = mean(lat))
-
-
-
-
 ### When you draw a figure, you limit lon and lat.      
 ggmap(map)+
-  scale_x_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
-  scale_y_continuous(limits = c(min(seroprevalence_x_final$west_final),max(seroprevalence_x_final$east_final))) +
-  geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
+  scale_x_continuous(limits = c(min(seroprevalence_geolocation_final$west_final),max(seroprevalence_geolocation_final$east_final))) +
+  scale_y_continuous(limits = c(min(seroprevalence_geolocation_final$west_final),max(seroprevalence_geolocation_final$east_final))) +
+  #geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
   geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))
+
+save(ls, file = 'data/map_data')
