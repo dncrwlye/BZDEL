@@ -216,15 +216,28 @@ for (i in 1:10)
   }
   group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
   names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+  
+  group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                              replacement = "", 
+                              x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+  group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+  
+  print(group_taxonomy_list %>% table())
+  print("NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP")
 }
 
 #usefull little thing
 #group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; Yinpterochiroptera; Pteropodidae; ", 
-group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
-                            replacement = "", 
-                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
-group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
-group_taxonomy_list %>% table()
+
 
 
 B <- lapply(pf$groups, function(l) l[[1]])
@@ -318,6 +331,7 @@ group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chord
 replacement = "", 
                             x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
 group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
 group_taxonomy_list %>% table()
 
 #5
@@ -356,19 +370,29 @@ colfcn <- function(n) return(c("#FF0066FF", #Yangochiroptera ~ similar to Vesper
                                "#B4DE2CFF", #Molossinae
                                "#FDE725FF", #Miniopterus
                                "#31688EFF", #Myotis ~ Myotis
-                               "#440154FF", #Pteropodidae: Nyctimene, Dobsonia, Pteropus, ...
-                               "#FF0000FF", #Taphozoinae
-                               "#6DCD59FF", #Pteropodidae: Rousettus, Epomophorus, ...
+                               "#6DCD59FF", #Pteropodidae: Nyctimene, Dobsonia, Pteropus, ...
+                               "#CCFF00FF", #Taphozoinae
+                               "#440154FF", #Pteropodidae: Rousettus, Epomophorus, ...
                                "#FF9900FF", #Vespertilionini
-                               "#CCFF00FF", #Pteropus 
+                               "#FF0000FF", #Pteropus 
                                "#33FF00FF"  #Macroglossus 
                                ))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 1:10,  color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
+#species.list <- ggtree::get.offspring.tip(pf$tree, node=1086)
+
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue')
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_cladelabel(node=1086, label="Noctilionoidea", 
+                color="black", angle="auto", offset=2, offset.text = 2, align=TRUE) 
+
+#geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
+
+
+  #ggtree::geom_label2(aes(label=node), size=2, color="darkred", alpha=0.5) +
+  #ggtree::geom_hilight(node=1086, fill = 'steelblue')
 
 ggsave("figures/filo global sampling effort.png", bg = "transparent", height = 18, width = 18)
 
@@ -650,13 +674,25 @@ probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 # 14      Macroglossus          1 #33FF00FF
 # 15      Pteropodinae          1 #33FF00FF
 # 15      Hipposideros          1 #FF9900FF
+load('data/seroprevalence.Rdata')
+
+pcr.pos.hnv <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virus == 'Henipavirus')
+
+Data <- Data %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.hnv$species, 1,0))
+
 colfcn <- function(n) return(c("#33FF00FF", "#440154FF", "#FF9900FF"))
 pf.tree <- pf.tree(pf, lwd=1, factors = 1:3, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
-  
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_tippoint(size=5*Data$pcr.pos,col='red') 
+
 ggsave("figures/hnv no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
 Legend <- pf.tree$legend
@@ -698,6 +734,12 @@ for (i in 1)
   print(i)
 }
 
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
+
 B <- pf$groups[[1]][[1]]
 # B <- bins(pf$basis[,1:10])
 # B <- B[2:11]
@@ -727,6 +769,17 @@ probs <- sum(probs)/length(probs)
 
 #colors 3 "Rhinolophoidea (Rhinolophidae & Hipposideridae)"  #00FF66FF
 
+load('data/seroprevalence.Rdata')
+
+pcr.pos.filo <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virus == 'Filovirus')
+
+Data <- Data %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.filo$species, 1,0))
+
 colfcn <- function(n) return(c("#00FF66FF"))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none", bg.color = NA)
@@ -738,7 +791,8 @@ d <- data.frame(x=pf.tree$ggplot$data[1:104,'x'] + .5,
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') + 
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red') +
   geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
 
 ggsave("figures/filo sampling effort tree.png", bg = "transparent", height = 18, width = 18)
@@ -814,15 +868,25 @@ probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 # 15      Rhinolophoidea        1 #00FF66FF
 # 16      Pteropodinae          1 #33FF00FF
 # 17      Hipposideros          1 #FF9900FF
+load('data/seroprevalence.Rdata')
 
+pcr.pos.filo <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virus == 'Filovirus')
+
+Data <- Data %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.filo$species, 1,0))
 colfcn <- function(n) return(c("#00FF66FF", "#440154FF"))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 1:2, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
-
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red') 
+  
 ggsave("figures/filo no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
 Legend <- pf.tree$legend

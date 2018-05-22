@@ -1,4 +1,6 @@
 ### mapping samples to raster polygons
+
+# Libraries --------------------------------------------------------------
 library(raster)
 library(rgdal)
 library(tidyverse)
@@ -9,14 +11,15 @@ library(rgeos)
 library(plotly)
 library(sp)
 
-
 # Which polygon is our point in? ------------------------------------------
-load("~/BZDEL/Data/MetaAnalysis/seroprevalence.Rdata")
-ecos <- shapefile('~/BZDEL/Data/MetaAnalysis/official_teow/wwf_terr_ecos.shp')
+
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+load("data/seroprevalence_ecoregions_final.Rdata")
+ecos <- shapefile('data/official_teow/wwf_terr_ecos.shp')
 
 #we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
-seroprevalence_x <- seroprevalence%>%
+seroprevalence_x <- seroprevalence %>%
   select(-c(north, south, west, east,  north_two, south_two, west_two, east_two)) %>%
   mutate(coordinate_box = NA)
 
@@ -75,6 +78,10 @@ m <- do.call(bind, coordinate_box)
 coordinate_box_fortified <- fortify(m)
 
 eco.points = fortify(ecos)
+
+location = c(lon = mean(lon), lat = mean(lat))
+
+
 
 
 ### When you draw a figure, you limit lon and lat.      
