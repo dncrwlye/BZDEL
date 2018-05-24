@@ -5,15 +5,11 @@ library(tidyverse)
 library(stringi)
 load('data/phylofactor work spaces/bat_tree')
 load("data/bat_taxonomy_data.Rdata")
-ncores = 4
-tot.reps=200
-reps.per.worker=round(tot.reps/ncores)
-
 
 load('data/phylofactor work spaces/bat_tree')
 load("data/bat_taxonomy_data.Rdata")
 ncores = 4
-tot.reps=200
+tot.reps=2000
 reps.per.worker=round(tot.reps/ncores)
 n_factors = 10
 
