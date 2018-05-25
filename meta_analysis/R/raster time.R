@@ -98,8 +98,8 @@ save(seroprevalence_geolocation, file='data/seroprevalence_geolocation.Rdata')
 
 #..............moving onto the ecoregions analyses.................................
 
+load(file = 'data/seroprevalence_geolocation.Rdata')
 ecos <- shapefile('data/official_teow/wwf_terr_ecos.shp')
-#ecos <- shapefile('~/Desktop/BZDEL/meta_analysis/data/official_teow/wwf_terr_ecos.shp')
 
 #we should probably go back and use polygons over polygons, but that is proving way too hard rn
 
@@ -127,7 +127,7 @@ for(i in 1:nrow(seroprevalence_x_unique))
   proj4string(x) <- proj4string(ecos)
   coordinate_box[[i]] <- x
   
-  m <- as.data.frame(over(coordinate_box[[i]], ecos[,'ECO_NAME'], returnList = TRUE)) %>%
+  m <- as.data.frame(over(coordinate_box[[i]], ecos, returnList = FALSE)) %>%
     unique() %>%
     mutate(north_final = as.numeric(seroprevalence_x_unique[i, "north_final"])) %>%
     mutate(south_final = as.numeric(seroprevalence_x_unique[i, "south_final"])) %>%  

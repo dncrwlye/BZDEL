@@ -2,8 +2,10 @@
 library(tidyverse)
 library(readxl)
 library(stringi)
-MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-                                            +     col_types = c("text", "numeric", "text", 
+
+MetaAnalysis_Data_New_Version <- read_excel("C:/Users/r83c996/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
+#MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
+                                                 col_types = c("text", "numeric", "text", 
                                                                          "text", "text", "text", "text", "text", 
                                                                          "text", "text", "text", "text", "text", 
                                                                          "text", "text", "text", "text", "text", 
@@ -21,11 +23,14 @@ MetaAnalysis_Data_New_Version$virusold=MetaAnalysis_Data_New_Version$virus
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Prevalence_Seroprevalence') %>%
   filter(study_type == "Observational") %>%
-  dplyr::select(title, last_name_of_first_author, virus, virusold, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  dplyr::select(title, last_name_of_first_author, virus, virusold, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sampling_location_three, sampling_location_four, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan|Lloviu', virus), 'Filovirus',
                         ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
-  mutate(sampling_location = tolower(sampling_location)) %>%
+  mutate(sampling_location       = tolower(sampling_location)) %>%
+  mutate(sampling_location_two   = tolower(sampling_location_two)) %>%
+  mutate(sampling_location_three = tolower(sampling_location_three)) %>%
+  mutate(sampling_location_four  = tolower(sampling_location_four)) %>%
   filter(virus != 'Tioman') %>%
   #mutate(country = stri_extract_first_regex(sampling_location, '[a-z]+')) %>%
   filter(species != 'Feral Cats') %>% 
