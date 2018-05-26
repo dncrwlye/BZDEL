@@ -63,6 +63,8 @@ y <- seroprevalence_x_final %>%
 
 save(seroprevalence_x_final, file ="~/BZDEL/Data/MetaAnalysis/seroprevalence_ecoregions_alternative.Rdata")
 
+
+load(file ="data/seroprevalence_ecoregions_alternative.Rdata")
 #######################################################################################
 
 #............plotting data ....................................
@@ -71,7 +73,7 @@ save(seroprevalence_x_final, file ="~/BZDEL/Data/MetaAnalysis/seroprevalence_eco
 lat <- c(min(seroprevalence_geolocation_final$south_final, na.rm=TRUE) ,max(seroprevalence_geolocation_final$north_final, na.rm=TRUE))
 lon <- c(min(seroprevalence_geolocation_final$west_final, na.rm=TRUE),max(seroprevalence_geolocation_final$east_final, na.rm=TRUE))
 
-map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 2,
+map <- get_map(location = c(lon = mean(lon), lat = mean(lat)), zoom = 1,
                maptype = "satellite", source = "google")
 
 m <- do.call(bind, coordinate_box)
@@ -79,10 +81,58 @@ coordinate_box_fortified <- fortify(m)
 
 eco.points = fortify(ecos)
 
+#.............start here if you just gonna load.................
+rm(list=ls())
+load(file='data/map_data')
+load(file ="data/seroprevalence_ecoregions_final.Rdata")
+
+ecos.data <- ecos@data
+ecos.data$id <- rownames(ecos@data)
+
+ecos.data.filter <- ecos.data%>%
+  filter(ECO_NAME %in% seroprevalence_geolocation_final$ECO_NAME) %>%
+  select(ECO_NAME, ECO_NUM, id)
+
+eco.points.join <- eco.points %>%
+  mutate(fill = ifelse(id %in% ecos.data.filter$id, 1, 0))
+  #filter(id.2 %in% ecos.data.filter$ECO_NUM)
+
+eco.points.join <- eco.points %>%
+  #mutate(fill = ifelse(id.2 %in% ecos.data.filter$ECO_NUM, 1, 0))
+   filter(id.2 %in% ecos.data.filter$ECO_NUM)
+
+
 ### When you draw a figure, you limit lon and lat.      
 ggmap(map)+
   scale_x_continuous(limits = c(min(seroprevalence_geolocation_final$west_final),max(seroprevalence_geolocation_final$east_final))) +
   scale_y_continuous(limits = c(min(seroprevalence_geolocation_final$west_final),max(seroprevalence_geolocation_final$east_final))) +
   #geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
-  geom_polygon(data=eco.points,aes(x=long,y=lat,group=group,fill=group))
+  geom_polygon(data=eco.points.join,aes(x=long,y=lat,fill = fill, group=group))
+
+save(list = ls(), file = 'data/map_data')
+
+
+head(ecos@data)
+
+
+
+ecos <- shapefile('data/official_teow/wwf_terr_ecos.shp')
+countries <- shapefile('data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp')
+
+load(file='data/map_data')
+
+ggmap(map)+
+  #scale_x_continuous(limits = c(min(seroprevalence_geolocation_final$west_final),max(seroprevalence_geolocation_final$east_final))) +
+  #scale_y_continuous(limits = c(min(seroprevalence_geolocation_final$west_final),max(seroprevalence_geolocation_final$east_final))) +
+  #geom_polygon(aes(x=long, y=lat, group=group), fill='grey', size=.2,color='green', data=coordinate_box_fortified, alpha=.3) +
+  geom_polygon(data=countries.points,aes(x=long,y=lat))
+
+
+countries.points = fortify(countries)
+
+mapdata <- map_data("world")
+
+ggmap(map)+
+  geom_polygon(data=mapdata, aes(x=long,y=lat, group=group, fill=region), alpha=0.5) + 
+  guides(fill=FALSE)
 
