@@ -848,6 +848,23 @@ pf.tree$ggplot +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
   ggtree::geom_tippoint(size=5*Data$pcr.pos,col='red') 
 
+ggsave("figures/hnv no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
+
+Legend <- pf.tree$legend
+Legend$names <- c('Pteropodinae: Pteropus, Eidolon...' ,names.storage[2:3])
+P <- sapply(probs[1:3],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
+Legend$names <- mapply(paste,Legend$names,P)
+Cairo(file='figures/hnv no sampling effort tree legend.jpg', 
+      type="png",
+      units="in", 
+      width=5, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
+plot.new()
+plot.new()
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
+dev.off()
 #.............................indian bats aside......................................
 #.............................indian bats aside......................................
 #.............................indian bats aside......................................
@@ -882,27 +899,31 @@ pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
   ggtree::geom_tippoint(size=5*Data$pcr.pos,col='red') +
-  ggtree::geom_tippoint(size=4*Data$IB,col='green')
-geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
+  ggtree::geom_tippoint(size=4*Data$IB,col='green') +
+  ggtree::geom_text2(aes(subset=!isTip,label=node))
+
+species.list <- ggtree::get.offspring.tip(pf$tree, node=179)
+species.list <- tolower(gsub("_", " ",species.list))
+group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
+gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            group_taxonomy_list[,1]) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
+
+species.list <- ggtree::get.offspring.tip(pf$tree, node=179)
+mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
+
+pf.tree$ggplot +
+  ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_tippoint(size=4*Data$IB,col='green') +
+  ggtree::geom_cladelabel(node=179, label="Noctilionoidea", 
+                        color="black", angle=222, offset=2, offset.text = 2) 
 
 
-ggsave("figures/hnv no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
-Legend <- pf.tree$legend
-Legend$names <- c('Pteropodinae: Pteropus, Eidolon...' ,names.storage[2:3])
-P <- sapply(probs[1:3],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
-Legend$names <- mapply(paste,Legend$names,P)
-Cairo(file='figures/hnv no sampling effort tree legend.jpg', 
-      type="png",
-      units="in", 
-      width=5, 
-      height=4, 
-      pointsize=12, 
-      dpi=200)
-plot.new()
-plot.new()
-legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
-dev.off()
 
 # filo SE + figure 1 --------------------------------------------------------------------------------------
 
