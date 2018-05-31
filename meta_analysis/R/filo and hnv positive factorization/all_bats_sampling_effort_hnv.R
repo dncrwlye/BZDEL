@@ -9,11 +9,15 @@ ncores = 4
 tot.reps=200
 reps.per.worker=round(tot.reps/ncores)
 
+
+
+
+
 Data <- batphy1 %>%
   mutate(hnv_surv_bin = ifelse(is.na(hnv_surv), 0, hnv_surv)) %>%
   mutate(hnv_surv_bin = ifelse(hnv_surv_bin == 1, 1, 0)) %>%
   mutate(log_hnv_samps = log(hnv_samps)) %>%
-  select(c(hnv_surv_bin, species, log_hnv_samps))%>%
+  select(c(hnv_samps, hnv_surv_bin, species, log_hnv_samps))%>%
   rename(Species = species) %>%
   mutate(Species = gsub(" ", "_", Species)) %>%
   mutate(Species = stri_trans_totitle(Species)) %>%

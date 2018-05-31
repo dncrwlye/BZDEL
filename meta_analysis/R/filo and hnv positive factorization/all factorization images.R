@@ -1,8 +1,9 @@
+
 #............phylofactor visualization script...................................
 
 # Libraries ---------------------------------------------------------------
 
-setwd("~/BZDEL/meta_analysis/")
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 library(phylofactor)
 library(parallel)
 library(tidyverse)
@@ -40,9 +41,10 @@ for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 
-rm(list=ls())
 
 # filo all bats factors-----------------------------------------------
+
+rm(list=ls())
 
 load(file='data/phylofactor work spaces/filo_workspace_sample_no_sample_all_bat_dataset')
 
@@ -216,23 +218,89 @@ for (i in 1:10)
   }
   group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
   names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+  
+  group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                              replacement = "", 
+                              x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+  group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+  
+  print(group_taxonomy_list %>% table())
+  print("NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP
+        NEW GROUP")
 }
 
 #usefull little thing
 #group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; Yinpterochiroptera; Pteropodidae; ", 
-group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
-                            replacement = "", 
-                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
-group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
-group_taxonomy_list %>% table()
 
+factor.1 <- pf$groups[[1]][[1]]
+factor.2 <- pf$groups[[2]][[1]]
+factor.3 <- pf$groups[[3]][[1]]
+factor.4 <- pf$groups[[4]][[1]]
+factor.5 <- pf$groups[[5]][[1]]
+factor.6 <- pf$groups[[6]][[1]]
+factor.7 <- pf$groups[[7]][[1]]
+factor.8 <- pf$groups[[8]][[1]]
+factor.9 <- pf$groups[[9]][[1]]
+factor.10 <- pf$groups[[10]][[1]]
+paraphyletic.remainder <- pf$groups[[10]][[2]]
 
-B <- lapply(pf$groups, function(l) l[[1]])
+length(factor.1) +
+length(factor.2) +
+length(factor.3) +
+length(factor.4) +
+length(factor.5)+
+length(factor.6)+
+length(factor.7)+
+length(factor.8)+
+length(factor.9)+
+length(factor.10)+
+length(paraphyletic.remainder)
 
-B <- c(B,as.vector(pf$bins[1]))
 Z <- Data$Z
-probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-lengths(B)
+factor.1.p <- sapply(factor.1,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.2.p <- sapply(factor.2,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.3.p <- sapply(factor.3,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.4.p <- sapply(factor.4,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.5.p <- sapply(factor.5,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.6.p <- sapply(factor.6,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.7.p <- sapply(factor.7,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.8.p <- sapply(factor.8,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.9.p <- sapply(factor.9,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.10.p <- sapply(factor.10,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+paraphyletic.remainder.p <- sapply(paraphyletic.remainder,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+factor.1.prob <- sum(factor.1.p)/length(factor.1.p)
+factor.2.prob <- sum(factor.2.p)/length(factor.2.p)
+factor.3.prob <- sum(factor.3.p)/length(factor.3.p)
+factor.4.prob <- sum(factor.4.p)/length(factor.4.p)
+factor.5.prob <- sum(factor.5.p)/length(factor.5.p)
+factor.6.prob <- sum(factor.6.p)/length(factor.6.p)
+factor.7.prob <- sum(factor.7.p)/length(factor.7.p)
+factor.8.prob <- sum(factor.8.p)/length(factor.8.p)
+factor.9.prob <- sum(factor.9.p)/length(factor.9.p)
+factor.10.prob <- sum(factor.10.p)/length(factor.10.p)
+paraphyletic.remainder.prob <- sum(paraphyletic.remainder.p)/length(paraphyletic.remainder.p)
+
+factor.1.prob
+factor.2.prob
+factor.3.prob
+factor.4.prob
+factor.5.prob
+factor.6.prob
+factor.7.prob
+factor.8.prob
+factor.9.prob
+factor.10.prob
+paraphyletic.remainder.prob
+
 
 # 1       Pteropodidae          1 #440154FF
 # 2       Vespertilionoidea     1 #482878FF
@@ -259,12 +327,15 @@ colfcn <- function(n) return(c("#440154FF",
 
 
 pf.tree <- pf.tree(pf, lwd=1, color.fcn = colfcn, factors = 1:10, branch.length = "none", bg.color = NA)
+Data <- Data %>%
+  mutate(ib = ifelse(Species %in% text2$V3, 1, 0))
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue')
+  ggtree::geom_tippoint(size=20*Data$ib,col='red') + 
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue')  
 
-ggsave("figures/hnv global sampling effort tree.png", bg = "transparent", height = 18, width = 18)
+ggsave("figures/hnv global sampling effort tree india bats.png", bg = "transparent", height = 18, width = 18)
 
 #something strange is going on, we have a factor 2 that is only one tip, but 
 #in the bins it contains many many species. This is odd....
@@ -284,7 +355,7 @@ Cairo(file='figures/hnv global sampling effort legend.jpg',
       dpi=200)
 plot.new()
 plot.new()
-legend('topleft', legend=Legend[,3:4],fill=Legend$colors,cex=1, bg="transparent", bty="n")
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
 # filo all bats+ figure 1 ----
 
@@ -315,24 +386,73 @@ for (i in 1:10)
 #usefull little thing
 #group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; Yinpterochiroptera; Pteropodidae; ", 
 group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
-replacement = "", 
+                            replacement = "", 
                             x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
 group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
 group_taxonomy_list %>% table()
 
-#5
-#Nyctimene, Dobsonia, Pteropus, ...
+factor.1 <- pf$groups[[1]][[1]]
+factor.2 <- pf$groups[[2]][[1]]
+factor.3 <- pf$groups[[3]][[1]]
+factor.4 <- pf$groups[[4]][[1]]
+factor.5 <- pf$groups[[5]][[1]]
+factor.6 <- pf$groups[[6]][[1]]
+factor.7 <- pf$groups[[7]][[1]]
+factor.8 <- pf$groups[[8]][[1]]
+factor.9 <- pf$groups[[9]][[1]]
+factor.10 <- pf$groups[[10]][[1]]
+paraphyletic.remainder <- pf$groups[[10]][[2]]
 
-#7
-#Rousettus, Epomophorus, ...
+length(factor.1) +
+  length(factor.2) +
+  length(factor.3) +
+  length(factor.4) +
+  length(factor.5)+
+  length(factor.6)+
+  length(factor.7)+
+  length(factor.8)+
+  length(factor.9)+
+  length(factor.10)+
+  length(paraphyletic.remainder)
 
-B <- lapply(pf$groups, function(l) l[[1]])
-
-B <- c(B,as.vector(pf$bins[1]))
 Z <- Data$Z
-probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-lengths(B)
-probs
+factor.1.p <- sapply(factor.1,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.2.p <- sapply(factor.2,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.3.p <- sapply(factor.3,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.4.p <- sapply(factor.4,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.5.p <- sapply(factor.5,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.6.p <- sapply(factor.6,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.7.p <- sapply(factor.7,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.8.p <- sapply(factor.8,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.9.p <- sapply(factor.9,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.10.p <- sapply(factor.10,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+paraphyletic.remainder.p <- sapply(paraphyletic.remainder,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+factor.1.prob <- sum(factor.1.p)/length(factor.1.p)
+factor.2.prob <- sum(factor.2.p)/length(factor.2.p)
+factor.3.prob <- sum(factor.3.p)/length(factor.3.p)
+factor.4.prob <- sum(factor.4.p)/length(factor.4.p)
+factor.5.prob <- sum(factor.5.p)/length(factor.5.p)
+factor.6.prob <- sum(factor.6.p)/length(factor.6.p)
+factor.7.prob <- sum(factor.7.p)/length(factor.7.p)
+factor.8.prob <- sum(factor.8.p)/length(factor.8.p)
+factor.9.prob <- sum(factor.9.p)/length(factor.9.p)
+factor.10.prob <- sum(factor.10.p)/length(factor.10.p)
+paraphyletic.remainder.prob <- sum(paraphyletic.remainder.p)/length(paraphyletic.remainder.p)
+
+factor.1.prob
+factor.2.prob
+factor.3.prob
+factor.4.prob
+factor.5.prob
+factor.6.prob
+factor.7.prob
+factor.8.prob
+factor.9.prob
+factor.10.prob
+paraphyletic.remainder.prob
+
 #factors from image 1 
 
 # factor group    colors
@@ -356,19 +476,29 @@ colfcn <- function(n) return(c("#FF0066FF", #Yangochiroptera ~ similar to Vesper
                                "#B4DE2CFF", #Molossinae
                                "#FDE725FF", #Miniopterus
                                "#31688EFF", #Myotis ~ Myotis
-                               "#440154FF", #Pteropodidae: Nyctimene, Dobsonia, Pteropus, ...
-                               "#FF0000FF", #Taphozoinae
-                               "#6DCD59FF", #Pteropodidae: Rousettus, Epomophorus, ...
+                               "#6DCD59FF", #Pteropodidae: Nyctimene, Dobsonia, Pteropus, ...
+                               "#CCFF00FF", #Taphozoinae
+                               "#440154FF", #Pteropodidae: Rousettus, Epomophorus, ...
                                "#FF9900FF", #Vespertilionini
-                               "#CCFF00FF", #Pteropus 
+                               "#FF0000FF", #Pteropus 
                                "#33FF00FF"  #Macroglossus 
-                               ))
+))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 1:10,  color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
+#species.list <- ggtree::get.offspring.tip(pf$tree, node=1086)
+
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue')
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_cladelabel(node=1086, label="Noctilionoidea", 
+                          color="black", angle="auto", offset=2, offset.text = 2, align=TRUE) 
+
+#geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
+
+
+#ggtree::geom_label2(aes(label=node), size=2, color="darkred", alpha=0.5) +
+#ggtree::geom_hilight(node=1086, fill = 'steelblue')
 
 ggsave("figures/filo global sampling effort.png", bg = "transparent", height = 18, width = 18)
 
@@ -527,20 +657,36 @@ for (i in 1)
   names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
 }
 
-B <- lapply(pf$groups[1], function(l) l[[1]])
-B <- c(B, list(unlist(pf$bins[c(1,3:10)])))
-Z <- Data$Z
-probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-lengths(B)
+factor.1 <- pf$groups[[1]][[1]]
+paraphyletic.remainder <-     pf$groups[[1]][[2]]
 
+Z <- Data$Z
+factor.1.p <- sapply(factor.1,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+paraphyletic.remainder.p <- sapply(paraphyletic.remainder,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+length(factor.1)
+length(paraphyletic.remainder.p)
+
+factor.1.prob <- sum(factor.1.p)/length(factor.1.p)
+paraphyletic.remainder.prob <- sum(paraphyletic.remainder.p)/length(paraphyletic.remainder.p)
 
 # 0.547619 for Pteropodidae
 
-B <- lapply(pf$groups, function(l) l[[1]])
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
-Z <- Data$Z
-probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+# B <- lapply(pf$groups, function(l) l[[1]])
+# # B <- bins(pf$basis[,1:10])
+# # B <- B[2:11]
+# Z <- Data$Z
+# probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+# 
+
+
+
+
+
+
+
+
+
 
 
 names.storage[[1]]
@@ -572,12 +718,16 @@ d <- data.frame(x=pf.tree$ggplot$data[1:143,'x'] + .5,
                 y=pf.tree$ggplot$data[1:143,'y'],
                 yend=pf.tree$ggplot$data[1:143,'y'] )
 
+Data <- Data %>%
+  mutate(ib = ifelse(Species %in% text2$V3, 1, 0))
+
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue')  +
+  #ggtree::geom_tippoint(size=5*Data$ib,col='red') +
   geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
 
-ggsave("figures/hnv sampling effort tree.png", bg = "transparent", height = 18, width = 18)
+ggsave("figures/hnv sampling effort tree w indian bats.png", bg = "transparent", height = 18, width = 18)
 
 #something strange is going on, we have a factor 2 that is only one tip, but 
 #in the bins it contains many many species. This is odd....
@@ -618,11 +768,6 @@ for (i in 1:10)
   print(i)
 }
 
-<<<<<<< HEAD
-
-B <- lapply(pf$groups[1:3], function(l) l[[1]])
-B <- c(B, list(unlist(pf$bins[c(1,5:10)])))
-=======
 group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
                             replacement = "", 
                             x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
@@ -630,14 +775,40 @@ group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonom
 group_taxonomy_list %>% table()
 
 
-B <- lapply(pf$groups, function(l) l[[1]])
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
->>>>>>> 8f02d1907df45c48858879ff05209b406e683710
+
+factor.1 <- pf$groups[[1]][[1]]
+factor.2 <- pf$groups[[2]][[1]]
+factor.3 <- pf$groups[[3]][[1]]
+paraphyletic.remainder <-     pf$groups[[3]][[2]]
+
+length(factor.1)
+length(factor.2)
+length(factor.3)
+length(paraphyletic.remainder)
+
+sum(15 + 27 + 2 + 99)
+
 Z <- Data$Z
-probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-lengths(B)
-probs
+factor.1.p <- sapply(factor.1,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.2.p <- sapply(factor.2,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.3.p <- sapply(factor.3,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+paraphyletic.remainder.p <- sapply(paraphyletic.remainder,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+factor.1.prob <- sum(factor.1.p)/length(factor.1.p)
+factor.2.prob <- sum(factor.2.p)/length(factor.2.p)
+factor.3.prob <- sum(factor.3.p)/length(factor.3.p)
+paraphyletic.remainder.prob <- sum(paraphyletic.remainder.p)/length(paraphyletic.remainder.p)
+
+factor.1.prob
+factor.2.prob
+factor.3.prob
+paraphyletic.remainder.prob
+
+# B <- lapply(pf$groups, function(l) l[[1]])
+# # B <- bins(pf$basis[,1:10])
+# # B <- B[2:11]
+# Z <- Data$Z
+# probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
 
 #Pteropodinae 0.8666667
 
@@ -658,13 +829,25 @@ probs
 # 14      Macroglossus          1 #33FF00FF
 # 15      Pteropodinae          1 #33FF00FF
 # 15      Hipposideros          1 #FF9900FF
+load('data/seroprevalence.Rdata')
+
+pcr.pos.hnv <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virus == 'Henipavirus')
+
+Data <- Data %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.hnv$species, 1,0))
+
 colfcn <- function(n) return(c("#33FF00FF", "#440154FF", "#FF9900FF"))
 pf.tree <- pf.tree(pf, lwd=1, factors = 1:3, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
-  
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_tippoint(size=5*Data$pcr.pos,col='red') 
+
 ggsave("figures/hnv no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
 Legend <- pf.tree$legend
@@ -706,12 +889,36 @@ for (i in 1)
   print(i)
 }
 
-B <- lapply(pf$groups[1], function(l) l[[1]])
-B <- c(B, list(unlist(pf$bins[c(1,3:11)])))
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
+
+factor.1 <- pf$groups[[1]][[1]]
+paraphyletic.remainder <-     pf$groups[[1]][[2]]
+
+length(factor.1)
+length(paraphyletic.remainder)
+
+
+Z <- Data$Z
+factor.1.p <- sapply(factor.1,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+paraphyletic.remainder.p <- sapply(paraphyletic.remainder,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+factor.1.prob <- sum(factor.1.p)/length(factor.1.p)
+paraphyletic.remainder.prob <- sum(paraphyletic.remainder.p)/length(paraphyletic.remainder.p)
+
+factor.1.prob
+paraphyletic.remainder.prob
+
+
+B <- pf$groups[[1]][[1]]
+# B <- bins(pf$basis[,1:10])
+# B <- B[2:11]
 Z <- Data$Z
 probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-lengths(B)
-probs
+probs <- sum(probs)/length(probs)
 #Rhinolophoidea at  0.125
 
 # factor group    colors
@@ -735,6 +942,17 @@ probs
 
 #colors 3 "Rhinolophoidea (Rhinolophidae & Hipposideridae)"  #00FF66FF
 
+load('data/seroprevalence.Rdata')
+
+pcr.pos.filo <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virus == 'Filovirus')
+
+Data <- Data %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.filo$species, 1,0))
+
 colfcn <- function(n) return(c("#00FF66FF"))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none", bg.color = NA)
@@ -746,7 +964,8 @@ d <- data.frame(x=pf.tree$ggplot$data[1:104,'x'] + .5,
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') + 
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red') +
   geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
 
 ggsave("figures/filo sampling effort tree.png", bg = "transparent", height = 18, width = 18)
@@ -791,24 +1010,36 @@ for (i in 1:10)
   print(i)
 }
 
-<<<<<<< HEAD
-B <- lapply(pf$groups[1:2], function(l) l[[1]])
-B <- c(B, list(unlist(pf$bins[c(1,4:11)])))
-=======
 group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
                             replacement = "", 
                             x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
 group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
 group_taxonomy_list %>% table()
 
-B <- lapply(pf$groups, function(l) l[[1]])
-# B <- bins(pf$basis[,1:10])
-# B <- B[2:11]
->>>>>>> 8f02d1907df45c48858879ff05209b406e683710
+
+factor.1 <- pf$groups[[1]][[1]]
+factor.2 <- pf$groups[[2]][[1]]
+paraphyletic.remainder <-     pf$groups[[2]][[2]]
+
+length(factor.1)
+length(factor.2)
+length(paraphyletic.remainder)
+
+sum(32 + 12 + 60)
+sum(32 + 72)
+
 Z <- Data$Z
-probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
-lengths(B)
-probs
+factor.1.p <- sapply(factor.1,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+factor.2.p <- sapply(factor.2,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+paraphyletic.remainder.p <- sapply(paraphyletic.remainder,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+factor.1.prob <- sum(factor.1.p)/length(factor.1.p)
+factor.2.prob <- sum(factor.2.p)/length(factor.2.p)
+paraphyletic.remainder.prob <- sum(paraphyletic.remainder.p)/length(paraphyletic.remainder.p)
+
+factor.1.prob
+factor.2.prob
+paraphyletic.remainder.prob
 
 # factor group    colors
 # 1       Pteropodidae          1 #440154FF
@@ -828,14 +1059,24 @@ probs
 # 15      Rhinolophoidea        1 #00FF66FF
 # 16      Pteropodinae          1 #33FF00FF
 # 17      Hipposideros          1 #FF9900FF
+load('data/seroprevalence.Rdata')
 
+pcr.pos.filo <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virus == 'Filovirus')
+
+Data <- Data %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.filo$species, 1,0))
 colfcn <- function(n) return(c("#00FF66FF", "#440154FF"))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 1:2, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
+  ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red') 
 
 ggsave("figures/filo no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 
@@ -857,12 +1098,6 @@ plot.new()
 plot.new()
 legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
 dev.off()
-
-
-
-
-
-
 
 # supplemental anlayses --------------------------------------------------------------------------------------
 
@@ -904,3 +1139,85 @@ unique(rhino.pos$title)
 rhino.2 <- batphy1 %>%
   filter(species %in% rhino.spp)%>%
   filter(filo_positive == 1)
+
+
+#supp.compar. anlayses --------------------------------------------------------------------------------------
+
+rm(list=ls())
+
+load(file='data/phylofactor work spaces/hnv_workspace_sample_no_sample_all_bat_dataset')
+
+plot(pf$pvals, type='l',ylim = c(0,.01), col='red')
+
+load(file='data/phylofactor work spaces/filo_workspace_sample_no_sample_all_bat_dataset')
+
+lines(pf$pvals, type='l', col='green')
+
+#supp.positive compare anlayses --------------------------------------------------------------------------------------
+
+#the p value of the null simulations 
+
+# one factor
+
+rm(list=ls())
+load(file='data/phylofactor work spaces/hnv_workspace')
+bb <- (t(diff(t(S))))
+bb <- cbind(S[,1],bb)
+Ojb.bb <- c(Obj[1],diff(Obj))
+print(ecdf(bb[,1])(Ojb.bb[1]))
+print(ecdf(bb[,2])(Ojb.bb[2]))
+
+plot(c(Obj[1:10]), type = 'l')
+
+
+#1rst factor:: 0.9899396
+
+rm(list=ls())
+load(file='data/phylofactor work spaces/filo_workspace')
+lines(c(Obj[1:10]), type = 'l', col = 'green')
+
+bb <- (t(diff(t(S))))
+bb <- cbind(S[,1],bb)
+Ojb.bb <- c(Obj[1],diff(Obj))
+print(ecdf(bb[,1])(Ojb.bb[1]))
+print(ecdf(bb[,2])(Ojb.bb[2]))
+
+#1rst factor:: 0.9620758
+
+rm(list=ls())
+load(file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
+bb <- (t(diff(t(S))))
+bb <- cbind(S[,1],bb)
+Ojb.bb <- c(Obj[1],diff(Obj))
+print(ecdf(bb[,1])(Ojb.bb[1]))
+print(ecdf(bb[,2])(Ojb.bb[2]))
+print(ecdf(bb[,3])(Ojb.bb[3]))
+
+#1rst factor:: 1
+#2nd  factor:: 0.974
+#3rd  factor:: 0.998
+
+rm(list=ls())
+load(file='data/phylofactor work spaces/filo_workspace_no_sampling_effort')
+bb <- (t(diff(t(S))))
+bb <- cbind(S[,1],bb)
+Ojb.bb <- c(Obj[1],diff(Obj))
+print(ecdf(bb[,1])(Ojb.bb[1]))
+print(ecdf(bb[,2])(Ojb.bb[2]))
+print(ecdf(bb[,3])(Ojb.bb[3]))
+
+#1rst factor:: 0.996
+#2nd  factor:: 0.95
+
+pf$models[[1]] %>% summary()
+pf$models[[2]] %>% summary()
+
+length(pf$groups[[1]][[1]])
+length(pf$groups[[1]][[2]])
+
+
+
+# missclassification rate ----
+
+pf$models[[1]]$model
+pf$models[[2]]$model

@@ -2,36 +2,53 @@ setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 
 # Libraries ---------------------------------------------------------------
 
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 library(phylofactor)
 library(parallel)
 library(tidyverse)
 library(stringi)
 library(Cairo)
-par(family="Times")   
-CairoFonts(regular = 'Times-12')
 
-
-load(file='data/phylofactor work spaces/hnv_workspace')
-load("data/bat_taxonomy_data.Rdata")
-
-Data.hnv <- Data %>%
-  mutate(virus = "hnv")
-
+load('data/seroprevalence.Rdata')
 load(file='data/phylofactor work spaces/filo_workspace')
 load("data/bat_taxonomy_data.Rdata")
 
+pcr.pos.filo <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virus == 'Filovirus')
+
 Data.filo <- Data %>%
-  mutate(virus = "filo")
+  mutate(virus = "filo") %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(Z.pcr = ifelse(species.mutate %in% pcr.pos.filo$species, 1,0))
+
+rm(list=(ls()[ls()!="Data.filo"]))
+
+load(file='data/phylofactor work spaces/hnv_workspace')
+load('data/seroprevalence.Rdata')
+load("data/bat_taxonomy_data.Rdata")
+
+pcr.pos.hnv <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virus == 'Henipavirus')
+
+Data.hnv <- Data %>%
+  mutate(virus = "hnv") %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(Z.pcr = ifelse(species.mutate %in% pcr.pos.hnv$species, 1,0))
+
 
 data.filo.hnv.bind <- rbind(Data.hnv, Data.filo)
 
 rm(list=(ls()[ls()!="data.filo.hnv.bind"]))
 
-data.filo.hnv.bind$virus
-
 glm(Z ~virus,family=binomial(link='logit'),data=data.filo.hnv.bind) %>% summary()
 glm(Z ~virus + log_effort,family=binomial(link='logit'),data=data.filo.hnv.bind) %>% summary()
+
+glm(Z.pcr ~virus,family=binomial(link='logit'),data=data.filo.hnv.bind) %>% summary()
+glm(Z.pcr ~virus + log_effort,family=binomial(link='logit'),data=data.filo.hnv.bind) %>% summary()
+
 
 
 # Geography Analysis ----
@@ -41,7 +58,6 @@ rm(list=ls())
 load(file='data/phylofactor work spaces/hnv_workspace_sample_no_sample_all_bat_dataset')
 load("data/bat_taxonomy_data.Rdata")
 batphy_for_rotl_update <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/batphy_for_rotl update.csv")
-
 
 country.factor.data.frame <- matrix(0,1,8) %>% as.data.frame()
 colnames(country.factor.data.frame) <- unique(batphy1$region)
