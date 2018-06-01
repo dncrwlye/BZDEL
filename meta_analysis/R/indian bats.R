@@ -153,6 +153,20 @@ pf.tree$ggplot +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
  
 
+taxonomy <- batphy1 %>%
+  select(c(species, tax)) 
+
+names.storage <- list()
+
+for (i in 1:10)
+{
+  indexes = pf$groups[[i]][[1]]
+  species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
+  group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
+  names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+  print(i)
+}
+
 
 
 

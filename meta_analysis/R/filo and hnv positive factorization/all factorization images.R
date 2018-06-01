@@ -642,6 +642,7 @@ load(file='data/phylofactor work spaces/hnv_workspace')
 load("data/bat_taxonomy_data.Rdata")
 source('R/taxonomy group name function.R')
 
+
 taxonomy <- batphy1 %>%
   select(c(species, tax)) 
 
@@ -885,8 +886,9 @@ colfcn <- function(n) return(c("#33FF00FF"))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 2, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
+#bat_spp_India <- read_csv("C:/Users/r83c996/Desktop/bat spp India.csv")
+bat_spp_India <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/phylofactor work spaces/bat spp India.csv")
 
-bat_spp_India <- read_csv("C:/Users/r83c996/Desktop/bat spp India.csv")
 bat_spp_India %>%
   filter(!(MSW05_Binomial %in% batphy1$unique_name))
 bat_spp_India$MSW05_Binomial =plyr::revalue(bat_spp_India$MSW05_Binomial,c("Myotis_blythii"="Myotis_oxygnathus"))

@@ -3,8 +3,9 @@ library(tidyverse)
 library(readxl)
 library(stringi)
 
-MetaAnalysis_Data_New_Version <- read_excel("C:/Users/r83c996/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-#MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis")
+#MetaAnalysis_Data_New_Version <- read_excel("C:/Users/r83c996/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
+MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
                                                  col_types = c("text", "numeric", "text", 
                                                                          "text", "text", "text", "text", "text", 
                                                                          "text", "text", "text", "text", "text", 
@@ -67,6 +68,8 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage), successes/sample_size, seroprevalence_percentage)) %>%
   filter(!(is.na(seroprevalence_percentage)))
 
+
+
 #some papers did repeat PCR or ELISA testing, but did like PCR urine, PCR blood...those aren't independent
 #im going to group by everything but those values and then take a weighted average of (sero)prevalence 
 
@@ -75,7 +78,7 @@ seroprevalence.x <- seroprevalence %>%
 
 seroprevalence.y <- seroprevalence %>%
   group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
-  summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
+  dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
   dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
   dplyr::rename(sample_size = sample_size.dc) %>%
   ungroup() %>%
@@ -86,7 +89,7 @@ seroprevalence.w <- seroprevalence.x %>%
 
 seroprevalence <- seroprevalence %>%
   group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
-  summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
+  dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
   dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
   dplyr::rename(sample_size = sample_size.dc) %>%
   ungroup()
@@ -174,4 +177,4 @@ seroprevalence <- seroprevalence %>%
                                          ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, "pooled multiple sampling events (>30 days)", "unclear sampling strategy")))))
          
 save(seroprevalence, file='data/seroprevalence.Rdata')
-
+rm(list=ls())
