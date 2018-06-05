@@ -642,6 +642,11 @@ load(file='data/phylofactor work spaces/hnv_workspace')
 load("data/bat_taxonomy_data.Rdata")
 source('R/taxonomy group name function.R')
 
+pf$call
+x <- pf$models[[1]] %>% summary()
+1/exp(x$coefficients[2,1])
+
+exp(-2.157)
 
 taxonomy <- batphy1 %>%
   select(c(species, tax)) 
@@ -950,6 +955,7 @@ for (i in 1)
   print(i)
 }
 
+
 group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
                             replacement = "", 
                             x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
@@ -1217,68 +1223,26 @@ lines(pf$pvals, type='l', col='green')
 #supp.positive compare anlayses --------------------------------------------------------------------------------------
 
 #the p value of the null simulations 
-
-# one factor
-
-rm(list=ls())
 load(file='data/phylofactor work spaces/hnv_workspace')
-bb <- (t(diff(t(S))))
-bb <- cbind(S[,1],bb)
-Ojb.bb <- c(Obj[1],diff(Obj))
-print(ecdf(bb[,1])(Ojb.bb[1]))
-print(ecdf(bb[,2])(Ojb.bb[2]))
 
-plot(c(Obj[1:10]), type = 'l')
+m1 <- nrow(Data)
+E1 <- dim(pf$tree$edge)[1]
+deviance.hnv <- anova(pf$models[[1]])$Deviance[2]
 
-
-#1rst factor:: 0.9899396
-
-rm(list=ls())
 load(file='data/phylofactor work spaces/filo_workspace')
-lines(c(Obj[1:10]), type = 'l', col = 'green')
 
-bb <- (t(diff(t(S))))
-bb <- cbind(S[,1],bb)
-Ojb.bb <- c(Obj[1],diff(Obj))
-print(ecdf(bb[,1])(Ojb.bb[1]))
-print(ecdf(bb[,2])(Ojb.bb[2]))
+m2 <- nrow(Data)
+E2 <- dim(pf$tree$edge)[1]
+deviance.filo <- anova(pf$models[[1]])$Deviance[2]
 
-#1rst factor:: 0.9620758
-
-rm(list=ls())
-load(file='data/phylofactor work spaces/hnv_workspace_no_sampling_effort')
-bb <- (t(diff(t(S))))
-bb <- cbind(S[,1],bb)
-Ojb.bb <- c(Obj[1],diff(Obj))
-print(ecdf(bb[,1])(Ojb.bb[1]))
-print(ecdf(bb[,2])(Ojb.bb[2]))
-print(ecdf(bb[,3])(Ojb.bb[3]))
-
-#1rst factor:: 1
-#2nd  factor:: 0.974
-#3rd  factor:: 0.998
-
-rm(list=ls())
-load(file='data/phylofactor work spaces/filo_workspace_no_sampling_effort')
-bb <- (t(diff(t(S))))
-bb <- cbind(S[,1],bb)
-Ojb.bb <- c(Obj[1],diff(Obj))
-print(ecdf(bb[,1])(Ojb.bb[1]))
-print(ecdf(bb[,2])(Ojb.bb[2]))
-print(ecdf(bb[,3])(Ojb.bb[3]))
-
-#1rst factor:: 0.996
-#2nd  factor:: 0.95
-
-pf$models[[1]] %>% summary()
-pf$models[[2]] %>% summary()
-
-length(pf$groups[[1]][[1]])
-length(pf$groups[[1]][[2]])
+m=1e5
+F1 <- matrix(rchisq(E1*m,df = 1),ncol=E1)
+F1 <- apply(F1,1,max)
+F2 <- matrix(rchisq(E2*m,df = 1),ncol=E2)
+F2 <- apply(F2,1,max)
+hist(abs(F1-F2),breaks=100)
+cdf <- ecdf(abs(F1-F2))
+cdf(abs(deviance.hnv-deviance.filo))
 
 
 
-# missclassification rate ----
-
-pf$models[[1]]$model
-pf$models[[2]]$model

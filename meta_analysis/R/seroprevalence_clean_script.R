@@ -56,8 +56,8 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   mutate(species = gsub('lavartus' ,"larvatus", species)) %>%
   mutate(species = gsub('horsfieldi' ,"horsfieldii", species)) %>%
   mutate(species = gsub('horsfieldiii' ,"horsfieldii", species)) %>%
-  mutate(species = gsub('veldkampi' ,"veldkampii", species)) %>%
-  mutate(species = gsub('veldkampiiii' ,"veldkampii", species)) %>%
+  #mutate(species = gsub('veldkampi' ,"veldkampii", species)) %>%
+  #mutate(species = gsub('veldkampiiii' ,"veldkampii", species)) %>%
   mutate(species = gsub('ferrum-equinum' ,"ferrumequinum", species)) %>%
   mutate(species = gsub('roussettus' ,"rousettus", species)) %>%
   mutate(number_positive = as.numeric(number_positive)) %>%

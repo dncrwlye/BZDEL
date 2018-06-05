@@ -168,6 +168,199 @@ for (i in 1:10)
 }
 
 
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+#######bunch of more bat bs................
+load('data/seroprevalence.Rdata')
+
+data.set.for.barbara <- seroprevalence %>%
+  filter(virus == 'Henipavirus') %>%
+  mutate(seroprevalence_percentage_cat = ifelse(seroprevalence_percentage > 0, 1, 0)) %>%
+  group_by(species, virus, virusold, seroprevalence_percentage_cat, methodology) %>%
+  summarise(n=n()) %>%
+  filter(seroprevalence_percentage_cat == 1)
+
+data.set.for.barbara.2 <- seroprevalence %>%
+  filter(virus == 'Henipavirus') %>%
+  mutate(seroprevalence_percentage_cat = ifelse(seroprevalence_percentage > 0, 1, 0)) %>%
+  group_by(species, virus, virusold, seroprevalence_percentage_cat, methodology) %>%
+  summarise(n=n()) %>%
+  filter(seroprevalence_percentage_cat == 0) %>%
+  filter(!(species %in% data.set.for.barbara$species))
+
+data.set.for.barbara <- rbind(data.set.for.barbara, data.set.for.barbara.2)
+
+rm(data.set.for.barbara.2)
+
+hnv_pos_for_barabara <- read_csv("~/Desktop/hnv.pos.for.barabara.csv")
+
+x <- data.set.for.barbara %>%
+  filter(!(species %in% hnv_pos_for_barabara$species)) %>%
+  filter(spe)
+
+data.set.for.barbara <- data.set.for.barbara %>%
+  filter(species %in% hnv_pos_for_barabara$species)
+
+write_csv(data.set.for.barbara, path = "~/Desktop/data.set.for.barbara.update.csv")
+
+x<- seroprevalence %>%
+  filter(virus == 'Henipavirus') %>%
+  filter(species == 'rousettus leschenaultii')
+
+x <- seroprevalence %>%
+  filter(grepl('diadema',species))
+
+bat_spp_India <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/phylofactor work spaces/bat spp India.csv")
+load("data/bat_taxonomy_data.Rdata")
+taxonomy <- batphy1 %>%
+  select(c(species, tax)) 
+
+unique(seroprevalence$sampling_location)
+
+india.outbreaks <- seroprevalence %>%
+  filter(grepl('india', sampling_location)) %>%
+  filter(virus == 'Henipavirus')
+
+india.outbreaks %>%
+  select(species) %>%
+  unique()
+
+india.outbreaks %>%
+  select(sampling_location, sampling_location_two) %>%
+  unique()
+
+bat_spp_India <- bat_spp_India %>%
+  mutate(species.tnsfrm = tolower(MSW05_Binomial)) %>%
+  mutate(species.tnsfrm = gsub("_", " ", species.tnsfrm)) 
+
+bat_spp_India.join <- left_join(bat_spp_India, seroprevalence, by = c("species.tnsfrm" = "species")) 
+bat_spp_India.join <- left_join(bat_spp_India.join, taxonomy, by =c('species.tnsfrm' = 'species'))
+
+bat_spp_India.join <- bat_spp_India.join %>%
+  filter(virus != 'Filovirus'| is.na(virus))
+
+bat_spp_India.join <- bat_spp_India.join %>%
+  mutate(Pteropodidae = ifelse(grepl('Pteropodidae', tax,), TRUE, FALSE))
+
+x <- bat_spp_India.join %>%
+  filter(Pteropodidae == TRUE) %>%
+  #filter(seroprevalence_percentage >0) %>%
+  select(species.tnsfrm, methodology, seroprevalence_percentage) %>%
+  unique()
+
+
+
+bat_spp_India.join %>%
+  select(sampling_location, sampling_location_two, sampling_location_three) %>%
+  unique()
+
+bat_spp_India.join.pcr <- bat_spp_India.join %>%
+  filter(methodology == "PCR based method")
+
+bat_spp_India.join <- bat_spp_India.join %>%
+  mutate(Vespertilionoidea = ifelse(grepl('Vespertilionoidea', tax,), TRUE, FALSE))
+
+bat_spp_India.join %>%
+  filter(Vespertilionoidea == TRUE) %>%
+  filter(is.na(virus)) %>%
+  select(species.tnsfrm) %>%
+  unique()
+
+#...........evenmore!!!!.......
+#...........evenmore!!!!.......
+#...........evenmore!!!!.......
+#...........evenmore!!!!.......
+#...........evenmore!!!!.......
+#...........evenmore!!!!.......
+#...........evenmore!!!!.......
+#...........evenmore!!!!.......
+
+library(tidyverse)
+load('data/seroprevalence.Rdata')
+batphy_for_rotl_update <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/batphy_for_rotl update.csv")
+
+nipah.question <- seroprevalence %>%
+  filter(virusold == 'Nipah'|virusold == "Henipavirus") 
+
+nipah.question.missing <- nipah.question%>%
+  filter(!(species %in% batphy_for_rotl_update$species))
+
+unique(nipah.question.missing$species)
+
+nipah.question$species=plyr::revalue(nipah.question$species,c("rhinolophus refulgens"="rhinolophus lepidus",
+                                                              "hipposideros cf caffer"="hipposideros caffer",
+                                                              "hipposideros cf caffer/ruber"="hipposideros caffer",
+                                                              "hipposideros cf ruber"="hipposideros ruber",
+                                                              "natalus lanatus"="natalus mexicanus",
+                                                              "myonycteris leptodon"="myonycteris torquata",
+                                                              "nanonycteris veldkampiii"="nanonycteris veldkampii",
+                                                              "tadarida plicata"="chaerephon plicatus"))
+
+nipah.question$species=plyr::revalue(nipah.question$species,c("Lissonycteris angolensis"="Myonycteris angolensis",
+                                                              "Nyctalus plancyi"="Nyctalus velutinus",
+                                                              "Rhinolophus stheno"="Rhinolophus microglobosus",
+                                                              "Natalus stramineus"="Natalus stramineus mexicanus",
+                                                              "Neoromicia somalicus"="Neoromicia malagasyensis"))
+
+nipah.question.missing <- nipah.question%>%
+  filter(!(species %in% batphy_for_rotl_update$species))
+
+unique(nipah.question.missing$species)
+
+nipah.question <- nipah.question %>%
+  mutate(seroprevalence_prevalence_percentage.cat  = ifelse(seroprevalence_percentage >0, 1, 0)) 
+
+nipah.question <- left_join(nipah.question, batphy_for_rotl_update[,c('species', 'region')])
+
+nipah.question.table <-  nipah.question %>%       
+  select(seroprevalence_prevalence_percentage.cat, species, region) %>%
+  group_by(species, region) %>%
+  summarise(nipah.pos.binary=sum(seroprevalence_prevalence_percentage.cat, na.rm=TRUE))  %>%
+  mutate(nipah.pos.binary = ifelse(nipah.pos.binary > 0, 1, 0))
+
+
+revised_HNV_positive_bats_uncleaned <- read_csv("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/revised HNV positive bats_uncleaned.csv")
+revised_NiV_positive_bats_uncleaned <- read_csv("~/Desktop/revised NiV positive bats_uncleaned.csv")
+
+revised_NiV_positive_bats_uncleaned <-revised_NiV_positive_bats_uncleaned %>%
+  rename(niv.pos = hnvpos)
+
+x <- full_join(revised_HNV_positive_bats_uncleaned, revised_NiV_positive_bats_uncleaned)
+
+y <- left_join(x, batphy_for_rotl_update[,c('species', 'region')])
+
+y <- y %>%
+  rename(wilson.reeder.region = region)
+
+
+
+write.csv(y, file = "/Users/buckcrowley/Desktop/hnv.pos.for.barabara.csv")
+
+
+
+
+
+
+
+
+
+
+
 
 
 
