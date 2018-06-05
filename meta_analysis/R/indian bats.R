@@ -23,36 +23,16 @@ bat_spp_India %>%
 #species that is the database either. Also, according to the internets it doesn't actually 
 #live in in India so maybe thats not a problem?
 
-revised_NiV_positive_bats_uncleaned <- read_csv("~/BZDEL/meta_analysis/data/phylofactor work spaces/revised NiV positive bats_uncleaned.csv")
-
-revised_NiV_positive_bats_uncleaned %>%
-  filter(!(species %in% batphy1$species)) 
-
-revised_NiV_positive_bats_uncleaned$species =
-  plyr::revalue(revised_NiV_positive_bats_uncleaned$species,c("ballionycterus maculata"="balionycteris maculata",
-                                                            "scotophilus heathi" = "scotophilus heathii"
-                                                              ))
-
-revised_NiV_positive_bats_uncleaned %>%
-  filter(!(species %in% batphy1$species)) 
-
-#i'm okay with this for now
-
-batphy1 <- left_join(batphy1, revised_NiV_positive_bats_uncleaned)
-nrow(revised_NiV_positive_bats_uncleaned) ==  nrow(filter(batphy1, !is.na(hnvpos))) + nrow(revised_NiV_positive_bats_uncleaned %>% filter(!(species %in% batphy1$species)) )
 
 Data <- batphy1 %>%
-  rename(niv_pos = hnvpos) %>%
-  select(-X1) %>% 
+  filter(unique_name %in% bat_spp_India$MSW05_Binomial) %>%
+  filter(hnv_samps > 0) %>%
   mutate(log_hnv_samps = log(hnv_samps)) %>%
-  select(c(hnv_samps, niv_pos, species, log_hnv_samps)) %>%
+  select(c(hnv_samps, hnv_positive, species, log_hnv_samps)) %>%
   rename(Species = species) %>%
   mutate(Species = gsub(" ", "_", Species)) %>%
   mutate(Species = stri_trans_totitle(Species)) %>%
   mutate(Sample = 1)
-
-Data <- Data %>%
-  filter(!is.na(niv_pos))
 
 tree <- ape::drop.tip(bat_tree,bat_tree$tip.label[!(bat_tree$tip.label %in% Data$Species)])
 
@@ -73,51 +53,48 @@ pf <- gpf(Data,tree,frmla=Z~offset(effort.fit),
           nfactors=10,
           algorithm='phylo')
 pf$factors
-# 
+
 ncores = 4
 tot.reps=500
 reps.per.worker=round(tot.reps/ncores)
 sampling_effort = TRUE
-source('R/filo and hnv positive factorization/null simulations script.R')
 
+source('R/filo and hnv positive factorization/null simulations script.R')
 save(list=ls(),file='data/phylofactor work spaces/indian bats only niv_workspace')
+
 
 pf <- gpf(Data,tree,frmla.phylo=Z~phylo,nfactors=10,family=binomial,algorithm='phylo')
 pf$factors
-# 
 ncores = 4
 tot.reps=500
 reps.per.worker=round(tot.reps/ncores)
 sampling_effort = FALSE
 source('R/filo and hnv positive factorization/null simulations script.R')
-
 save(list=ls(),file='data/phylofactor work spaces/indian bats no sampling effort only niv_workspace')
 
-
-#............phylofactor visualization script...................................
-
-# Libraries ---------------------------------------------------------------
-
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
-library(phylofactor)
-library(parallel)
-library(tidyverse)
-library(stringi)
-library(Cairo)
-par(family="Times")   
-CairoFonts(regular = 'Times-12')
-
-# hnv all bats factors-----------------------------------------------
-
 rm(list=ls())
+
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
+#....................signifigant factors .............................................
 
 load(file='data/phylofactor work spaces/indian bats no sampling effort only niv_workspace')
 
-plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,25))
+plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,15))
 for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
+
 
 bb <- (t(diff(t(S))))
 bb <- cbind(S[,1],bb)
@@ -126,16 +103,15 @@ for (i in 1:10)
 {
   print(ecdf(bb[,i])(Ojb.bb[i]))
 }
-
-rm(list=ls())
 
 load(file='data/phylofactor work spaces/indian bats only niv_workspace')
 
-plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,25))
+plot(c(Obj[1],diff(Obj)),type='o',lwd=2,cex=2,ylim=c(0,15))
 for (rr in 1:497){
   lines(c(S[rr,1],diff(S[rr,])),col=rgb(0,0,0,0.2))
 }
 points(deviances,col='red',pch=16,cex=2)
+
 
 bb <- (t(diff(t(S))))
 bb <- cbind(S[,1],bb)
@@ -146,12 +122,8 @@ for (i in 1:10)
 }
 
 
-pf.tree <- pf.tree(pf, lwd=1, branch.length = "none", bg.color = NA)
-
-pf.tree$ggplot +
-  ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') 
- 
+load("data/bat_taxonomy_data.Rdata")
+source('R/taxonomy group name function.R')
 
 taxonomy <- batphy1 %>%
   select(c(species, tax)) 
@@ -162,10 +134,98 @@ for (i in 1:10)
 {
   indexes = pf$groups[[i]][[1]]
   species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
+  #print(species)
+  #print(i)
   group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
   names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
-  print(i)
 }
+
+names.storage
+factor.1 <- pf$groups[[1]][[1]]
+paraphyletic.remainder <-     pf$groups[[1]][[2]]
+
+Z <- Data$Z
+factor.1.p <- sapply(factor.1,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+paraphyletic.remainder.p <- sapply(paraphyletic.remainder,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+
+length(factor.1)
+length(paraphyletic.remainder.p)
+
+factor.1.prob <- sum(factor.1.p)/length(factor.1.p)
+paraphyletic.remainder.prob <- sum(paraphyletic.remainder.p)/length(paraphyletic.remainder.p)
+
+# 0.547619 for Pteropodidae
+
+# B <- lapply(pf$groups, function(l) l[[1]])
+# # B <- bins(pf$basis[,1:10])
+# # B <- B[2:11]
+# Z <- Data$Z
+# probs <- sapply(B,FUN=function(ix,Z) mean(Z[ix]),Z=Z) %>% signif(.,digits=2)
+# 
+
+
+names.storage[[1]]
+
+#factors from image 1 
+
+# factor group    colors
+# 1       Pteropodidae          1 #440154FF
+# 2       Vespertilionoidea     1 #482878FF
+# 3       Pipistrellini         1 #3E4A89FF
+# 4       Myotis                1 #31688EFF
+# 5       Pteropus              1 #26828EFF
+# 6       Rhinolophus           1 #1F9E89FF
+# 7       Pteropus 2????        1 #35B779FF
+# 8       Phyllostomini         1 #6DCD59FF
+# 9       Molossus              1 #B4DE2CFF
+# 10      Carollia              1 #FDE725FF
+# 11      Molossinae            1 #B4DE2CFF
+# 12      Miniopterus           1 #FDE725FF
+# 13      Vespertilionini       1 #FF9900FF
+# 14      Macroglossus          1 #33FF00FF
+
+colfcn <- function(n) return(c("#440154FF"))
+
+pf.tree <- pf.tree(pf, lwd=1, factors = 1, color.fcn=colfcn, branch.length = "none", bg.color = NA)
+
+d <- data.frame(x=pf.tree$ggplot$data[1:143,'x'] + .5,
+                xend=pf.tree$ggplot$data[1:143,'x'] + 1+ Data$log_effort,
+                y=pf.tree$ggplot$data[1:143,'y'],
+                yend=pf.tree$ggplot$data[1:143,'y'] )
+
+Data <- Data %>%
+  mutate(ib = ifelse(Species %in% text2$V3, 1, 0))
+
+pf.tree$ggplot +
+  ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue')  +
+  #ggtree::geom_tippoint(size=5*Data$ib,col='red') +
+  geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$log_effort, colour = 'blue'))
+
+ggsave("figures/hnv sampling effort tree w indian bats.png", bg = "transparent", height = 18, width = 18)
+
+#something strange is going on, we have a factor 2 that is only one tip, but 
+#in the bins it contains many many species. This is odd....
+Legend <- pf.tree$legend
+Legend$names <- names.storage[1]
+P <- sapply(probs[1],FUN=function(x) paste('p=',toString(signif(x,digits = 2)),sep=''))
+Legend$names <- mapply(paste,Legend$names,P)
+Cairo(file='figures/hnv sampling effort tree legend.jpg', 
+      type="png",
+      units="in", 
+      width=5, 
+      height=4, 
+      pointsize=12, 
+      dpi=200)
+plot.new()
+plot.new()
+legend('topleft', legend=Legend$names,fill=Legend$colors,cex=1, bg="transparent", bty="n")
+dev.off()
+
+
+
+
+
 
 
 #######bunch of more bat bs................
