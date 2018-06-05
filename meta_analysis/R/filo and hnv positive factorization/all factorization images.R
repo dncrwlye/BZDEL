@@ -887,28 +887,30 @@ dev.off()
 #.............................indian bats aside......................................
 #.............................indian bats aside......................................
 #.............................indian bats aside......................................
+# indian bats aside ----
+
 colfcn <- function(n) return(c("#33FF00FF"))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 2, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
-#bat_spp_India <- read_csv("C:/Users/r83c996/Desktop/bat spp India.csv")
-bat_spp_India <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/phylofactor work spaces/bat spp India.csv")
+bat_spp_India <- read_csv("C:/Users/r83c996/Desktop/Bats_Kerala.csv")
+#bat_spp_India <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/phylofactor work spaces/bat spp India.csv")
 
 bat_spp_India %>%
-  filter(!(MSW05_Binomial %in% batphy1$unique_name))
-bat_spp_India$MSW05_Binomial =plyr::revalue(bat_spp_India$MSW05_Binomial,c("Myotis_blythii"="Myotis_oxygnathus"))
+  filter(!(MSW05_binomial %in% batphy1$unique_name))
+bat_spp_India$MSW05_binomial =plyr::revalue(bat_spp_India$MSW05_binomial,c("Myotis_blythii"="Myotis_oxygnathus"))
 bat_spp_India %>%
-  filter(!(MSW05_Binomial %in% batphy1$unique_name))
+  filter(!(MSW05_binomial %in% batphy1$unique_name))
+bat_spp_India <- bat_spp_India %>%
+  mutate(MSW05_binomial = gsub(" ", "_", MSW05_binomial))
 
 Data <- Data %>%
-  mutate(IB = ifelse(Species %in% bat_spp_India$MSW05_Binomial, 1, 0))
+  mutate(IB = ifelse(Species %in% bat_spp_India$MSW05_binomial, 1, 0))
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
-  ggtree::geom_tippoint(size=5*Data$pcr.pos,col='red') +
-  ggtree::geom_tippoint(size=4*Data$IB,col='green') +
   ggtree::geom_text2(aes(subset=!isTip,label=node))
 
+# .................................vesper bats......................................
 species.list <- ggtree::get.offspring.tip(pf$tree, node=179)
 species.list <- tolower(gsub("_", " ",species.list))
 group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
@@ -922,14 +924,52 @@ group_taxonomy_list
 species.list <- ggtree::get.offspring.tip(pf$tree, node=179)
 mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
 
+# .................................pteropodidae bats......................................
+species.list <- ggtree::get.offspring.tip(pf$tree, node=244)
+species.list <- tolower(gsub("_", " ",species.list))
+group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
+gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            group_taxonomy_list[,1]) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
+
+species.list <- ggtree::get.offspring.tip(pf$tree, node=244)
+mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
+
+pf.tree <- pf.tree(pf, lwd=1, factors = 10, color.fcn=colfcn, branch.length = "none", bg.color = NA)
+
+
+d <- data.frame(x=pf.tree$ggplot$data[1:143,'x'] + 1,
+                xend=pf.tree$ggplot$data[1:143,'x'] + 1 + Data$IB,
+                y=pf.tree$ggplot$data[1:143,'y'],
+                yend=pf.tree$ggplot$data[1:143,'y'] )
+
+load('data/seroprevalence.Rdata')
+
+pcr.pos.hnv <- seroprevalence %>%
+  filter(methodology == 'PCR based method') %>%
+  filter(seroprevalence_percentage > 0) %>%
+  filter(virusold == 'Nipah') %>%
+  select(species) %>%
+  unique()
+
+Data <- Data %>%
+  mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
+  mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.hnv$species, 1,0))
+
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
-  ggtree::geom_tippoint(size=4*Data$IB,col='green') +
-  ggtree::geom_cladelabel(node=179, label="Noctilionoidea", 
-                        color="black", angle=222, offset=2, offset.text = 2) 
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue', alpha = .5) +
+  ggtree::geom_cladelabel(node=179, label="Vespertilionidae", 
+                        color="black", angle=222, offset=2, offset.text = 2) +
+  ggtree::geom_cladelabel(node=244, label="Pteropodidae", 
+                        color="black", angle=32, offset=2, offset.text = 2)  +
+  geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$IB, colour = 'purple')) +
+  ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red') 
 
-
+ggsave("figures/indian bats info.png", bg = "transparent", height = 18, width = 18)
 
 
 # filo SE + figure 1 --------------------------------------------------------------------------------------
