@@ -938,6 +938,22 @@ group_taxonomy_list
 species.list <- ggtree::get.offspring.tip(pf$tree, node=244)
 mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
 
+# .................................218 bats......................................
+species.list <- ggtree::get.offspring.tip(pf$tree, node=218)
+species.list <- tolower(gsub("_", " ",species.list))
+group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
+gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            group_taxonomy_list[,1]) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
+
+species.list <- ggtree::get.offspring.tip(pf$tree, node=244)
+mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
+
+
+
 pf.tree <- pf.tree(pf, lwd=1, factors = 10, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
 
@@ -967,7 +983,8 @@ pf.tree$ggplot +
   ggtree::geom_cladelabel(node=244, label="Pteropodidae", 
                         color="black", angle=32, offset=2, offset.text = 2)  +
   geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$IB, colour = 'purple')) +
-  ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red') 
+  ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red') +
+  ggtree::geom_tiplab(aes(angle=angle))
 
 ggsave("figures/indian bats info.png", bg = "transparent", height = 18, width = 18)
 
