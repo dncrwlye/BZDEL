@@ -6,7 +6,7 @@ par(family="Times")
 CairoFonts(regular = 'Times-12')
 
 #setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
-
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 #bat_spp_India <- read_csv("C:/Users/r83c996/Desktop/bat spp India.csv")
 bat_spp_India <- read_csv('data/phylofactor work spaces/bat spp India.csv')
 bat_spp_Kerala <- read_csv('data/phylofactor work spaces/Bats_Kerala.csv')
@@ -17,7 +17,8 @@ load("data/bat_taxonomy_data.Rdata")
 bat_spp_India %>%
   filter(!(MSW05_Binomial %in% batphy1$unique_name))
 
-bat_spp_India$MSW05_Binomial =plyr::revalue(bat_spp_India$MSW05_Binomial,c("Myotis_blythii"="Myotis_oxygnathus"))
+bat_spp_India$MSW05_Binomial =plyr::revalue(bat_spp_India$MSW05_Binomial,c("Myotis_blythii"="Myotis_oxygnathus",
+                                                                           "Myotis_peytoni"="Myotis_montivagus"))
 
 bat_spp_India %>%
   filter(!(MSW05_Binomial %in% batphy1$unique_name))
@@ -25,6 +26,8 @@ bat_spp_India %>%
 #only Eptesicus_bottae doesn't appear in the database, I can't find another name for this 
 #species that is the database either. Also, according to the internets it doesn't actually 
 #live in in India so maybe thats not a problem?
+
+
 
 Data <- batphy1 %>%
   filter(unique_name %in% bat_spp_India$MSW05_Binomial) %>%
