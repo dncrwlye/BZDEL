@@ -25,16 +25,14 @@ bat_spp_India %>%
 
 #only Eptesicus_bottae doesn't appear in the database, I can't find another name for this 
 #species that is the database either. Also, according to the internets it doesn't actually 
-#live in in India so maybe thats not a problem?
-
-
+#live in in India so maybe thats not a problem? funky face
 
 Data <- batphy1 %>%
   filter(unique_name %in% bat_spp_India$MSW05_Binomial) %>%
   #filter(hnv_samps > 0) %>%
   mutate(log_hnv_samps = log(hnv_samps)) %>%
   select(c(hnv_samps, hnv_positive, species, log_hnv_samps)) %>%
-  rename(Species = species) %>%
+  dplyr::rename(Species = species) %>%
   mutate(Species = gsub(" ", "_", Species)) %>%
   mutate(Species = stri_trans_totitle(Species)) %>%
   mutate(Sample = 1)
@@ -94,16 +92,6 @@ pf$factors
 #....................signifigant factors .............................................
 
 #load(file='data/phylofactor work spaces/indian bats no sampling effort only niv_workspace')
-
-colfcn <- function(n) return(c("#33FF00FF"))
-
-pf.tree <- pf.tree(pf, lwd=1, factors = 4, color.fcn=colfcn, branch.length = "none", bg.color = NA)
-
-pf.tree$ggplot +
- ggtree::geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + 
- ggtree::geom_tiplab(aes(angle=angle))
-
-
 bat_spp_India <- bat_spp_India %>%
   mutate(MSW05_Binomial = gsub(" ", "_", MSW05_Binomial))
 
@@ -112,9 +100,35 @@ bat_spp_Kerala <- bat_spp_Kerala %>%
 
 Data <- Data %>%
   mutate(IB = ifelse(Species %in% bat_spp_India$MSW05_Binomial, 1, 
-              ifelse(!(Species %in% bat_spp_India$MSW05_Binomial), 0, NA))) %>%
+                     ifelse(!(Species %in% bat_spp_India$MSW05_Binomial), 0, NA))) %>%
   mutate(Kerala = ifelse(Species %in% bat_spp_Kerala$MSW05_binomial, 1,
-                  ifelse(!(Species %in% bat_spp_Kerala$MSW05_binomial), 0, NA)))
+                         ifelse(!(Species %in% bat_spp_Kerala$MSW05_binomial), 0, NA)))
+
+Data <- Data %>%
+  mutate(color = ifelse(Kerala == 1, "black", "grey"))
+
+source('r/stupid_pointless_internal_node_color_function.R')
+internal.edges<- (internal.edge.color(tree, Data))
+
+row.names(internal.edges) <- internal.edges[,1]
+#internal.edges <- internal.edges[,-c(1)] %>% as.data.frame()
+length(nodeId(g1, "internal"))
+length(row.names(internal.edges))
+
+ggtree::ggtree(tree) 
+g1 = as(tree, 'phylo4')
+g2 = phylo4d(g1, Data)
+nodeData(g2) <- internal.edges
+
+ggtree::ggtree(g2, aes(color=I(color))) +
+  ggtree::geom_tippoint(size=2*Data$Kerala,col='blue', alpha = .5) 
+
+
+pf.tree$ggplot 
+pf.tree$ggplot +
+ ggtree::geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + 
+ ggtree::geom_tiplab(aes(angle=angle))
+
 
 load("data/bat_taxonomy_data.Rdata")
 
