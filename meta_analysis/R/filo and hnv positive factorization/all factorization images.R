@@ -761,7 +761,7 @@ load("data/bat_taxonomy_data.Rdata")
 source('R/taxonomy group name function.R')
 
 taxonomy <- batphy1 %>%
-  select(c(species, tax)) 
+  dplyr::select(c(species, tax)) 
 
 names.storage <- list()
 
@@ -842,6 +842,13 @@ pcr.pos.hnv <- seroprevalence %>%
   filter(seroprevalence_percentage > 0) %>%
   filter(virus == 'Henipavirus')
 
+asian.spp <- seroprevalence %>%
+  filter(virus =='Henipavirus') %>%
+  filter(grepl('thailand|malaysia|china|indonesia|bangladesh|papua new guinea|vietnam|india|timor', sampling_location)) %>%
+  dplyr::select(species) %>%
+  unique() %>%
+  mutate(species= gsub(" ", "_", species))
+
 Data <- Data %>%
   mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
   mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.hnv$species, 1,0))
@@ -853,6 +860,8 @@ pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue') +
   ggtree::geom_tippoint(size=5*Data$pcr.pos,col='red') 
+
+
 
 ggsave("figures/hnv no sampling effort tree.png", bg = "transparent", height = 18, width = 18)
 

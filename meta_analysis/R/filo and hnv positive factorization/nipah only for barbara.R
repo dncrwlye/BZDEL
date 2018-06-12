@@ -1,4 +1,6 @@
-setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
+#setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
+setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+
 library(phylofactor)
 library(parallel)
 library(tidyverse)
@@ -21,9 +23,25 @@ xx <- batphy1 %>%
 
 jj <- x %>%
   filter(!(species %in% batphy1$species))
+
+
+
+# Data <- batphy1 %>%
+#   filter(!is.na(positive_all)) %>%
+#   mutate(log_hnv_samps = log(hnv_samps)) %>%
+#   select(c(hnv_samps, positive_all, species, log_hnv_samps))%>%
+#   rename(Species = species) %>%
+#   mutate(Species = gsub(" ", "_", Species)) %>%
+#   mutate(Species = stri_trans_totitle(Species)) %>%
+#   mutate(Sample = 1) %>%
+#   unique()
+
 Data <- batphy1 %>%
-  filter(!is.na(positive_all)) %>%
   mutate(log_hnv_samps = log(hnv_samps)) %>%
+  filter(virus =='Henipavirus') %>%
+  filter(grepl('thailand|malaysia|china|indonesia|bangladesh|papua new guinea|vietnam|india|timor', sampling_location)) %>%
+  select(species) %>%
+  unique() %>%
   select(c(hnv_samps, positive_all, species, log_hnv_samps))%>%
   rename(Species = species) %>%
   mutate(Species = gsub(" ", "_", Species)) %>%
@@ -77,11 +95,41 @@ for (i in 1:10)
 {
   print(ecdf(bb[,i])(Ojb.bb[i]))
 }
-
-pf.tree <- pf.tree(pf, lwd=1, branch.length = "none", bg.color = NA)
+names.storage
+pf.tree <- pf.tree(pf, lwd=1, factors = 8, branch.length = "none", bg.color = NA)
 
 pf.tree$ggplot+
 ggtree::geom_tippoint(size=10*Data$Z,col='blue')
   
 
 save(list=ls(),file='data/phylofactor work spaces/niv_only_workspace')
+load('data/phylofactor work spaces/niv_only_workspace')
+1-ecdf(X)(anova(pf$models[[1]])['phylo','Deviance'])
+
+
+
+pf$call
+x <- pf$models[[1]] %>% summary()
+1/exp(x$coefficients[2,1])
+
+exp(-2.157)
+
+taxonomy <- batphy1 %>%
+  select(c(species, tax)) 
+
+names.storage <- list()
+
+for (i in 1:10)
+{
+  indexes = pf$groups[[i]][[1]]
+  species <- gsub("_", " ", tolower(tree$tip.label[indexes]))
+  #print(species)
+  #print(i)
+  group_taxonomy_list <- as.data.frame(taxonomy[match(species,taxonomy[,1]),2])
+  names.storage[i] <- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+}
+
+factor.1 <- pf$groups[[1]][[1]]
+paraphyletic.remainder <-     pf$groups[[1]][[2]]
+
+
