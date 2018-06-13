@@ -902,19 +902,22 @@ colfcn <- function(n) return(c("#33FF00FF"))
 
 pf.tree <- pf.tree(pf, lwd=1, factors = 2, color.fcn=colfcn, branch.length = "none", bg.color = NA)
 
-bat_spp_India <- read_csv("C:/Users/r83c996/Desktop/Bats_Kerala.csv")
-#bat_spp_India <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/phylofactor work spaces/bat spp India.csv")
+#bat_spp_India <- read_csv("C:/Users/r83c996/Desktop/Bats_Kerala.csv")
+
+Bats_Kerala <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/phylofactor work spaces/Bats_Kerala.csv")
+bat_spp_India <- read_csv("~/Desktop/BDEL/BZDEL/meta_analysis/data/phylofactor work spaces/bat spp India.csv")
 
 bat_spp_India %>%
-  filter(!(MSW05_binomial %in% batphy1$unique_name))
-bat_spp_India$MSW05_binomial =plyr::revalue(bat_spp_India$MSW05_binomial,c("Myotis_blythii"="Myotis_oxygnathus"))
+  filter(!(MSW05_Binomial %in% batphy1$unique_name))
+bat_spp_India$MSW05_Binomial =plyr::revalue(bat_spp_India$MSW05_Binomial,c("Myotis_blythii"="Myotis_oxygnathus",
+                                                                           "Myotis_peytoni"="Myotis_montivagus"))
 bat_spp_India %>%
-  filter(!(MSW05_binomial %in% batphy1$unique_name))
+  filter(!(MSW05_Binomial %in% batphy1$unique_name))
 bat_spp_India <- bat_spp_India %>%
-  mutate(MSW05_binomial = gsub(" ", "_", MSW05_binomial))
+  mutate(MSW05_Binomial = gsub(" ", "_", MSW05_Binomial))
 
 Data <- Data %>%
-  mutate(IB = ifelse(Species %in% bat_spp_India$MSW05_binomial, 1, 0))
+  mutate(IB = ifelse(Species %in% bat_spp_India$MSW05_Binomial, 1, 0))
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   ggtree::geom_text2(aes(subset=!isTip,label=node))
@@ -947,8 +950,8 @@ group_taxonomy_list
 species.list <- ggtree::get.offspring.tip(pf$tree, node=244)
 mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
 
-# .................................218 bats......................................
-species.list <- ggtree::get.offspring.tip(pf$tree, node=218)
+# .................................244 bats......................................
+species.list <- ggtree::get.offspring.tip(pf$tree, node=244)
 species.list <- tolower(gsub("_", " ",species.list))
 group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
 gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
@@ -961,10 +964,7 @@ group_taxonomy_list
 species.list <- ggtree::get.offspring.tip(pf$tree, node=244)
 mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
 
-
-
 pf.tree <- pf.tree(pf, lwd=1, factors = 10, color.fcn=colfcn, branch.length = "none", bg.color = NA)
-
 
 d <- data.frame(x=pf.tree$ggplot$data[1:143,'x'] + 1,
                 xend=pf.tree$ggplot$data[1:143,'x'] + 1 + Data$IB,

@@ -28,35 +28,20 @@ bat_spp_India %>%
 #live in in India so maybe thats not a problem? funky face
 
 Data <- batphy1 %>%
-  filter(unique_name %in% bat_spp_India$MSW05_Binomial) %>%
-  #filter(hnv_samps > 0) %>%
-  mutate(log_hnv_samps = log(hnv_samps)) %>%
+  filter(unique_name %in% bat_spp_India$MSW05_Binomial) %>% #only use bats that are in India
+  mutate(log_hnv_samps = log(hnv_samps)) %>% #log transform sampling effort
   select(c(hnv_samps, hnv_positive, species, log_hnv_samps)) %>%
   dplyr::rename(Species = species) %>%
   mutate(Species = gsub(" ", "_", Species)) %>%
   mutate(Species = stri_trans_totitle(Species)) %>%
   mutate(Sample = 1)
 
+# remove tips from tree that are in our Data file
+Data$Species %in% bat_tree$tip.label
 tree <- ape::drop.tip(bat_tree,bat_tree$tip.label[!(bat_tree$tip.label %in% Data$Species)])
-
 rm(batphy1, bat_tree)
 
 names(Data) <- c('effort','Z', 'Species','log_effort', 'Sample')
-Data$Z2 <- rbinom(n= nrow(Data), p=.5, size=1)
-
-model.sampling.effort <- glm(Z2~Sample,family=binomial,data=Data)
-
-Data <- Data %>%
-  mutate(effort.fit = coef(model.sampling.effort)['log_effort']*Data$log_effort)
-
-rm(model.sampling.effort)
-
-pf <- gpf(Data,tree,
-          frmla.phylo=Z2~phylo,
-          family=binomial,
-          nfactors=10,
-          algorithm='phylo')
-pf$factors
 
 # ncores = 4
 # tot.reps=500
@@ -104,76 +89,6 @@ Data <- Data %>%
   mutate(Kerala = ifelse(Species %in% bat_spp_Kerala$MSW05_binomial, 1,
                          ifelse(!(Species %in% bat_spp_Kerala$MSW05_binomial), 0, NA)))
 
-Data <- Data %>%
-  mutate(color = ifelse(Kerala == 1, "black", "grey"))
-
-source('r/stupid_pointless_internal_node_color_function.R')
-internal.edges<- (internal.edge.color(tree, Data))
-
-row.names(internal.edges) <- internal.edges[,1]
-#internal.edges <- internal.edges[,-c(1)] %>% as.data.frame()
-length(nodeId(g1, "internal"))
-length(row.names(internal.edges))
-
-ggtree::ggtree(tree) 
-g1 = as(tree, 'phylo4')
-g2 = phylo4d(g1, Data)
-nodeData(g2) <- internal.edges
-
-ggtree::ggtree(g2, aes(color=I(color))) +
-  ggtree::geom_tippoint(size=2*Data$Kerala,col='blue', alpha = .5) 
-
-
-pf.tree$ggplot 
-pf.tree$ggplot +
- ggtree::geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + 
- ggtree::geom_tiplab(aes(angle=angle))
-
-
-load("data/bat_taxonomy_data.Rdata")
-
-taxonomy <- batphy1 %>%
-  select(c(species, tax)) 
-source('R/taxonomy group name function.R')
-
-# .................................vesper bats......................................
-
-species.list <- ggtree::get.offspring.tip(pf$tree, node=118)
-species.list <- tolower(gsub("_", " ",species.list))
-group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
-gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
-group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ",
-                            replacement = "",
-                            group_taxonomy_list[,1])
-group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
-group_taxonomy_list
-
- species.list <- ggtree::get.offspring.tip(pf$tree, node=179)
- mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
-
- #.................................pteropodidae bats......................................
- 
- species.list <- ggtree::get.offspring.tip(pf$tree, node=200)
- species.list <- tolower(gsub("_", " ",species.list))
- group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
- gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
- group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ",
-                             replacement = "",
-                             group_taxonomy_list[,1])
- group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
- group_taxonomy_list
- 
- species.list <- ggtree::get.offspring.tip(pf$tree, node=200)
- mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
- 
-#...............................................................................
-jj <- nrow(Data)
-
-d <- data.frame(x=pf.tree$ggplot$data[1:jj,'x'] + 1,
-                xend=pf.tree$ggplot$data[1:jj,'x'] + 1 + Data$Kerala,
-                y=pf.tree$ggplot$data[1:jj,'y'],
-                yend=pf.tree$ggplot$data[1:jj,'y'] )
-
 load('data/seroprevalence.Rdata')
 
 pcr.pos.hnv <- seroprevalence %>%
@@ -192,15 +107,80 @@ neg.hnv <- seroprevalence %>%
 Data <- Data %>%
   mutate(species.mutate = tolower(gsub("_", " ", Species))) %>%
   mutate(pcr.pos = ifelse(species.mutate %in% pcr.pos.hnv$species, 1,0)) %>%
-  mutate(all.neg = ifelse(species.mutate %in% neg.hnv$species,1,0))
+  mutate(all.neg = ifelse(species.mutate %in% neg.hnv$species & effort > 0, 1, 0))%>%
+  mutate(effort_cat = ifelse(effort > 0, 1,0))
 
-#sapply(strsplit(pf.tree$ggplot$data$label,"_"),function(x) paste(x[1],x[2],collape="",sep=" "))
+Data <- Data %>%
+  mutate(color = ifelse(Kerala == 1, "black", "grey"))
 
+source('r/stupid_pointless_internal_node_color_function.R')
+internal.edges<- (internal.edge.color(tree, Data))
 
-pf.tree$ggplot$data$label <- gsub("_"," ", pf.tree$ggplot$data$label)
-ii <- 7
-iii <- 1
-pf.tree$ggplot +
+row.names(internal.edges) <- internal.edges[,1]
+#internal.edges <- internal.edges[,-c(1)] %>% as.data.frame()
+g1 = as(tree, 'phylo4')
+length(nodeId(g1, "internal")) == length(row.names(internal.edges))
+
+g2 = phylo4d(g1, Data)
+nodeData(g2) <- internal.edges
+
+ggtree.object <- ggtree::ggtree(g2, layout= 'fan',aes(color=I(color))) 
+
+ggtree.object +
+ ggtree::geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + 
+ ggtree::geom_tiplab(aes(angle=angle))
+
+load("data/bat_taxonomy_data.Rdata")
+
+taxonomy <- batphy1 %>%
+  select(c(species, tax)) 
+source('R/taxonomy group name function.R')
+
+# .................................pteropodidae bats......................................
+
+species.list <- ggtree::get.offspring.tip(tree, node=200)
+species.list <- tolower(gsub("_", " ",species.list))
+group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
+gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ",
+                            replacement = "",
+                            group_taxonomy_list[,1])
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
+
+ species.list <- ggtree::get.offspring.tip(tree, node=200)
+ mean(ggtree.object$data[ggtree.object$data$label %in% species.list,]$angle-90)
+
+ #.................................vester bats......................................
+ 
+ species.list <- ggtree::get.offspring.tip(tree, node=119)
+ species.list <- tolower(gsub("_", " ",species.list))
+ group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
+ gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+ group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ",
+                             replacement = "",
+                             group_taxonomy_list[,1])
+ group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+ group_taxonomy_list
+ 
+ species.list <- ggtree::get.offspring.tip(tree, node=119)
+ mean(ggtree.object$data[ggtree.object$data$label %in% species.list,]$angle-90)
+ 
+#...............................................................................
+jj <- nrow(Data)
+
+d <- data.frame(x=ggtree.object$data[1:jj,'x'] + .5,
+                xend=ggtree.object$data[1:jj,'x'] + 1+ Data$log_effort,
+                y=ggtree.object$data[1:jj,'y'],
+                yend=ggtree.object$data[1:jj,'y'] )
+
+d[is.finite(d$xend)==FALSE,] <- -1
+
+ggtree.object$data$label <- gsub("_"," ", ggtree.object$data$label)
+i <- .1
+ii <- 1
+iii <- .5
+ggtree.object +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   ggtree::geom_tippoint(size=10*Data$Z,col='blue', alpha = .5) +
   ggtree::geom_tippoint(size=10*Data$all.neg, shape = 1) +
@@ -208,11 +188,29 @@ pf.tree$ggplot +
                           color="black", angle=12.16-180, offset=ii, offset.text = iii) +
   ggtree::geom_cladelabel(node=200, label="Pteropodidae", 
                           color="black", angle=-68.91, offset=ii, offset.text = iii)  +
-  geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$IB, colour = 'purple')) +
-  ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red')  +
-  ggtree::geom_tiplab(offset=1, aes(angle=angle))
+  #geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$effort_cat, colour = 'purple', alpha =.5)) +
+  #ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red')  +
+  ggtree::geom_tiplab(offset=i, aes(angle=angle))
 
-ggsave("figures/indian bats only info.png", bg = "transparent", height = 18, width = 18)
+ggsave("figures/indian bats only info no sampling effort.png", bg = "transparent", height = 18, width = 18)
+
+i <- .14
+ii <- .1
+iii <- .5
+
+ggtree.object +
+  ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
+  ggtree::geom_tippoint(size=10*Data$Z,col='blue', alpha = .5) +
+  #ggtree::geom_tippoint(size=10*Data$all.neg, shape = 1) +
+  #ggtree::geom_cladelabel(node=118, label="Vespertilionidae", 
+  #                        color="black", angle=12.16-180, offset=ii, offset.text = iii) +
+  #ggtree::geom_cladelabel(node=200, label="Pteropodidae", 
+  #                        color="black", angle=-68.91, offset=ii, offset.text = iii)  +
+  geom_segment(data= d,aes(x=x-.35,y=y,xend=xend,yend=yend, size= Data$effort_cat, colour = 'purple', alpha = (.5 + Data$Kerala/10))) +
+  #ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red')  +
+  ggtree::geom_tiplab(offset=i, aes(angle=angle))
+
+ggsave("figures/indian bats only info sampling effort no tip lab.png", bg = "transparent", height = 18, width = 18)
 
 #...................Alex's binomial check....................................................
 #...................Alex's binomial check....................................................
