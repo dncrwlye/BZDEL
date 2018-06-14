@@ -114,6 +114,7 @@ Data <- Data %>%
   mutate(color = ifelse(Kerala == 1, "black", "grey"))
 
 source('r/stupid_pointless_internal_node_color_function.R')
+library('phylobase')
 internal.edges<- (internal.edge.color(tree, Data))
 
 row.names(internal.edges) <- internal.edges[,1]
@@ -124,7 +125,7 @@ length(nodeId(g1, "internal")) == length(row.names(internal.edges))
 g2 = phylo4d(g1, Data)
 nodeData(g2) <- internal.edges
 
-ggtree.object <- ggtree::ggtree(g2, layout= 'fan',aes(color=I(color))) 
+ggtree.object <- ggtree::ggtree(g2, layout= 'circular',branch.length = "none",aes(color=I(color))) 
 
 ggtree.object +
  ggtree::geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + 
@@ -170,7 +171,7 @@ group_taxonomy_list
 jj <- nrow(Data)
 
 d <- data.frame(x=ggtree.object$data[1:jj,'x'] + .5,
-                xend=ggtree.object$data[1:jj,'x'] + 1+ Data$log_effort,
+                xend=ggtree.object$data[1:jj,'x'] + 1 + Data$log_effort,
                 y=ggtree.object$data[1:jj,'y'],
                 yend=ggtree.object$data[1:jj,'y'] )
 
@@ -180,19 +181,19 @@ ggtree.object$data$label <- gsub("_"," ", ggtree.object$data$label)
 i <- .1
 ii <- 1
 iii <- .5
-ggtree.object +
-  ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  ggtree::geom_tippoint(size=10*Data$Z,col='blue', alpha = .5) +
-  ggtree::geom_tippoint(size=10*Data$all.neg, shape = 1) +
-  ggtree::geom_cladelabel(node=118, label="Vespertilionidae", 
-                          color="black", angle=12.16-180, offset=ii, offset.text = iii) +
-  ggtree::geom_cladelabel(node=200, label="Pteropodidae", 
-                          color="black", angle=-68.91, offset=ii, offset.text = iii)  +
-  #geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$effort_cat, colour = 'purple', alpha =.5)) +
-  #ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red')  +
-  ggtree::geom_tiplab(offset=i, aes(angle=angle))
+# ggtree.object +
+#   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
+#   ggtree::geom_tippoint(size=10*Data$Z,col='blue', alpha = .5) +
+#   ggtree::geom_tippoint(size=10*Data$all.neg, shape = 1) +
+#   ggtree::geom_cladelabel(node=118, label="Vespertilionidae", 
+#                           color="black", angle=12.16-180, offset=ii, offset.text = iii) +
+#   ggtree::geom_cladelabel(node=200, label="Pteropodidae", 
+#                           color="black", angle=-68.91, offset=ii, offset.text = iii)  +
+#   #geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$effort_cat, colour = 'purple', alpha =.5)) +
+#   #ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red')  +
+#   ggtree::geom_tiplab(offset=i, aes(angle=angle))
 
-ggsave("figures/indian bats only info no sampling effort.png", bg = "transparent", height = 18, width = 18)
+#ggsave("figures/indian bats only info no sampling effort.png", bg = "transparent", height = 18, width = 18)
 
 i <- .14
 ii <- .1
@@ -206,7 +207,7 @@ ggtree.object +
   #                        color="black", angle=12.16-180, offset=ii, offset.text = iii) +
   #ggtree::geom_cladelabel(node=200, label="Pteropodidae", 
   #                        color="black", angle=-68.91, offset=ii, offset.text = iii)  +
-  geom_segment(data= d,aes(x=x-.35,y=y,xend=xend,yend=yend, size= Data$effort_cat, colour = 'purple', alpha = (.5 + Data$Kerala/10))) +
+  geom_segment(data= d,aes(x=x-.35,y=y,xend=xend,yend=yend, size= Data$effort_cat, colour = 'purple', alpha = (.5 + Data$Kerala))) +
   #ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red')  +
   ggtree::geom_tiplab(offset=i, aes(angle=angle))
 
