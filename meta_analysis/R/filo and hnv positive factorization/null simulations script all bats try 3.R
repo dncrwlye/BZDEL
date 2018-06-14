@@ -1,39 +1,21 @@
 # null simulations script -------
 
 getDV <- function(ss) ss['phylo','Deviance']
-summaries <- lapply(pf$models,logLik)
-deviances <- sapply(summaries,getDV)
+summaries <- lapply(pf$models,summary)
+deviances <- sapply(summaries, "[", "loglik")
 
 plot(deviances,type='o',lwd=2,cex=2)
 
-pb <- phylofactor:::phylobin
-
-globalObj <- function(factor,pf){
-  DF <- cbind(pf$Data,'phylo'=factor(pb(bins(pf$basis[,1:factor,drop=F]))))
-  fit <- pf$model.fcn(pf$frmla.phylo,data=DF,family=binomial)
-  return(anova(fit)['phylo','Deviance'])
-}
-
-Obj <- sapply(1:pf$nfactors,globalObj,pf=pf)
-
-plot(Obj,type='o',lwd=2,cex=2)
-
-if (sampling_effort == TRUE)
-{
-  fit.effort <- glm(Z~log_effort,data=Data,family=binomial)
-  Z.probs <- predict(fit.effort,type='response')
-}
-
-if (sampling_effort == FALSE)
-{
-  fit.effort <- glm(Z~1,data=Data,family=binomial)
-  Z.probs <- predict(fit.effort,type='response')
-}
-
 randomPF <- function(pf){
-  pf$Data$Z <- rbinom(nrow(pf$Data),size=1,prob=Z.probs)
-  pf <- gpf(pf$Data,pf$tree,frmla.phyl=pf$frmla.phylo,nfactors=pf$nfactors,family=binomial,algorithm='phylo')
-  return(sapply(1:pf$nfactors,globalObj,pf=pf))
+  Data$Z.poisson <- sample(Data$Z.poisson)
+  pf.random <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
+            model.fcn = model.fcn,objective.fcn = obj.fcn,
+            cluster.depends = {library(pscl)}, ncores = ncores,
+            dist = "negbin")
+  summaries <- lapply(pf.random$models,summary)
+  loglik <- unlist(sapply(summaries, "[", "loglik"))
+  
+    return(loglik)
 }
 
 randomPFs <- function(reps,pf){
@@ -47,7 +29,15 @@ randomPFs <- function(reps,pf){
 reps <- as.list(rep(reps.per.worker,ncores))
 cl <- phyloFcluster(ncores=ncores)
 
-clusterExport(cl,c('randomPF','randomPFs','pb','globalObj','Z.probs'))
+clusterExport(cl,c('randomPF',
+                   'randomPFs',
+                   'phylobin',
+                   'model.fcn',
+                   'Data',
+                   'tree',
+                   'ncores',
+                   'obj.fcn'
+                   ))
 
 OBJ <- parLapply(cl,reps,randomPFs,pf=pf)
 
