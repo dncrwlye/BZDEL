@@ -59,18 +59,17 @@ else
   }
 }
 
-pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
-          model.fcn = model.fcn,objective.fcn = obj.fcn,
-          cluster.depends = {library(pscl)}, ncores = ncores,
-          dist = "negbin")
+#pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
+#          model.fcn = model.fcn,objective.fcn = obj.fcn,
+#          ncores = ncores,
+#          dist = "negbin", cluster.depends='library(pscl)')
 
-pf2 <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
-          model.fcn = model.fcn,objective.fcn = obj.fcn,
-          cluster.depends = {library(pscl)}, ncores = ncores)
+#pf2 <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
+#          model.fcn = model.fcn,objective.fcn = obj.fcn,
+#          cluster.depends = {library(pscl)}, ncores = ncores)
 
-pf$models
+pf <- readRDS("data/phylofactor work spaces/hnv_phylofactor_object_negbin")
 
-pf$bins
 
 
 pf.tree <- pf.tree(pf, lwd=1, branch.length = "none", bg.color = NA)

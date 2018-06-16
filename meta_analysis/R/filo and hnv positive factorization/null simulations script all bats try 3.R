@@ -1,6 +1,6 @@
 # null simulations script -------
 
-getDV <- function(ss) ss['phylo','Deviance']
+#getDV <- function(ss) ss['phylo','Deviance']
 summaries <- lapply(pf$models,summary)
 deviances <- sapply(summaries, "[", "loglik")
 
@@ -10,7 +10,7 @@ randomPF <- function(pf){
   Data$Z.poisson <- sample(Data$Z.poisson)
   pf.random <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
             model.fcn = model.fcn,objective.fcn = obj.fcn,
-            cluster.depends = {library(pscl)}, ncores = ncores,
+            cluster.depends='library(pscl)', ncores = ncores,
             dist = "negbin")
   summaries <- lapply(pf.random$models,summary)
   loglik <- unlist(sapply(summaries, "[", "loglik"))
@@ -37,6 +37,7 @@ clusterExport(cl,c('randomPF',
                    'tree',
                    'ncores',
                    'obj.fcn'
+                   
                    ))
 
 OBJ <- parLapply(cl,reps,randomPFs,pf=pf)
@@ -60,5 +61,5 @@ ecdf(S[,1])(Obj[1])
 
 
 
-
+save(list=ls(), file='data/phylofactor work spaces/poisson hnv workspace' )
 
