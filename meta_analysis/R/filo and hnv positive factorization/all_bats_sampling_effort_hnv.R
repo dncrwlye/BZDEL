@@ -8,8 +8,8 @@ require(pscl)
 require(boot)
 load('data/phylofactor work spaces/bat_tree')
 load("data/bat_taxonomy_data.Rdata")
-ncores = 4
-tot.reps=200
+ncores = 1
+tot.reps=2
 reps.per.worker=round(tot.reps/ncores)
 
 Data <- batphy1 %>%
@@ -69,8 +69,6 @@ else
 #          cluster.depends = {library(pscl)}, ncores = ncores)
 
 pf <- readRDS("data/phylofactor work spaces/hnv_phylofactor_object_negbin")
-
-
 
 pf.tree <- pf.tree(pf, lwd=1, branch.length = "none", bg.color = NA)
 jj <- nrow(Data)
