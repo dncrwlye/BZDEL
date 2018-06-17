@@ -170,7 +170,7 @@ group_taxonomy_list
 #...............................................................................
 jj <- nrow(Data)
 
-d <- data.frame(x=ggtree.object$data[1:jj,'x'] + .5,
+d <- data.frame(x=ggtree.object$data[1:jj,'x'] + .1,
                 xend=ggtree.object$data[1:jj,'x'] + 1 + Data$log_effort,
                 y=ggtree.object$data[1:jj,'y'],
                 yend=ggtree.object$data[1:jj,'y'] )
@@ -195,9 +195,18 @@ iii <- .5
 
 #ggsave("figures/indian bats only info no sampling effort.png", bg = "transparent", height = 18, width = 18)
 
-i <- .14
-ii <- .1
+i <- 1
+ii <- 1
 iii <- .5
+
+jj <- nrow(Data)
+
+d <- data.frame(x=ggtree.object$data[1:jj,'x'] + 1.5,
+                xend=ggtree.object$data[1:jj,'x'] + 1.5 + 2*Data$log_effort,
+                y=ggtree.object$data[1:jj,'y'],
+                yend=ggtree.object$data[1:jj,'y'] )
+
+d[is.finite(d$xend)==FALSE,] <- -1
 
 ggtree.object +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
@@ -207,11 +216,12 @@ ggtree.object +
   #                        color="black", angle=12.16-180, offset=ii, offset.text = iii) +
   #ggtree::geom_cladelabel(node=200, label="Pteropodidae", 
   #                        color="black", angle=-68.91, offset=ii, offset.text = iii)  +
-  geom_segment(data= d,aes(x=x-.35,y=y,xend=xend,yend=yend, size= Data$effort_cat, colour = 'purple', alpha = (.5 + Data$Kerala))) +
+  geom_segment(data= d,aes(x=x-.35,y=y,xend=xend,yend=yend, size= Data$effort_cat,
+                           colour = 'purple', alpha = (.5 + Data$Kerala))) +
   #ggtree::geom_tippoint(size=5*Data$pcr.pos, shape = 17, col='red')  +
   ggtree::geom_tiplab(offset=i, aes(angle=angle))
 
-ggsave("figures/indian bats only info sampling effort no tip lab.png", bg = "transparent", height = 18, width = 18)
+ggsave("figures/indian bats only info sampling effort no tip lab circular.png", bg = "transparent", height = 18, width = 18)
 
 #...................Alex's binomial check....................................................
 #...................Alex's binomial check....................................................
