@@ -1,10 +1,17 @@
 # null simulations script -------
 
 #getDV <- function(ss) ss['phylo','Deviance']
-summaries <- lapply(pf$models,summary)
-deviances <- sapply(summaries, "[", "loglik")
 
-plot(deviances,type='o',lwd=2,cex=2)
+#summaries <- lapply(pf$models,summary)
+#loglik <- sapply(summaries, "[", "loglik")
+
+#plot(unlist(loglik),type='o',lwd=2,cex=2)
+
+Data <- pf$Data
+tree <- pf$tree
+ncores=1
+tot.reps=2
+reps.per.worker=round(tot.reps/ncores)
 
 randomPF <- function(pf){
   Data$Z.poisson <- sample(Data$Z.poisson)
@@ -15,7 +22,7 @@ randomPF <- function(pf){
   summaries <- lapply(pf.random$models,summary)
   loglik <- unlist(sapply(summaries, "[", "loglik"))
   
-    return(loglik)
+  return(loglik)
 }
 
 randomPFs <- function(reps,pf){
@@ -26,21 +33,27 @@ randomPFs <- function(reps,pf){
   return(obj)
 }
 
+#y <- randomPFs(2,pf )
+
 reps <- as.list(rep(reps.per.worker,ncores))
 cl <- phyloFcluster(ncores=ncores)
 
-clusterExport(cl,c('randomPF',
+clusterExport(cl = cl,
+                 varlist = 
+                   c('pf',
+                   'randomPF',
                    'randomPFs',
                    'phylobin',
                    'model.fcn',
+                   'obj.fcn',
                    'Data',
                    'tree',
-                   'ncores',
-                   'obj.fcn'
-                   
+                   'ncores'
                    ))
 
-OBJ <- parLapply(cl,reps,randomPFs,pf=pf)
+#OBJ <- lapply(X=reps,FUN= randomPFs,pf=pf)
+
+OBJ <- parLapply(cl=cl,reps,fun = randomPFs, pf=pf)
 
 ltoMat <- function(OBJ){
   nr <- sum(sapply(OBJ,nrow))
