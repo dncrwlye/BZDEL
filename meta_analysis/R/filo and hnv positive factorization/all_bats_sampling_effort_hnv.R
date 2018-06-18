@@ -42,7 +42,7 @@ Data[is.na(Data)] <- 0
 # }
 
 model.fcn <- function(formula,data,...){
-   fit <- tryCatch(zeroinfl(formula,data,...),
+   fit <- tryCatch(pscl::zeroinfl(formula,data,...),
                    error=function(e) NA)
   #fit <- do.call
   return(fit)

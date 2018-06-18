@@ -1,11 +1,33 @@
 # null simulations script -------
+#setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
+#setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+library(phylofactor)
+library(parallel)
+library(tidyverse)
+library(stringi)
+require(pscl)
+require(boot)
 
-#getDV <- function(ss) ss['phylo','Deviance']
+pf <- readRDS("meta_analysis/data/phylofactor work spaces/hnv_phylofactor_object_negbin")
 
-#summaries <- lapply(pf$models,summary)
-#loglik <- sapply(summaries, "[", "loglik")
+model.fcn <- function(formula,data,...){
+  fit <- tryCatch(pscl::zeroinfl(formula,data,...),
+                  error=function(e) NA)
+  #fit <- do.call
+  return(fit)
+}
 
-#plot(unlist(loglik),type='o',lwd=2,cex=2)
+obj.fcn <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
+  if (!'zeroinfl' %in% class(fit))
+  {
+    return(0)
+  }
+  else 
+  {
+    return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
+  }
+}
+
 
 Data <- pf$Data
 tree <- pf$tree
@@ -17,7 +39,7 @@ randomPF <- function(pf){
   Data$Z.poisson <- sample(Data$Z.poisson)
   pf.random <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
             model.fcn = model.fcn,objective.fcn = obj.fcn,
-            cluster.depends='library(pscl)', ncores = ncores,
+            cluster.depends='library(pscl)', #ncores = ncores,
             dist = "negbin")
   summaries <- lapply(pf.random$models,summary)
   loglik <- unlist(sapply(summaries, "[", "loglik"))
@@ -38,12 +60,12 @@ randomPFs <- function(reps,pf){
 reps <- as.list(rep(reps.per.worker,ncores))
 cl <- phyloFcluster(ncores=ncores)
 
-clusterExport(cl = cl,
-                 varlist = 
+
+clusterExport(cl,
+              varlist = 
                    c('pf',
                    'randomPF',
                    'randomPFs',
-                   'phylobin',
                    'model.fcn',
                    'obj.fcn',
                    'Data',
@@ -53,26 +75,9 @@ clusterExport(cl = cl,
 
 #OBJ <- lapply(X=reps,FUN= randomPFs,pf=pf)
 
-OBJ <- parLapply(cl=cl,reps,fun = randomPFs, pf=pf)
-
-ltoMat <- function(OBJ){
-  nr <- sum(sapply(OBJ,nrow))
-  nc <- ncol(OBJ[[1]])
-  Mat <- matrix(NA,nrow=nr,ncol=nc)
-  for (l in 1:length(OBJ)){
-    Mat[reps.per.worker*(l-1)+1:reps.per.worker,] <- OBJ[[l]]
-  }
-  return(Mat)
-}
-
-S <- ltoMat(OBJ) 
-
-mm <- min(c(S))
-mx <- max(c(c(S),Obj))
-
-ecdf(S[,1])(Obj[1])
+OBJ<-parLapply(cl, reps, randomPFs, pf)
 
 
+#...............................................................................
 
-save(list=ls(), file='data/phylofactor work spaces/poisson hnv workspace' )
 
