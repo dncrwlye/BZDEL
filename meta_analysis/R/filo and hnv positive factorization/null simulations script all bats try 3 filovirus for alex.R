@@ -24,17 +24,25 @@ model.fcn2 <- function(formula,data,...){
   return(fit)
 }
 
-obj.fcn <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
-  if (!'zeroinfl' %in% class(fit))
-  {
-    return(0)
-  }
-  else 
-  {
-    fit2 <- pscl::zeroinfl(Z.poisson~1,data = fit$model,dist='negbin')
-    # return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
-    fit$loglik-fit2$loglik %>% return()
-  }
+
+randomPF <- function(pf){
+  Data$Z.poisson <- sample(Data$Z.poisson)
+  pf.random <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
+                   model.fcn = model.fcn,objective.fcn = obj.fcn,
+                   cluster.depends='library(pscl)', #ncores = ncores,
+                   dist = "negbin")
+  summaries <- lapply(pf.random$models,summary)
+  loglik <- unlist(sapply(summaries, "[", "loglik"))
+  
+  summaries.null <- (lapply(pf$models, "[[", "model"))
+  loglik.null <- lapply(summaries.null, 
+                        function(data){
+                          pscl::zeroinfl(Z.poisson~1, data)
+                        })
+  loglik.null <- unlist(sapply(loglik.null, "[", "loglik"))
+  loglik-loglik.null
+  
+  return(loglik-loglik.null)
 }
 
 obj.fcn2 <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
