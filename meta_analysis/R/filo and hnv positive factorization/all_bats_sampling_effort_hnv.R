@@ -58,17 +58,23 @@ else
     return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
   }
 }
+tic()
+pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=1,algorithm = 'phylo',
+          model.fcn = model.fcn,objective.fcn = obj.fcn,
+          ncores = 4,
+          dist = "negbin", cluster.depends='library(pscl)')
+toc()
 
-#pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
-#          model.fcn = model.fcn,objective.fcn = obj.fcn,
-#          ncores = ncores,
-#          dist = "negbin", cluster.depends='library(pscl)')
 
-#pf2 <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
-#          model.fcn = model.fcn,objective.fcn = obj.fcn,
-#          cluster.depends = {library(pscl)}, ncores = ncores)
+pf2 <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
+          model.fcn = model.fcn,objective.fcn = obj.fcn,
+          cluster.depends = 'library(pscl)', ncores = ncores)
 
-pf <- readRDS("data/phylofactor work spaces/hnv_phylofactor_object_negbin")
+gpf(Data,tree,Z.binom~phylo,nfactors=10,algorithm = 'phylo',
+    family=binomial, ncores = 4)
+
+
+#pf <- readRDS("data/phylofactor work spaces/hnv_phylofactor_object_negbin")
 
 pf.tree <- pf.tree(pf, lwd=1, branch.length = "none", bg.color = NA)
 jj <- nrow(Data)

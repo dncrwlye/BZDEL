@@ -1,5 +1,5 @@
 # null simulations script -------
-#setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
+setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
 #setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 library(phylofactor)
 library(parallel)
@@ -7,8 +7,8 @@ library(tidyverse)
 library(stringi)
 require(pscl)
 require(boot)
-
-pf <- readRDS("meta_analysis/data/phylofactor work spaces/hnv_phylofactor_object_negbin")
+library(tictoc)
+#pf <- readRDS("data/phylofactor work spaces/hnv_phylofactor_object_negbin")
 
 model.fcn <- function(formula,data,...){
   fit <- tryCatch(pscl::zeroinfl(formula,data,...),
@@ -24,22 +24,20 @@ obj.fcn <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
   }
   else 
   {
-    return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
+    fit2 <- zeroinfl(Z.poisson~1,data = fit$model,dist='negbin')
+    # return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
+    fit$loglik-fit2$loglik %>% return()
   }
 }
-
-
 Data <- pf$Data
 tree <- pf$tree
-ncores=1
-tot.reps=2
-reps.per.worker=round(tot.reps/ncores)
+#reps.per.worker=round(tot.reps/ncores)
 
 randomPF <- function(pf){
   Data$Z.poisson <- sample(Data$Z.poisson)
-  pf.random <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
+  pf.random <- phylofactor::gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
             model.fcn = model.fcn,objective.fcn = obj.fcn,
-            cluster.depends='library(pscl)', #ncores = ncores,
+            cluster.depends='library(pscl)', ncores = 4,
             dist = "negbin")
   summaries <- lapply(pf.random$models,summary)
   loglik <- unlist(sapply(summaries, "[", "loglik"))
@@ -55,29 +53,12 @@ randomPFs <- function(reps,pf){
   return(obj)
 }
 
+#.....................tests...............................
+
+OBJ <- lapply(tot.reps, randomPFs, pf)
+
+#x <- randomPF(pf)
 #y <- randomPFs(2,pf )
-
-reps <- as.list(rep(reps.per.worker,ncores))
-cl <- phyloFcluster(ncores=ncores)
-
-
-clusterExport(cl,
-              varlist = 
-                   c('pf',
-                   'randomPF',
-                   'randomPFs',
-                   'model.fcn',
-                   'obj.fcn',
-                   'Data',
-                   'tree',
-                   'ncores'
-                   ))
-
-#OBJ <- lapply(X=reps,FUN= randomPFs,pf=pf)
-
-OBJ<-parLapply(cl, reps, randomPFs, pf)
-
-
 #...............................................................................
 
 
