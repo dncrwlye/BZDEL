@@ -8,6 +8,7 @@ library(tidyverse)
 library(stringi)
 require(pscl)
 require(boot)
+library(pscl)
 load('data/phylofactor work spaces/bat_tree')
 load("data/bat_taxonomy_data.Rdata")
 
@@ -56,12 +57,12 @@ obj.fcn <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
   }
 }
 
-tic()
-pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
+tictoc::tic()
+pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=2,algorithm = 'phylo',
           model.fcn = model.fcn,objective.fcn = obj.fcn,
-          ncores = 4,
+          ncores = 1,
           dist = "negbin", cluster.depends='library(pscl)')
-toc()
+tictoc::toc()
 
 tot.reps=50
 
