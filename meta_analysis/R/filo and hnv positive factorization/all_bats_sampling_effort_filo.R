@@ -1,5 +1,7 @@
-setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
-#setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+
+tryCatch(setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis"),
+                error=function(e) setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/"))
+
 library(phylofactor)
 library(parallel)
 library(tidyverse)
