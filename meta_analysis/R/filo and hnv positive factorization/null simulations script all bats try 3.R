@@ -31,18 +31,25 @@ obj.fcn <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
 }
 Data <- pf$Data
 tree <- pf$tree
+ncores = 
 #reps.per.worker=round(tot.reps/ncores)
 
 randomPF <- function(pf){
   Data$Z.poisson <- sample(Data$Z.poisson)
-  pf.random <- phylofactor::gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
-            model.fcn = model.fcn,objective.fcn = obj.fcn,
-            cluster.depends='library(pscl)', ncores = 4,
-            dist = "negbin")
+  pf.random <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
+                   model.fcn = model.fcn,objective.fcn = obj.fcn,
+                   cluster.depends='library(pscl)', ncores = 4,
+                   dist = "negbin")
   summaries <- lapply(pf.random$models,summary)
   loglik <- unlist(sapply(summaries, "[", "loglik"))
   
-  return(loglik)
+  summaries.null <- (lapply(pf.random$models, "[[", "model"))
+  loglik.null <- lapply(summaries.null, 
+                        function(data){
+                          pscl::zeroinfl(Z.poisson~1, data)
+                        })
+  loglik.null <- unlist(sapply(loglik.null, "[", "loglik"))
+  return(loglik-loglik.null)
 }
 
 randomPFs <- function(reps,pf){
@@ -52,10 +59,10 @@ randomPFs <- function(reps,pf){
   }
   return(obj)
 }
-
 #.....................tests...............................
 
-OBJ <- lapply(tot.reps, randomPFs, pf)
+OBJ1 <- lapply(tot.reps, randomPFs, pf)
+OBJ2 <- lapply(tot.reps, randomPFs, pf)
 
 #x <- randomPF(pf)
 #y <- randomPFs(2,pf )

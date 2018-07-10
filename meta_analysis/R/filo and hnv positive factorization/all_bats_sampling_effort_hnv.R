@@ -8,9 +8,6 @@ require(pscl)
 require(boot)
 load('data/phylofactor work spaces/bat_tree')
 load("data/bat_taxonomy_data.Rdata")
-ncores = 1
-tot.reps=2
-reps.per.worker=round(tot.reps/ncores)
 
 Data <- batphy1 %>%
   mutate(hnv_surv_bin = ifelse(is.na(hnv_surv), 0, hnv_surv)) %>%
@@ -37,44 +34,63 @@ Data <- Data[Data$Species %in% tree$tip.label,]
 n_factors = 10
 Data[is.na(Data)] <- 0
 
-# obj.fcn <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
-#   return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
-# }
-
 model.fcn <- function(formula,data,...){
-   fit <- tryCatch(pscl::zeroinfl(formula,data,...),
-                   error=function(e) NA)
+  fit <- tryCatch(pscl::zeroinfl(formula,data,...),
+                  error=function(e) NA)
   #fit <- do.call
   return(fit)
-  }
+}
 
 obj.fcn <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
-if (!'zeroinfl' %in% class(fit))
+  if (!'zeroinfl' %in% class(fit))
   {
     return(0)
   }
-else 
+  else 
   {
-    return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
+    fit2 <- zeroinfl(Z.poisson~1,data = fit$model,dist='negbin')
+    # return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
+    fit$loglik-fit2$loglik %>% return()
   }
 }
+
 tic()
-pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=1,algorithm = 'phylo',
+pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
           model.fcn = model.fcn,objective.fcn = obj.fcn,
           ncores = 4,
           dist = "negbin", cluster.depends='library(pscl)')
 toc()
 
+tot.reps=50
 
-pf2 <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
-          model.fcn = model.fcn,objective.fcn = obj.fcn,
-          cluster.depends = 'library(pscl)', ncores = ncores)
+source('R/filo and hnv positive factorization/null simulations script all bats try 3.R')
 
-gpf(Data,tree,Z.binom~phylo,nfactors=10,algorithm = 'phylo',
-    family=binomial, ncores = 4)
-
+save(list=ls(),file='data/phylofactor work spaces/neg binom hnv_workspace_7_10_18')
 
 #pf <- readRDS("data/phylofactor work spaces/hnv_phylofactor_object_negbin")
+
+# extract deviances from actual data ----
+summaries <- lapply(pf$models,summary)
+loglik <- unlist(sapply(summaries, "[", "loglik"))
+
+summaries.null <- (lapply(pf$models, "[[", "model"))
+loglik.null <- lapply(summaries.null, 
+                      function(data){
+                        pscl::zeroinfl(Z.poisson~1, data)
+                      })
+loglik.null <- unlist(sapply(loglik.null, "[", "loglik"))
+
+# plot null simulations against data ----
+
+OBJ <- rbind(OBJ1[[1]], OBJ2[[1]])
+
+
+plot(loglik-loglik.null, type ='l', col = 'red')
+apply(OBJ, 1, lines)
+
+
+
+
 
 pf.tree <- pf.tree(pf, lwd=1, branch.length = "none", bg.color = NA)
 jj <- nrow(Data)
@@ -87,70 +103,3 @@ pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
   #ggtree::geom_tippoint(size=10*Data$Z.poisson,col='blue') +
   geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$Z.binom, colour = 'blue'))
-
-
-# pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=2,
-#           algorithm = 'phylo',
-#           ncores=1,
-#           family=poisson
-#           )
-# 
-# hist(Data$Z.poisson, breaks=seq(0,65, by=1))
-#   
-# )# pf <- gpf(Data,tree,
-# #           frmla.phylo=Z~phylo,
-# #           family=binomial,
-# #           nfactors=10,
-# #           algorithm='phylo')
-# 
-# 
-# pf <- phylofactor::twoSampleFactor(Data$Z, tree, method='Fisher', n_factors ,ncores = 3)
-# 
-# source('R/filo and hnv positive factorization/null simulations script all bats try 2.R')
-# 
-# save(list=ls(),file='data/phylofactor work spaces/hnv_workspace_sample_no_sample_all_bat_dataset')
-# 
-# 
-# rm(list=ls())
-# 
-# load('data/phylofactor work spaces/bat_tree')
-# load("data/bat_taxonomy_data.Rdata")
-# ncores = 4
-# tot.reps=200
-# reps.per.worker=round(tot.reps/ncores)
-# n_factors = 10
-# 
-# Data <- batphy1 %>%
-#   mutate(filo_surv_bin = ifelse(is.na(filo_surv), 0, filo_surv)) %>%
-#   mutate(filo_surv_bin = ifelse(filo_surv_bin == 1, 1, 0)) %>%
-#   mutate(log_filo_samps = log(filo_samps)) %>%
-#   select(c(filo_surv_bin, species, log_filo_samps))%>%
-#   rename(Species = species) %>%
-#   mutate(Species = gsub(" ", "_", Species)) %>%
-#   mutate(Species = stri_trans_totitle(Species)) %>%
-#   mutate(Sample = 1) %>%
-#   unique()
-# 
-# Data[duplicated(Data$Species),]
-# 
-# tree<-bat_tree
-# tree <- ape::drop.tip(tree,tree$tip.label[!(tree$tip.label %in% Data$Species)])
-# Data <- Data[Data$Species %in% tree$tip.label,]
-# 
-# rm(batphy1, bat_tree)
-# 
-# names(Data) <- c('Z', 'Species', 'log_effort', 'Sample')
-# 
-# #pf <- gpf(Data,tree,frmla.phylo=Z~phylo,nfactors=10,family=binomial,algorithm='phylo')
-# pf <- phylofactor::twoSampleFactor(Data$Z, tree, method='Fisher', n_factors ,ncores = 3)
-# 
-# pf$factors
-# # 
-# source('R/filo and hnv positive factorization/null simulations script all bats try 2.R')
-
-#save(list=ls(),file='data/phylofactor work spaces/filo_workspace_sample_no_sample_all_bat_dataset')
-
-#rm(list=ls())
-
-
-#............................................ visualization

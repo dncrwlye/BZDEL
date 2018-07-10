@@ -67,7 +67,26 @@ source('R/filo and hnv positive factorization/null simulations script all bats t
 
 save(list=ls(),file='data/phylofactor work spaces/neg binom filo_workspace')
 
-#pf <- readRDS("data/phylofactor work spaces/filo_phylofactor_object_negbin")
+load(file='data/phylofactor work spaces/neg binom filo_workspace')
+
+# extract deviances from actual data ----
+summaries <- lapply(pf$models,summary)
+loglik <- unlist(sapply(summaries, "[", "loglik"))
+
+summaries.null <- (lapply(pf$models, "[[", "model"))
+loglik.null <- lapply(summaries.null, 
+                      function(data){
+                        pscl::zeroinfl(Z.poisson~1, data)
+                      })
+loglik.null <- unlist(sapply(loglik.null, "[", "loglik"))
+
+# plot null simulations against data ----
+
+OBJ <- rbind(OBJ1[[1]], OBJ2[[1]])
+
+
+plot(loglik-loglik.null, type ='l', col = 'red')
+apply(OBJ, 1, lines)
 
 pf.tree <- pf.tree(pf, lwd=1, branch.length = "none", bg.color = NA)
 jj <- nrow(Data)
