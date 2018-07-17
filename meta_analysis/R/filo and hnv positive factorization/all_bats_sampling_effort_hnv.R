@@ -1,11 +1,14 @@
-setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
-#setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+
+tryCatch(setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis"),
+         error=function(e) setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/"))
+
 library(phylofactor)
 library(parallel)
 library(tidyverse)
 library(stringi)
 require(pscl)
 require(boot)
+library(pscl)
 load('data/phylofactor work spaces/bat_tree')
 load("data/bat_taxonomy_data.Rdata")
 
@@ -34,61 +37,45 @@ Data <- Data[Data$Species %in% tree$tip.label,]
 n_factors = 10
 Data[is.na(Data)] <- 0
 
-model.fcn <- function(formula,data,...){
-  fit <- tryCatch(pscl::zeroinfl(formula,data,...),
-                  error=function(e) NA)
-  #fit <- do.call
-  return(fit)
-}
+source('R/filo and hnv positive factorization/negative binomial no zero inflation tests for all bats sampling effort.R')
+source('R/filo and hnv positive factorization/null simulations script all bats try 4.R')
 
-obj.fcn <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...){
-  if (!'zeroinfl' %in% class(fit))
-  {
-    return(0)
-  }
-  else 
-  {
-    fit2 <- zeroinfl(Z.poisson~1,data = fit$model,dist='negbin')
-    # return(abs(summary(fit)$coefficients$zero['phyloS','z value']))
-    fit$loglik-fit2$loglik %>% return()
-  }
-}
+save(list=ls(),file='data/phylofactor work spaces/neg binom no zeroinfl hnv_workspace')
 
-tic()
-pf <- gpf(Data,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
-          model.fcn = model.fcn,objective.fcn = obj.fcn,
-          ncores = 4,
-          dist = "negbin", cluster.depends='library(pscl)')
-toc()
-
-tot.reps=50
-
-source('R/filo and hnv positive factorization/null simulations script all bats try 3.R')
-
-save(list=ls(),file='data/phylofactor work spaces/neg binom hnv_workspace_7_10_18')
-
-#pf <- readRDS("data/phylofactor work spaces/hnv_phylofactor_object_negbin")
-
-# extract deviances from actual data ----
-summaries <- lapply(pf$models,summary)
-loglik <- unlist(sapply(summaries, "[", "loglik"))
-
-summaries.null <- (lapply(pf$models, "[[", "model"))
-loglik.null <- lapply(summaries.null, 
-                      function(data){
-                        pscl::zeroinfl(Z.poisson~1, data)
-                      })
-loglik.null <- unlist(sapply(loglik.null, "[", "loglik"))
-
+load(file='data/phylofactor work spaces/neg binom no zeroinfl hnv_workspace')
 # plot null simulations against data ----
 
-OBJ <- rbind(OBJ1[[1]], OBJ2[[1]])
+
+summaries.null <- (lapply(pf2$models, "[[", "model"))
+loglik.null <- lapply(summaries.null, 
+                      function(data){
+                        MASS::glm.nb(Z.poisson~1, data)
+                      })
+
+logLik.models <- unlist(lapply(pf2$models,logLik))
+loglik.null <- unlist(sapply(loglik.null, logLik))
 
 
-plot(loglik-loglik.null, type ='l', col = 'red')
+
+plot(logLik.models-loglik.null, 
+     type ='l', 
+     col = 'red',
+     xlim=c(0, 11), 
+     ylim=c(0, 40))
+
 apply(OBJ, 1, lines)
 
+bb <- (t(diff(t(S))))
+bb <- cbind(S[,1],bb)
+Ojb.bb <- c(Obj[1],diff(Obj))
 
+ll.model <- (logLik.models-loglik.null)
+for (i in 1:10)
+{
+  print(ecdf(OBJ[,i])(ll.model[i]))
+}
+
+#print(ecdf(bb[,i])(Ojb.bb[i]))
 
 
 
