@@ -14,8 +14,8 @@ obj.fcn2 <- function(fit,grp,tree,PartitioningVariables,model.fcn,phyloData,...)
   }
   else 
   {
-    fit2 <- MASS::glm.nb(Z.poisson~1,data = fit$model)
-    fit$twologlik-fit2$twologlik %>% return()
+    #fit2 <- MASS::glm.nb(Z.poisson~1,data = fit$model)
+    fit$null.deviance-fit$deviance %>% return()
     #fit$twologlik %>% return()
   }
 }

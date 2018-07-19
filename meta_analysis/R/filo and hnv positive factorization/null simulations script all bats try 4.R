@@ -1,5 +1,5 @@
 # null simulations script -------
-setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
+#setwd("C:/Users/r83c996/Documents/BZDEL/meta_analysis")
 #setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
 library(phylofactor)
 library(parallel)
@@ -17,7 +17,7 @@ nfactors = 10
 #reps.per.worker=round(tot.reps/ncores)
 
 randomPF <- function(pf){
-  Data.random$Z.poisson <- sample(Data.random$Z.poisson)
+  Data.random$Z.poisson <- sample(Data.random$Z.poisson, replace=TRUE)
   #pf.random <- gpf(Data.random,tree,Z.poisson~phylo,nfactors=10,algorithm = 'phylo',
   #               model.fcn = model.fcn2,objective.fcn = obj.fcn2,
   #               cluster.depends='library(MASS)', 
@@ -29,17 +29,17 @@ randomPF <- function(pf){
     ncores = 4), error = function(e) NULL)
   
   
-  summaries.null <- (lapply(pf.random$models, "[[", "model"))
-  loglik.null <- lapply(summaries.null, 
-                        function(data){
-                          MASS::glm.nb(Z.poisson~1, data)
-                        })
+  #summaries.null <- (lapply(pf.random$models, "[[", "model"))
+  #loglik.null <- lapply(summaries.null, 
+  #                      function(data){
+  #                        MASS::glm.nb(Z.poisson~1, data)
+  #                      })
   
-  logLik.models <- unlist(lapply(pf.random$models,logLik))
-  loglik.null <- unlist(sapply(loglik.null, logLik))
+  #logLik.models <- unlist(lapply(pf.random$models,logLik))
+  #loglik.null <- unlist(sapply(loglik.null, logLik))
+  #return(logLik.models-loglik.null)
   
-  return(logLik.models-loglik.null)
-  
+  return(unlist(lapply(pf.random$models, "[[", "null.deviance")) - unlist(lapply(pf.random$models, "[[", "deviance")))
 }
 
 randomPF2 <- function(pf){
@@ -56,16 +56,17 @@ randomPF2 <- function(pf){
                             cluster.depends='library(MASS)', 
                             ncores = 4), error = function(e) NULL)
   
-  summaries.null <- (lapply(pf.random$models, "[[", "model"))
-  loglik.null <- lapply(summaries.null, 
-                        function(data){
-                          MASS::glm.nb(Z.poisson~1, data)
-                        })
+  #summaries.null <- (lapply(pf.random$models, "[[", "model"))
+  #loglik.null <- lapply(summaries.null, 
+  #                      function(data){
+  #                        MASS::glm.nb(Z.poisson~1, data)
+  #                      })
   
-  logLik.models <- unlist(lapply(pf.random$models,logLik))
-  loglik.null <- unlist(sapply(loglik.null, logLik))
+  #logLik.models <- unlist(lapply(pf.random$models,logLik))
+  #loglik.null <- unlist(sapply(loglik.null, logLik))
   
-  return(logLik.models-loglik.null)
+  #return(logLik.models-loglik.null)
+  return(unlist(lapply(pf.random$models, "[[", "null.deviance")) - unlist(lapply(pf.random$models, "[[", "deviance")))
   
 }
 
@@ -100,8 +101,6 @@ OBJ2.7 <- lapply(tot.reps, randomPFs2, pf2)
 OBJ2.8 <- lapply(tot.reps, randomPFs2, pf2)
 OBJ2.9 <- lapply(tot.reps, randomPFs2, pf2)
 OBJ2.10 <-lapply(tot.reps, randomPFs2, pf2)
-
-
 
 dfs <- mget(ls(pattern = "OBJ2"))
 dfs <- lapply(dfs, '[[', 1)
