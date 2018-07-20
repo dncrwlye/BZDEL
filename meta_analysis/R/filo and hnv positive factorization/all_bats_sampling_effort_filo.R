@@ -40,9 +40,9 @@ Data[is.na(Data)] <- 0
 source('R/filo and hnv positive factorization/negative binomial no zero inflation tests for all bats sampling effort.R')
 source('R/filo and hnv positive factorization/null simulations script all bats try 4.R')
 
-save(list=ls(),file='data/phylofactor work spaces/neg binom no zeroinfl filo_workspace')
+save(list=ls(),file='data/phylofactor work spaces/neg binom no zeroinfl filo_workspace_try2')
 
-load(file='data/phylofactor work spaces/neg binom no zeroinfl filo_workspace')
+#load(file='data/phylofactor work spaces/neg binom no zeroinfl filo_workspace')
 
 # plot null simulations against data ----
 # i now have two types of null simulations, the re shuffling method and 
