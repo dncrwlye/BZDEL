@@ -42,58 +42,41 @@ source('R/filo and hnv positive factorization/null simulations script all bats t
 
 #save(list=ls(),file='data/phylofactor work spaces/neg binom no zeroinfl hnv_workspace')
 
-load(file='data/phylofactor work spaces/neg binom no zeroinfl hnv_workspace')
+load(file='data/phylofactor work spaces/neg binom no zeroinfl hnv_workspace try 2')
 
 # plot null simulations against data ----
 # i now have two types of null simulations, the re shuffling method and 
 # number 2, where i made new data from a distribution. lets see if it looks different!
+x <- unlist(lapply(pf2$models,'[[', 'null.deviance')) - unlist(lapply(pf2$models,'[[', 'deviance'))
 
-summaries.null <- (lapply(pf2$models, "[[", "model"))
-loglik.null <- lapply(summaries.null, 
-                      function(data){
-                        MASS::glm.nb(Z.poisson~1, data)
-                      })
-
-logLik.models <- unlist(lapply(pf2$models,logLik))
-loglik.null <- unlist(sapply(loglik.null, logLik))
-
-plot(logLik.models-loglik.null, 
-     type ='l', 
-     col = 'red',
-     xlim=c(0, 11), 
-     ylim=c(0, 40))
+plot(x, type = 'l', col ='red')
 
 OBJ1 <- OBJ1[[1]]
 apply(unlist(OBJ1), 1, lines)
 
-bb <- (t(diff(t(S))))
-bb <- cbind(S[,1],bb)
-Ojb.bb <- c(OBJ1[1],diff(OBJ1))
-
-ll.model <- (logLik.models-loglik.null)
 for (i in 1:10)
 {
-  print(ecdf(OBJ1[,i])(ll.model[i]))
+  print(ecdf(OBJ1[,i])(x[[i]]))
 }
 
 #.................Now we can try the method where we generated new data.... ----
 
-plot(logLik.models-loglik.null, 
+plot(x, 
      type ='l', 
      col = 'red',
      xlim=c(0, 11), 
-     ylim=c(0, 100))
+     ylim=c(0, 150))
 
 apply(unlist(OBJ.final.2), 1, lines)
 
 for (i in 1:10)
 {
-  print(ecdf(OBJ.final.2[,i])(ll.model[i]))
+  print(ecdf(OBJ.final.2[,i])(x[[i]]))
 }
 
 #print(ecdf(bb[,i])(Ojb.bb[i]))
 
-pf.tree <- pf.tree(pf2, lwd=1, branch.length = "none", bg.color = NA)
+pf.tree <- pf.tree(pf2, factors = 1:2, lwd=1, branch.length = "none", bg.color = NA)
 jj <- nrow(Data)
 d <- data.frame(x=pf.tree$ggplot$data[1:jj,'x'],
                 xend=pf.tree$ggplot$data[1:jj,'x'] + .2*(Data$Z.poisson),
