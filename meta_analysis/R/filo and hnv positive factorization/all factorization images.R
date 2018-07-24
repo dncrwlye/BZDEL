@@ -1007,6 +1007,10 @@ load(file='data/phylofactor work spaces/filo_workspace')
 load("data/bat_taxonomy_data.Rdata")
 source('R/taxonomy group name function.R')
 
+#log odds of rhinolophoidea 
+x <- pf$models[[1]] %>% summary()
+1/exp(x$coefficients[2,1])
+
 taxonomy <- batphy1 %>%
   select(c(species, tax)) 
 

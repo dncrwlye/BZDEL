@@ -66,7 +66,7 @@ for (i in 1:10)
                               x = group_taxonomy_list$`taxonomy[match(species, taxonomy[, 1]), 2]`) 
   group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
   
-  print(group_taxonomy_list %>% table())
+  #print(group_taxonomy_list %>% table())
 
 }
 
@@ -122,16 +122,19 @@ d <- data.frame(x=pf.tree$ggplot$data[1:jj,'x'],
                 yend=pf.tree$ggplot$data[1:jj,'y'] )
 
 # figure ----
+
 pf.tree$ggplot +
   ggtree::theme_tree(bgcolor = NA, fgcolor = NA, plot.background = element_rect(fill = "transparent",colour = NA)) +
-  #ggtree::geom_tippoint(size=10*Data$Z.poisson,col='blue') +
-  ggtree::geom_cladelabel(node=1283, label="Vespertilionoidea",
-                          color="black", angle=187.2299, offset=2, offset.text = 2, align=TRUE) +
-  ggtree::geom_cladelabel(node=1087, label="Noctilionoidea",
-                          color="black", angle=75.706, offset=3, offset.text = 2, align=TRUE) + 
-  ggtree::geom_cladelabel(node=1591, label="Yinpterochiroptera",
-                          color="black", angle=-32.49307, offset=2.5, offset.text = 2, align=TRUE) + 
-  geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$Z.binom, colour = 'blue')) 
+  ggtree::geom_cladelabel(node=1238, label="Emballonuroidea",
+                           color="black", angle=35.98338, offset=4.5, offset.text = 2, align=TRUE) + 
+  ggtree::geom_cladelabel(node=1085, label="Yangochiroptera",
+                           color="black", angle=147.5069, offset=2.5, offset.text = 2, align=TRUE) + 
+  geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$Z.binom, colour = 'blue')) +
+  ggtree::geom_cladelabel(node=1592, label="Rhinolophoidea",
+                          color="black", angle=-62.40997, offset=3.5, offset.text = 2, align=TRUE) + 
+  ggtree::geom_cladelabel(node=1700, label="Pteropodidae", 
+                          color="black", angle=-5.069252, offset=3, offset.text = 2, align=TRUE)  +
+  geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$Z.binom, colour = 'blue'))
 
 ggsave("figures/filo sampling effort tree neg binom.png", bg = "transparent", height = 18, width = 18)
 
@@ -299,9 +302,9 @@ group_taxonomy_list
 species.list <- ggtree::get.offspring.tip(pf2$tree, node=1283)
 mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
 
-# .......................... Noctilionoidea bats......................................
+# .......................... Emballonuroidea bats......................................
 
-species.list <- ggtree::get.offspring.tip(pf2$tree, node=1087)
+species.list <- ggtree::get.offspring.tip(pf2$tree, node=1238)
 species.list <- tolower(gsub("_", " ",species.list))
 group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
 gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
@@ -311,7 +314,7 @@ group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chord
 group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
 group_taxonomy_list
 
-species.list <- ggtree::get.offspring.tip(pf2$tree, node=1087)
+species.list <- ggtree::get.offspring.tip(pf2$tree, node=1238)
 mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
 
 # .......... Pteropodidae bats......................................
