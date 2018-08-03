@@ -63,18 +63,29 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   mutate(number_positive = as.numeric(number_positive)) %>%
   mutate(seroprevalence_percentage = as.numeric(seroprevalence_percentage)) %>%
   mutate(sample_size = as.numeric(sample_size)) %>%
-  mutate(successes = ifelse(is.na(number_positive), round((1/100)*seroprevalence_percentage * sample_size,0), number_positive)) %>% 
+  mutate(successes = ifelse(is.na(number_positive) & !is.na(seroprevalence_percentage), 
+                            round(sample_size * seroprevalence_percentage), number_positive)) %>%
   dplyr::select(-c(number_positive)) %>%
-  mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage), successes/sample_size, seroprevalence_percentage)) %>%
+  mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage & !is.na(successes)), successes/sample_size * 100, seroprevalence_percentage)) %>%
   filter(!(is.na(seroprevalence_percentage)))
 
-
+y <- seroprevalence %>%
+  filter(species ==  'miniopterus schreibersii')
 
 #some papers did repeat PCR or ELISA testing, but did like PCR urine, PCR blood...those aren't independent
 #im going to group by everything but those values and then take a weighted average of (sero)prevalence 
 
 seroprevalence.x <- seroprevalence %>%
   mutate(row.unique = paste(sample_size, title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
+  #mutate(row.num = row.num
+# seroprevalence.dc <- seroprevalence.x %>%
+#   group_by(title, last_name_of_first_author, virus, virusold, study_type, 
+#            row.unique, study_design, species, sex, age_class, sampling_location, sample_size,
+#            ) %>%
+#   dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size))
+# 
+# seroprevalence.w <- seroprevalence.x %>%
+#   filter(!(row.unique %in% seroprevalence.dc$row.unique))
 
 seroprevalence.y <- seroprevalence %>%
   group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
@@ -84,9 +95,6 @@ seroprevalence.y <- seroprevalence %>%
   ungroup() %>%
   mutate(row.unique.w = paste(sample_size, title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
   
-seroprevalence.w <- seroprevalence.x %>%
-  filter(!(row.unique %in% seroprevalence.y$row.unique.w))
-
 seroprevalence <- seroprevalence %>%
   group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
   dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
@@ -178,3 +186,10 @@ seroprevalence <- seroprevalence %>%
          
 save(seroprevalence, file='data/seroprevalence.Rdata')
 rm(list=ls())
+
+
+
+
+y <- seroprevalence %>%
+  filter(species ==  'miniopterus schreibersii')
+
