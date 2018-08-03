@@ -118,9 +118,24 @@ data1 <- data %>%
 
 data1 <- data1 %>%
   select(species, Nipah) %>%
-  mutate(Nipah = ifelse(Nipah > 0, 1, 0))
+  mutate(Nipah = ifelse(Nipah > 0, 1, 0)) %>%
+  rename(Nipah.Pos = Nipah)
+
+data2 <- data %>% 
+  #dplyr:: mutate(number_pos = (serop * sample)) %>%
+  group_by(species, virusold) %>%
+  #dplyr::summarise(total_pos = sum(number_pos, na.rm=TRUE), total_sampled = sum(sample, na.rm=TRUE)) %>%
+  dplyr::summarise(n = n()) %>%
+  spread(virusold, n) 
+
+data2 <- data2 %>%
+  select(species, Nipah) %>%
+  rename(Nipah.samps = Nipah)
 
 batphy <- left_join(batphy, data1)
+batphy <- left_join(batphy, data2)
+
+batphy <- batphy %>% select(-c(Nipah))
 
 save(batphy, file = 'data/batphy.Rdata')
 rm(list=ls())
