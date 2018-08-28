@@ -134,7 +134,10 @@ pf.tree$ggplot +
                           color="black", angle=-62.40997, offset=3.5, offset.text = 2, align=TRUE) + 
   ggtree::geom_cladelabel(node=1700, label="Pteropodidae", 
                           color="black", angle=-5.069252, offset=3, offset.text = 2, align=TRUE)  +
+  ggtree::geom_cladelabel(node=1538, label="Molossidae", 
+                          color="black", angle=-5.069252, offset=4, offset.text = 2, align=TRUE)  +
   geom_segment(data= d,aes(x=x,y=y,xend=xend,yend=yend, size= Data$Z.binom, colour = 'blue'))
+
 
 ggsave("figures/filo sampling effort tree neg binom.png", bg = "transparent", height = 18, width = 18)
 
@@ -272,6 +275,9 @@ rm(list = ls())
 
 # node and angle data ----
 
+pf.tree$ggplot +
+   geom_text2(aes(subset=!isTip, label=node), hjust=-.3)
+
 # .......... Yinpterochiroptera (Rhinolophoidea & Pteropodidae) bats......................................
 
 species.list <- ggtree::get.offspring.tip(pf2$tree, node=1591)
@@ -362,3 +368,17 @@ group_taxonomy_list
 species.list <- ggtree::get.offspring.tip(pf2$tree, node=1592)
 mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)
 
+# .......... Mystery Group......................................
+
+species.list <- ggtree::get.offspring.tip(pf2$tree, node=1538)
+species.list <- tolower(gsub("_", " ",species.list))
+group_taxonomy_list <- as.data.frame(taxonomy[match(species.list,taxonomy[,1]),2])
+gsub("\\)|;","", as.character(taxonomy_group_name(group_taxonomy_list)))
+group_taxonomy_list <- gsub(pattern = "Animalia; Bilateria; Deuterostomia; Chordata; Vertebrata; Gnathostomata; Tetrapoda; Mammalia; Theria; Eutheria; Chiroptera; ", 
+                            replacement = "", 
+                            group_taxonomy_list[,1]) 
+group_taxonomy_list <- gsub(pattern = "; [A-Z][a-z]+ [a-z]+)", "", group_taxonomy_list)
+group_taxonomy_list
+
+species.list <- ggtree::get.offspring.tip(pf2$tree, node=1538)
+mean(pf.tree$ggplot$data[pf.tree$ggplot$data$label %in% species.list,]$angle-90)

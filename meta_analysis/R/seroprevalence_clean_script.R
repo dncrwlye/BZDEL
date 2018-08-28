@@ -179,16 +179,13 @@ single_time_points_but_decent_range$substudy_non_annual %in% pooled_estimates_ju
 unique(seroprevalence$substudy_non_annual)
 
 seroprevalence <- seroprevalence %>%
-  mutate(sampling.strategy = ifelse(substudy_non_annual %in% explicit_longitudinal.a$substudy_non_annual, "> 4 repeated sampling events",
-                                ifelse(substudy_non_annual %in% explicit_longitudinal.b$substudy_non_annual, "2-3 repeated sampling events",
+  mutate(sampling.strategy = ifelse(substudy_non_annual %in% explicit_longitudinal.b$substudy_non_annual, "> 4 repeated sampling events",
+                                ifelse(substudy_non_annual %in% explicit_longitudinal.a$substudy_non_annual, "2-3 repeated sampling events",
                                   ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, "1 sampling event (<30 days)",
                                          ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, "pooled multiple sampling events (>30 days)", "unclear sampling strategy")))))
          
 save(seroprevalence, file='data/seroprevalence.Rdata')
 rm(list=ls())
-
-
-
 
 y <- seroprevalence %>%
   filter(species ==  'miniopterus schreibersii')

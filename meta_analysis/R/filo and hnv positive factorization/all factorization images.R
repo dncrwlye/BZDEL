@@ -642,11 +642,21 @@ load(file='data/phylofactor work spaces/hnv_workspace')
 load("data/bat_taxonomy_data.Rdata")
 source('R/taxonomy group name function.R')
 
+
 pf$call
 x <- pf$models[[1]] %>% summary()
 1/exp(x$coefficients[2,1])
 
 exp(-2.157)
+
+plot(residuals(pf$models[[1]], type="pearson"))
+     
+influence <- influence(pf$models[[1]])$hat#  Case Leverages          
+
+cookd = cooks.distance(pf$models[[1]])   # Cook's Distances   
+plot(cookd)
+plot(cookd,influence)
+data.cookd <- cbind(pf$models[[1]]$data, cookd)
 
 taxonomy <- batphy1 %>%
   select(c(species, tax)) 
