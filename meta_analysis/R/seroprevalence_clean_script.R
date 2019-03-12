@@ -5,7 +5,7 @@ library(stringi)
 
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis")
 #MetaAnalysis_Data_New_Version <- read_excel("C:/Users/r83c996/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
+MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
                                                  col_types = c("text", "numeric", "text", 
                                                                          "text", "text", "text", "text", "text", 
                                                                          "text", "text", "text", "text", "text", 
@@ -15,16 +15,16 @@ MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox_gmail/Dropbox/bat virus m
                                                                          "numeric", "text", "text", "text", 
                                                                          "text", "text", "text", "date", "date", 
                                                                          "date", "text", "text", "text", "text", 
-                                                                         "text", "text"))                                      
+                                                                         "text", "text", "text", "text"))                                      
                                             
 ## save old virus
-MetaAnalysis_Data_New_Version$virusold=MetaAnalysis_Data_New_Version$virus
+MetaAnalysis_Data_New_Version$virus_specific=MetaAnalysis_Data_New_Version$virus
 
 # Cleaning ----
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Prevalence_Seroprevalence') %>%
   filter(study_type == "Observational") %>%
-  dplyr::select(title, last_name_of_first_author, virus, virusold, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sampling_location_three, sampling_location_four, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  dplyr::select(title, last_name_of_first_author, virus, virus_specific, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sampling_location_three, sampling_location_four, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan|Lloviu', virus), 'Filovirus',
                         ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
@@ -38,7 +38,7 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   mutate(species = tolower(species)) %>%
   mutate(species = trimws(species)) %>%
   #mutate(species = stri_extract_first_regex(species, '[a-z]+ [a-z]+')) %>%
-  mutate(methodology = ifelse(grepl('PCR', methodology), 'PCR based method',
+  mutate(methodology_general = ifelse(grepl('PCR', methodology), 'PCR based method',
                               ifelse(grepl('ELISA|Luminex', methodology), 'non nAb based method',
                                      ifelse(grepl('VNT|SNT|Neutralizing', methodology), "nAb based method", methodology)))) %>%
   mutate(species = gsub('hipperosiderus' ,"hipposideros", species)) %>%
@@ -67,40 +67,37 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
                             round(sample_size * seroprevalence_percentage), number_positive)) %>%
   dplyr::select(-c(number_positive)) %>%
   mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage & !is.na(successes)), successes/sample_size * 100, seroprevalence_percentage)) %>%
-  filter(!(is.na(seroprevalence_percentage)))
+  filter(!(is.na(seroprevalence_percentage))) 
 
-y <- seroprevalence %>%
-  filter(species ==  'miniopterus schreibersii')
+rm(MetaAnalysis_Data_New_Version)
 
 #some papers did repeat PCR or ELISA testing, but did like PCR urine, PCR blood...those aren't independent
+#additionally, there are some paper that did analyses are different substrains of Filoviruses (marburg, ebola, etc). We now have those all under 'filoviruses, need to account for those)
 #im going to group by everything but those values and then take a weighted average of (sero)prevalence 
 
-seroprevalence.x <- seroprevalence %>%
-  mutate(row.unique = paste(sample_size, title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
-  #mutate(row.num = row.num
-# seroprevalence.dc <- seroprevalence.x %>%
-#   group_by(title, last_name_of_first_author, virus, virusold, study_type, 
-#            row.unique, study_design, species, sex, age_class, sampling_location, sample_size,
-#            ) %>%
-#   dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size))
-# 
-# seroprevalence.w <- seroprevalence.x %>%
-#   filter(!(row.unique %in% seroprevalence.dc$row.unique))
+#NOTE OKAY WE NEED TO COME UP WITH A WAY TO DEAL WITH THIS BETTER. RIGHT NOW I CANNOT FIGURE IT OUT
 
-seroprevalence.y <- seroprevalence %>%
-  group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
-  dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
-  dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
-  dplyr::rename(sample_size = sample_size.dc) %>%
-  ungroup() %>%
-  mutate(row.unique.w = paste(sample_size, title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
-  
-seroprevalence <- seroprevalence %>%
-  group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
-  dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
-  dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
-  dplyr::rename(sample_size = sample_size.dc) %>%
-  ungroup()
+# seroprevalence.weighted.means <- seroprevalence %>%
+#   group_by(title, 
+#            last_name_of_first_author, 
+#            virus,
+#            #not virus_specific, often times these are not independent samples, but could be interesting for future analyes,
+#            study_type,
+#            study_design,
+#            methodology #just cause we should make sure that the PCR and Serological samples are reported sep
+#            )
+# 
+# seroprevalence.weighted.means <- seroprevalence %>%
+#   group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
+#   dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
+#   dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
+#   dplyr::rename(sample_size = sample_size.dc) %>%
+#   ungroup() %>%
+#   mutate(successes = (seroprevalence_percentage/100)*sample_size)
+# 
+# 
+# x <- setdiff(seroprevalence, seroprevalence.weighted.means)
+# y <- setdiff(seroprevalence.weighted.means, seroprevalence)
 
 #...........adding on a column for becker, unfortunately many papers did multiple methods.....
 
@@ -184,9 +181,9 @@ seroprevalence <- seroprevalence %>%
                                   ifelse(substudy_non_annual %in% single_time_points_but_decent_range$substudy_non_annual, "1 sampling event (<30 days)",
                                          ifelse(substudy_non_annual %in% pooled_estimates_just_horrible$substudy_non_annual, "pooled multiple sampling events (>30 days)", "unclear sampling strategy")))))
          
-save(seroprevalence, file='data/seroprevalence.Rdata')
-rm(list=ls())
 
-y <- seroprevalence %>%
-  filter(species ==  'miniopterus schreibersii')
+rm(explicit_longitudinal,  explicit_longitudinal.a, explicit_longitudinal.b, pooled_estimates_just_horrible, seroprevalence.compare, single_time_points_but_decent_range)
+save(seroprevalence, file='data/seroprevalence.Rdata')
+#rm(list=ls())
+
 
