@@ -71,35 +71,7 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
 
 rm(MetaAnalysis_Data_New_Version)
 
-#some papers did repeat PCR or ELISA testing, but did like PCR urine, PCR blood...those aren't independent
-#additionally, there are some paper that did analyses are different substrains of Filoviruses (marburg, ebola, etc). We now have those all under 'filoviruses, need to account for those)
-#im going to group by everything but those values and then take a weighted average of (sero)prevalence 
 
-#NOTE OKAY WE NEED TO COME UP WITH A WAY TO DEAL WITH THIS BETTER. RIGHT NOW I CANNOT FIGURE IT OUT
-
-# seroprevalence.weighted.means <- seroprevalence %>%
-#   group_by(title, 
-#            last_name_of_first_author, 
-#            virus,
-#            #not virus_specific, often times these are not independent samples, but could be interesting for future analyes,
-#            study_type,
-#            study_design,
-#            methodology #just cause we should make sure that the PCR and Serological samples are reported sep
-#            )
-# 
-# seroprevalence.weighted.means <- seroprevalence %>%
-#   group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
-#   dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), sample_size.dc = mean(sample_size)) %>%
-#   dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
-#   dplyr::rename(sample_size = sample_size.dc) %>%
-#   ungroup() %>%
-#   mutate(successes = (seroprevalence_percentage/100)*sample_size)
-# 
-# 
-# x <- setdiff(seroprevalence, seroprevalence.weighted.means)
-# y <- setdiff(seroprevalence.weighted.means, seroprevalence)
-
-#...........adding on a column for becker, unfortunately many papers did multiple methods.....
 
 seroprevalence <- seroprevalence %>%
   mutate(date_diff = end_of_sampling - start_of_sampling) %>%
@@ -185,5 +157,65 @@ seroprevalence <- seroprevalence %>%
 rm(explicit_longitudinal,  explicit_longitudinal.a, explicit_longitudinal.b, pooled_estimates_just_horrible, seroprevalence.compare, single_time_points_but_decent_range)
 save(seroprevalence, file='data/seroprevalence.Rdata')
 #rm(list=ls())
+
+
+#some papers did repeat PCR or ELISA testing, but did like PCR urine, PCR blood...those aren't independent
+#additionally, there are some paper that did analyses are different substrains of Filoviruses (marburg, ebola, etc). We now have those all under 'filoviruses, need to account for those)
+#im going to group by everything but those values and then take a weighted average of (sero)prevalence
+
+#NOTE OKAY WE NEED TO COME UP WITH A WAY TO DEAL WITH THIS BETTER. RIGHT NOW I CANNOT FIGURE IT OUT
+
+
+
+
+seroprevalence.weighted.means <- seroprevalence %>%
+  group_by(title,
+           last_name_of_first_author,
+           virus,
+           #not virus_specific, often times these are not independent samples, but could be interesting for future analyes,
+           study_type,
+           study_design,
+           #methodology PCR in urine and PCR in blood not independent probs
+           species, 
+           sex,
+           age_class,
+           sampling_location,
+           sampling_location_two, 
+           sampling_location_three,
+           sampling_location_four,
+           #sample_size
+           #seroprevalence_percentage
+           single_sampling_point,
+           sampling_date_single_time_point,
+           start_of_sampling,
+           end_of_sampling,
+           methodology_general,
+           #successes,
+           date_diff,
+           date_diff_cat,
+           substudy_non_annual,
+           sampling.strategy
+           )
+
+seroprevalence.weighted.means <- seroprevalence.weighted.means %>%
+  #group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
+  dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), 
+                   successes.dc = weighted.mean(successes, w = sample_size),
+                   sample_size.dc = mean(sample_size)) %>%
+  dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
+  dplyr::rename(sample_size = sample_size.dc) %>%
+  ungroup() %>%
+  mutate(successes.1 = (seroprevalence_percentage/100)*sample_size)
+
+#okay clearly messing something up
+seroprevalence.weighted.means.x <- seroprevalence.weighted.means %>%
+  filter(successes.dc < 9999)
+plot(seroprevalence.weighted.means.x$successes.1, seroprevalence.weighted.means.x$successes.dc)
+
+x <- setdiff(seroprevalence, seroprevalence.weighted.means)
+y <- setdiff(seroprevalence.weighted.means, seroprevalence)
+
+#...........adding on a column for becker, unfortunately many papers did multiple methods.....
+
 
 
