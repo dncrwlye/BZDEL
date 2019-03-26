@@ -15,7 +15,7 @@ MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox/bat virus meta-analysis/M
                                                                          "numeric", "text", "text", "text", 
                                                                          "text", "text", "text", "date", "date", 
                                                                          "date", "text", "text", "text", "text", 
-                                                                         "text", "text", "text", "text"))                                      
+                                                                         "text", "text", "text", "text","text"))                                      
                                             
 ## save old virus
 MetaAnalysis_Data_New_Version$virus_specific=MetaAnalysis_Data_New_Version$virus
@@ -59,26 +59,23 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   #mutate(species = gsub('veldkampi' ,"veldkampii", species)) %>%
   #mutate(species = gsub('veldkampiiii' ,"veldkampii", species)) %>%
   mutate(species = gsub('ferrum-equinum' ,"ferrumequinum", species)) %>%
-  mutate(species = gsub('roussettus' ,"rousettus", species)) %>%
+  mutate(species = gsub('roussettus' ,"rousettus", species))
+
+seroprevalence <- seroprevalence %>%
   mutate(number_positive = as.numeric(number_positive)) %>%
   mutate(seroprevalence_percentage = as.numeric(seroprevalence_percentage)) %>%
   mutate(sample_size = as.numeric(sample_size)) %>%
-  mutate(successes = ifelse(is.na(number_positive) & !is.na(seroprevalence_percentage), 
-                            round(sample_size * seroprevalence_percentage), number_positive)) %>%
-  dplyr::select(-c(number_positive)) %>%
-  mutate(seroprevalence_percentage = ifelse(is.na(seroprevalence_percentage & !is.na(successes)), successes/sample_size * 100, seroprevalence_percentage)) %>%
-  filter(!(is.na(seroprevalence_percentage))) 
-
+  mutate(successes = (seroprevalence_percentage/100)*sample_size) %>%
+  filter(!is.na(sample_size) & !is.na(successes))
+ 
 rm(MetaAnalysis_Data_New_Version)
-
-
 
 seroprevalence <- seroprevalence %>%
   mutate(date_diff = end_of_sampling - start_of_sampling) %>%
-  mutate(date_diff_cat = ifelse(single_sampling_point == 1 | date_diff < 365/12, '<30.4 days', 
+  mutate(date_diff_cat = ifelse(single_sampling_point == 1 | date_diff < 365/12, '<30.4 days',
                          ifelse(single_sampling_point == 0 | date_diff >= 365/12, '>30.4 days', NA))) %>%
   mutate(substudy_non_annual = paste(title, study_design, species, sex, methodology, age_class, sampling_location, single_sampling_point, sep = ', '))
-  
+
 explicit_longitudinal<-seroprevalence %>%
   filter(single_sampling_point == TRUE | date_diff < 365/12) %>%
   dplyr::select(title, substudy_non_annual, sampling_date_single_time_point, start_of_sampling) %>%
@@ -166,8 +163,6 @@ save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
 #NOTE OKAY WE NEED TO COME UP WITH A WAY TO DEAL WITH THIS BETTER. RIGHT NOW I CANNOT FIGURE IT OUT
 
 
-
-
 seroprevalence.weighted.means <- seroprevalence %>%
   group_by(title,
            last_name_of_first_author,
@@ -197,20 +192,42 @@ seroprevalence.weighted.means <- seroprevalence %>%
            sampling.strategy
            )
 
-seroprevalence.weighted.means <- seroprevalence.weighted.means %>%
+seroprevalence.weighted.means.1 <- seroprevalence.weighted.means %>%
   #group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
-  dplyr::summarise(seroprevalence_percentage.dc = weighted.mean(seroprevalence_percentage, w = sample_size), 
-                   successes.dc = weighted.mean(successes, w = sample_size),
-                   sample_size.dc = mean(sample_size)) %>%
-  dplyr::rename(seroprevalence_percentage = seroprevalence_percentage.dc) %>%
-  dplyr::rename(sample_size = sample_size.dc) %>%
+  dplyr::summarise(seroprevalence_percentage = weighted.mean(seroprevalence_percentage, w = sample_size), 
+                   successes = weighted.mean(successes, w = sample_size),
+                   sample_size = mean(sample_size)) %>%
   ungroup() %>%
   mutate(successes.1 = (seroprevalence_percentage/100)*sample_size)
 
+  filter(seroprevalence.weighted.means.1,successes < 9999)$successes.1 %>% mean()
+  filter(seroprevalence.weighted.means.1,successes < 9999)$successes %>% mean()
+  filter(seroprevalence,successes < 9999)$successes %>% mean()
+  
+  filter(seroprevalence.weighted.means.1,successes < 9999)$sample_size %>% mean(na.rm=TRUE)
+  filter(seroprevalence,successes < 9999)$sample_size %>% mean(na.rm=TRUE)
+  
+  filter(seroprevalence.weighted.means.1,successes < 9999)$seroprevalence_percentage %>% mean(na.rm=TRUE)
+  filter(seroprevalence,successes < 9999)$seroprevalence_percentage %>% mean(na.rm=TRUE)
+  
 #okay clearly messing something up
-seroprevalence.weighted.means.x <- seroprevalence.weighted.means %>%
-  filter(successes.dc < 9999)
-plot(seroprevalence.weighted.means.x$successes.1, seroprevalence.weighted.means.x$successes.dc)
+seroprevalence.weighted.means.1 %>%
+  filter(successes < 9999) %>%
+  ggplot() +
+  geom_point(aes(x = successes, y= successes.1))
+
+x <- seroprevalence.weighted.means %>%
+  ungroup() %>%
+  filter(seroprevalence_percentage < 5) %>%
+  select(c(seroprevalence_percentage))%>%
+  unique()
+  ggplot() +
+  geom_histogram(aes(x = seroprevalence_percentage), bins = 100)
+
+plot(seroprevalence.weighted.means.x$successes.1, seroprevalence.weighted.means.x$successes, xlim = c(0,7000))
+
+plot(seroprevalence.weighted.means.x$sample_size.dc)
+
 
 x <- setdiff(seroprevalence, seroprevalence.weighted.means)
 y <- setdiff(seroprevalence.weighted.means, seroprevalence)
