@@ -155,7 +155,7 @@ seroprevalence <- seroprevalence %>%
          
 
 rm(explicit_longitudinal,  explicit_longitudinal.a, explicit_longitudinal.b, pooled_estimates_just_horrible, seroprevalence.compare, single_time_points_but_decent_range)
-save(seroprevalence, file='data/seroprevalence.Rdata')
+save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
 #rm(list=ls())
 
 
