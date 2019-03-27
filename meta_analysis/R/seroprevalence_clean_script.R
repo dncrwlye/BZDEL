@@ -5,28 +5,18 @@ library(stringi)
 
 setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis")
 #MetaAnalysis_Data_New_Version <- read_excel("C:/Users/r83c996/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-# MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-#                                                  col_types = c("text", "numeric", "text", 
-#                                                                          "text", "text", "text", "text", "text", 
-#                                                                          "text", "text", "text", "text", "text", 
-#                                                                          "text", "text", "text", "text", "text", 
-#                                                                          "text", "text", "numeric", "text", 
-#                                                                          "text", "text", "text", "text", "text", 
-#                                                                          "numeric", "text", "text", "text", 
-#                                                                          "text", "text", "text", "date", "date", 
-#                                                                          "date", "text", "text", "text", "text", 
-#                                                                          "text", "text", "text", "text","text"))                                      
-MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-                                            col_types = c("text", "numeric", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "text", "text", "numeric", "text", 
-                                                          "text", "text", "text", "text", "text", 
-                                                          "numeric", "text", "text", "text", 
-                                                          "text", "text", "text", "date", "date", 
-                                                          "date", "text", "text", "text", "text", 
-                                                          "text", "text", "text", "text","text"))                                           
+MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx",
+                                                 col_types = c("text", "numeric", "text",
+                                                                         "text", "text", "text", "text", "text",
+                                                                         "text", "text", "text", "text", "text",
+                                                                         "text", "text", "text", "text", "text",
+                                                                         "text", "text", "numeric", "text",
+                                                                         "text", "text", "text", "text", "text",
+                                                                         "numeric", "text", "text", "text",
+                                                                         "text", "text", "text", "date", "date",
+                                                                         "date", "text", "text", "text", "text",
+                                                                         "text", "text", "text", "text","text"))
+
 ## save old virus
 MetaAnalysis_Data_New_Version$virus_specific=MetaAnalysis_Data_New_Version$virus
 
@@ -176,7 +166,6 @@ seroprevalence <- seroprevalence %>%
   group_by(title,
            last_name_of_first_author,
            virus,
-           virus_specific, ## keep this for Figure 2 EID
            #not virus_specific, often times these are not independent samples, but could be interesting for future analyes,
            study_type,
            study_design,
@@ -213,8 +202,7 @@ seroprevalence <- seroprevalence %>%
   mutate(successes.1 = (seroprevalence_percentage/100)*sample_size)
 
 
-#save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
-setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis"); save(seroprevalence, file='seroprevalence.Rdata')
+save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
 
 
 #okay clearly messing something up
