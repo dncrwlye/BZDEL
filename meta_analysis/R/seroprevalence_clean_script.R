@@ -24,7 +24,7 @@ MetaAnalysis_Data_New_Version$virus_specific=MetaAnalysis_Data_New_Version$virus
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Prevalence_Seroprevalence') %>%
   filter(study_type == "Observational") %>%
-  dplyr::select(title, last_name_of_first_author, virus, virus_specific, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sampling_location_three, sampling_location_four, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling) %>%
+  dplyr::select(title, last_name_of_first_author, virus, virus_specific, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sampling_location_three, sampling_location_four, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling, purpose_of_study, secondary_purpose_of_study) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan|Lloviu', virus), 'Filovirus',
                         ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
@@ -152,7 +152,6 @@ seroprevalence <- seroprevalence %>%
          
 
 rm(explicit_longitudinal,  explicit_longitudinal.a, explicit_longitudinal.b, pooled_estimates_just_horrible, seroprevalence.compare, single_time_points_but_decent_range)
-save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
 #rm(list=ls())
 
 
@@ -163,7 +162,7 @@ save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
 #NOTE OKAY WE NEED TO COME UP WITH A WAY TO DEAL WITH THIS BETTER. RIGHT NOW I CANNOT FIGURE IT OUT
 
 
-seroprevalence.weighted.means <- seroprevalence %>%
+seroprevalence <- seroprevalence %>%
   group_by(title,
            last_name_of_first_author,
            virus,
@@ -189,10 +188,12 @@ seroprevalence.weighted.means <- seroprevalence %>%
            date_diff,
            date_diff_cat,
            substudy_non_annual,
-           sampling.strategy
+           sampling.strategy,
+           purpose_of_study,
+           secondary_purpose_of_study
            )
 
-seroprevalence.weighted.means.1 <- seroprevalence.weighted.means %>%
+seroprevalence <- seroprevalence %>%
   #group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
   dplyr::summarise(seroprevalence_percentage = weighted.mean(seroprevalence_percentage, w = sample_size), 
                    successes = weighted.mean(successes, w = sample_size),
@@ -200,39 +201,14 @@ seroprevalence.weighted.means.1 <- seroprevalence.weighted.means %>%
   ungroup() %>%
   mutate(successes.1 = (seroprevalence_percentage/100)*sample_size)
 
-  filter(seroprevalence.weighted.means.1,successes < 9999)$successes.1 %>% mean()
-  filter(seroprevalence.weighted.means.1,successes < 9999)$successes %>% mean()
-  filter(seroprevalence,successes < 9999)$successes %>% mean()
-  
-  filter(seroprevalence.weighted.means.1,successes < 9999)$sample_size %>% mean(na.rm=TRUE)
-  filter(seroprevalence,successes < 9999)$sample_size %>% mean(na.rm=TRUE)
-  
-  filter(seroprevalence.weighted.means.1,successes < 9999)$seroprevalence_percentage %>% mean(na.rm=TRUE)
-  filter(seroprevalence,successes < 9999)$seroprevalence_percentage %>% mean(na.rm=TRUE)
+
+save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
+
   
 #okay clearly messing something up
 seroprevalence.weighted.means.1 %>%
   filter(successes < 9999) %>%
   ggplot() +
   geom_point(aes(x = successes, y= successes.1))
-
-x <- seroprevalence.weighted.means %>%
-  ungroup() %>%
-  filter(seroprevalence_percentage < 5) %>%
-  select(c(seroprevalence_percentage))%>%
-  unique()
-  ggplot() +
-  geom_histogram(aes(x = seroprevalence_percentage), bins = 100)
-
-plot(seroprevalence.weighted.means.x$successes.1, seroprevalence.weighted.means.x$successes, xlim = c(0,7000))
-
-plot(seroprevalence.weighted.means.x$sample_size.dc)
-
-
-x <- setdiff(seroprevalence, seroprevalence.weighted.means)
-y <- setdiff(seroprevalence.weighted.means, seroprevalence)
-
-#...........adding on a column for becker, unfortunately many papers did multiple methods.....
-
 
 
