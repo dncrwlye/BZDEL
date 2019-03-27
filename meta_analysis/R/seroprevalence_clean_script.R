@@ -214,7 +214,7 @@ seroprevalence <- seroprevalence %>%
 
 
 #save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
-save(seroprevalence, file='seroprevalence.Rdata')
+setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis"); save(seroprevalence, file='seroprevalence.Rdata')
 
 
 #okay clearly messing something up
