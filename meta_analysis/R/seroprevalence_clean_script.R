@@ -3,19 +3,47 @@ library(tidyverse)
 library(readxl)
 library(stringi)
 
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis")
+#setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis")
 #MetaAnalysis_Data_New_Version <- read_excel("C:/Users/r83c996/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx", 
-MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx",
-                                                 col_types = c("text", "numeric", "text",
-                                                                         "text", "text", "text", "text", "text",
-                                                                         "text", "text", "text", "text", "text",
-                                                                         "text", "text", "text", "text", "text",
-                                                                         "text", "text", "numeric", "text",
-                                                                         "text", "text", "text", "text", "text",
-                                                                         "numeric", "text", "text", "text",
-                                                                         "text", "text", "text", "date", "date",
-                                                                         "date", "text", "text", "text", "text",
-                                                                         "text", "text", "text", "text","text"))
+# MetaAnalysis_Data_New_Version <- read_excel("~/Dropbox/bat virus meta-analysis/MetaAnalysis Data New Version.xlsx",
+#                                                  col_types = c("text", "numeric", "text",
+#                                                                          "text", "text", "text", "text", "text",
+#                                                                          "text", "text", "text", "text", "text",
+#                                                                          "text", "text", "text", "text", "text",
+#                                                                          "text", "text", "numeric", "text",
+#                                                                          "text", "text", "text", "text", "text",
+#                                                                          "numeric", "text", "text", "text",
+#                                                                          "text", "text", "text", "date", "date",
+#                                                                          "date", "text", "text", "text", "text",
+#                                                                          "text", "text", "text", "text","text"))
+setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis")
+MetaAnalysis_Data_New_Version <- read_excel("MetaAnalysis Data New Version.xlsx",
+                                            col_types = c("text", "numeric", "text",
+                                                          "text", "text", "text", "text", "text",
+                                                          "text", "text", "text", "text", "text",
+                                                          "text", "text", "text", "text", "text",
+                                                          "text", "text", "numeric", "text",
+                                                          "text", "text", "text", "text", "text",
+                                                          "numeric", "text", "text", "text",
+                                                          "text", "text", "text", "date", "date",
+                                                          "date", "text", "text", "text", "text",
+                                                          "text", "text", "text", "text","text"))
+
+## load in new data
+new_data <- read_excel("additional_data.xlsx",
+                                                     col_types = c("text", "numeric", "text",
+                                                                   "text", "text", "text", "text", "text",
+                                                                   "text", "text", "text", "text", "text",
+                                                                   "text", "text", "text", "text", "text",
+                                                                   "text", "text", "numeric", "text",
+                                                                   "text", "text", "text", "text", "text",
+                                                                   "numeric", "text", "text", "text",
+                                                                   "text", "text", "text", "date", "date",
+                                                                   "date", "text", "text", "text", "text",
+                                                                   "text", "text", "text", "text","text"))
+
+## combine
+MetaAnalysis_Data_New_Version=rbind.data.frame(MetaAnalysis_Data_New_Version,new_data)
 
 ## save old virus
 MetaAnalysis_Data_New_Version$virus_specific=MetaAnalysis_Data_New_Version$virus
@@ -60,6 +88,11 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
   #mutate(species = gsub('veldkampiiii' ,"veldkampii", species)) %>%
   mutate(species = gsub('ferrum-equinum' ,"ferrumequinum", species)) %>%
   mutate(species = gsub('roussettus' ,"rousettus", species))
+
+## fix percentage
+seroprevalence$number_positive=as.numeric(as.character(seroprevalence$number_positive))
+seroprevalence$seroprevalence_percentage=ifelse(is.na(seroprevalence$seroprevalence_percentage),seroprevalence$number_positive/seroprevalence$sample_size,
+       seroprevalence$seroprevalence_percentage)
 
 seroprevalence <- seroprevalence %>%
   mutate(number_positive = as.numeric(number_positive)) %>%
@@ -201,8 +234,9 @@ seroprevalence <- seroprevalence %>%
   ungroup() %>%
   mutate(successes.1 = (seroprevalence_percentage/100)*sample_size)
 
-
-save(seroprevalence, file='meta_analysis/data/seroprevalence.Rdata')
+setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis")
+#save(seroprevalence, file='meta_analysis/data/seroprevalence_revised.Rdata')
+save(seroprevalence, file='seroprevalence_revised.Rdata')
 
 
 #okay clearly messing something up
