@@ -1,4 +1,10 @@
 #............................script that will clean prevalence and seroprevalence data...................................................
+
+## clean environment & plots
+rm(list=ls()) 
+graphics.off()
+
+## libraries
 library(tidyverse)
 library(readxl)
 library(stringi)
@@ -27,7 +33,8 @@ MetaAnalysis_Data_New_Version <- read_excel("MetaAnalysis Data New Version.xlsx"
                                                           "numeric", "text", "text", "text",
                                                           "text", "text", "text", "date", "date",
                                                           "date", "text", "text", "text", "text",
-                                                          "text", "text", "text", "text","text"))
+                                                          "text", "text", "text", "text","text"),
+                                            trim_ws=T)
 
 ## load in new data
 new_data <- read_excel("additional_data.xlsx",
@@ -40,10 +47,36 @@ new_data <- read_excel("additional_data.xlsx",
                                                                    "numeric", "text", "text", "text",
                                                                    "text", "text", "text", "date", "date",
                                                                    "date", "text", "text", "text", "text",
-                                                                   "text", "text", "text", "text","text"))
+                                                                   "text", "text", "text", "text","text"),
+                       trim_ws=T)
+
+## add note
+MetaAnalysis_Data_New_Version$search="previous"
+new_data$search="new"
+
+## are the names the same
+n1=names(MetaAnalysis_Data_New_Version)
+n2=names(new_data)
+n1%in%n2
+
+## sort correctly
+new_data=new_data[names(MetaAnalysis_Data_New_Version)]
 
 ## combine
 MetaAnalysis_Data_New_Version=rbind.data.frame(MetaAnalysis_Data_New_Version,new_data)
+
+## check species
+table(MetaAnalysis_Data_New_Version$species)
+
+## textclean to figure out what's happening
+library(textclean)
+check_text(unique(MetaAnalysis_Data_New_Version$species))
+
+## replace non-ascii
+MetaAnalysis_Data_New_Version$species=replace_non_ascii(MetaAnalysis_Data_New_Version$species)
+
+## check species
+table(MetaAnalysis_Data_New_Version$species)
 
 ## save old virus
 MetaAnalysis_Data_New_Version$virus_specific=MetaAnalysis_Data_New_Version$virus
@@ -52,7 +85,9 @@ MetaAnalysis_Data_New_Version$virus_specific=MetaAnalysis_Data_New_Version$virus
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Prevalence_Seroprevalence') %>%
   filter(study_type == "Observational") %>%
-  dplyr::select(title, last_name_of_first_author, virus, virus_specific, study_type, study_design, methodology, species, sex, age_class, sampling_location, sampling_location_two, sampling_location_three, sampling_location_four, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling, purpose_of_study, secondary_purpose_of_study) %>%
+  dplyr::select(title, last_name_of_first_author, virus, virus_specific, study_type, study_design, 
+                methodology, assay_cutoff, protein_for_elisa,
+                species, sex, age_class, sampling_location, sampling_location_two, sampling_location_three, sampling_location_four, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling, purpose_of_study, secondary_purpose_of_study, search) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan|Lloviu', virus), 'Filovirus',
                         ifelse(grepl('Henipa|Hendra|Nipah', virus), 'Henipavirus',
                                ifelse(grepl('Tioman', virus), 'Tioman', virus)))) %>%
@@ -91,6 +126,8 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
 
 ## fix percentage
 seroprevalence$number_positive=as.numeric(as.character(seroprevalence$number_positive))
+seroprevalence$seroprevalence_percentage=as.numeric(as.character(seroprevalence$seroprevalence_percentage))
+seroprevalence$sample_size=as.numeric(as.character(seroprevalence$sample_size))
 seroprevalence$seroprevalence_percentage=ifelse(is.na(seroprevalence$seroprevalence_percentage),seroprevalence$number_positive/seroprevalence$sample_size,
        seroprevalence$seroprevalence_percentage)
 
@@ -195,44 +232,44 @@ rm(explicit_longitudinal,  explicit_longitudinal.a, explicit_longitudinal.b, poo
 #NOTE OKAY WE NEED TO COME UP WITH A WAY TO DEAL WITH THIS BETTER. RIGHT NOW I CANNOT FIGURE IT OUT
 
 
-seroprevalence <- seroprevalence %>%
-  group_by(title,
-           last_name_of_first_author,
-           virus,
-           #not virus_specific, often times these are not independent samples, but could be interesting for future analyes,
-           study_type,
-           study_design,
-           #methodology PCR in urine and PCR in blood not independent probs
-           species, 
-           sex,
-           age_class,
-           sampling_location,
-           sampling_location_two, 
-           sampling_location_three,
-           sampling_location_four,
-           #sample_size
-           #seroprevalence_percentage
-           single_sampling_point,
-           sampling_date_single_time_point,
-           start_of_sampling,
-           end_of_sampling,
-           methodology_general,
-           #successes,
-           date_diff,
-           date_diff_cat,
-           substudy_non_annual,
-           sampling.strategy,
-           purpose_of_study,
-           secondary_purpose_of_study
-           )
-
-seroprevalence <- seroprevalence %>%
-  #group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
-  dplyr::summarise(seroprevalence_percentage = weighted.mean(seroprevalence_percentage, w = sample_size), 
-                   successes = weighted.mean(successes, w = sample_size),
-                   sample_size = mean(sample_size)) %>%
-  ungroup() %>%
-  mutate(successes.1 = (seroprevalence_percentage/100)*sample_size)
+# seroprevalence <- seroprevalence %>%
+#   group_by(title,
+#            last_name_of_first_author,
+#            virus,
+#            #not virus_specific, often times these are not independent samples, but could be interesting for future analyes,
+#            study_type,
+#            study_design,
+#            #methodology PCR in urine and PCR in blood not independent probs
+#            species, 
+#            sex,
+#            age_class,
+#            sampling_location,
+#            sampling_location_two, 
+#            sampling_location_three,
+#            sampling_location_four,
+#            #sample_size
+#            #seroprevalence_percentage
+#            single_sampling_point,
+#            sampling_date_single_time_point,
+#            start_of_sampling,
+#            end_of_sampling,
+#            methodology_general,
+#            #successes,
+#            date_diff,
+#            date_diff_cat,
+#            substudy_non_annual,
+#            sampling.strategy,
+#            purpose_of_study,
+#            secondary_purpose_of_study
+#            )
+# 
+# seroprevalence <- seroprevalence %>%
+#   #group_by_at(vars(-seroprevalence_percentage, -successes, -sample_size)) %>%
+#   dplyr::summarise(seroprevalence_percentage = weighted.mean(seroprevalence_percentage, w = sample_size), 
+#                    successes = weighted.mean(successes, w = sample_size),
+#                    sample_size = mean(sample_size)) %>%
+#   ungroup() %>%
+#   mutate(successes.1 = (seroprevalence_percentage/100)*sample_size)
 
 setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis")
 #save(seroprevalence, file='meta_analysis/data/seroprevalence_revised.Rdata')
