@@ -85,7 +85,7 @@ MetaAnalysis_Data_New_Version$virus_specific=MetaAnalysis_Data_New_Version$virus
 seroprevalence <- MetaAnalysis_Data_New_Version %>%
   filter(outcome == 'Prevalence_Seroprevalence') %>%
   filter(study_type == "Observational") %>%
-  dplyr::select(title, last_name_of_first_author, virus, virus_specific, study_type, study_design, 
+  dplyr::select(title, last_name_of_first_author, year_published, virus, virus_specific, study_type, study_design, 
                 methodology, assay_cutoff, protein_for_elisa,
                 species, sex, age_class, sampling_location, sampling_location_two, sampling_location_three, sampling_location_four, sample_size, seroprevalence_percentage, number_positive, single_sampling_point, sampling_date_single_time_point, start_of_sampling, end_of_sampling, purpose_of_study, secondary_purpose_of_study, search) %>%
   mutate(virus = ifelse(grepl('Ebola|Marburg|Sudan|Lloviu', virus), 'Filovirus',
@@ -128,9 +128,29 @@ seroprevalence <- MetaAnalysis_Data_New_Version %>%
 seroprevalence$number_positive=as.numeric(as.character(seroprevalence$number_positive))
 seroprevalence$seroprevalence_percentage=as.numeric(as.character(seroprevalence$seroprevalence_percentage))
 seroprevalence$sample_size=as.numeric(as.character(seroprevalence$sample_size))
-seroprevalence$seroprevalence_percentage=ifelse(is.na(seroprevalence$seroprevalence_percentage),seroprevalence$number_positive/seroprevalence$sample_size,
+
+## fix wonky percents
+set=seroprevalence
+set=set[-which(set$seroprevalence_percentage==0),]
+set=set[which(set$seroprevalence_percentage<1),]
+rm(set)
+
+## remove sample size of zero
+seroprevalence=seroprevalence[-which(seroprevalence$sample_size==0),]
+
+## fix for missing
+seroprevalence$seroprevalence_percentage=ifelse(is.na(seroprevalence$seroprevalence_percentage),
+                                                (seroprevalence$number_positive/seroprevalence$sample_size)*100,
        seroprevalence$seroprevalence_percentage)
 
+## remove fake sample
+seroprevalence=seroprevalence[-which(seroprevalence$sample_size==9999999999),]
+
+## check
+set=seroprevalence[c("seroprevalence_percentage","sample_size","number_positive")]
+set=set[order(set$number_positive),]
+
+## Crowley code
 seroprevalence <- seroprevalence %>%
   mutate(number_positive = as.numeric(number_positive)) %>%
   mutate(seroprevalence_percentage = as.numeric(seroprevalence_percentage)) %>%
