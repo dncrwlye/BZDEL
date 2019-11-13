@@ -12,8 +12,10 @@ library(ape)
 library(plyr)
 
 ## read in Rdata file
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
-load(file='data/seroprevalence.Rdata')
+setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis")
+load("seroprevalence_revised.Rdata")
+#setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+#load(file='data/seroprevalence.Rdata')
 
 #load("/Users/danielbecker/Desktop/BZDEL/meta_analysis/data/seroprevalence.Rdata")
 data=seroprevalence
@@ -34,6 +36,18 @@ data$sample=as.numeric(data$sample)
 ## make detection
 data$detection=ifelse(data$serop>0,1,0)
 
+## convert virus to lower
+data$virus=tolower(data$virus)
+
+## standardize virus
+table(data$virus)
+data$virus=revalue(data$virus,c("bombali virus"="filovirus",
+                                "cedar"="henipavirus",
+                                "ebola"="filovirus",
+                                "hendra"="henipavirus",
+                                "nipah"="henipavirus"))
+table(data$virus)
+
 ## if methodology==isolation
 data$detection=ifelse(data$methodology=="isolation",1,data$detection)
 
@@ -47,23 +61,73 @@ data$species=revalue(data$species,c("rhinolophus refulgens"="rhinolophus lepidus
                                     "hipposideros cf ruber"="hipposideros ruber",
                                     "natalus lanatus"="natalus mexicanus",
                                     "myonycteris leptodon"="myonycteris torquata",
-                                    "nanonycteris veldkampiii"="nanonycteris veldkampii",
-                                    "tadarida plicata"="chaerephon plicata"))
+                                    "tadarida plicata"="chaerephon plicatus",
+                                    "pipistrellus cf nanus/nanulus"="pipistrellus nanus",
+                                    "neoromicia nana"="neoromicia nanus"))
 
-## remove unapplicable names
-data=data[-which(data$species=="bat"),]
+## record pooled ones
+pool=c("bat","bats*",
+       "carollia species","chalinobus species","cynopterus species","eonycteris spelaea & rousettus species",
+       "epomophorus species","glossophaginae species1","glossophaginae species3",
+       "hipposideros species","hypsignathus monstrosus, epomops franqueti, myonycteris torquata",
+       "microchiroptere species","micropteropus/nanonycteris",
+       "miniopterus species","molossideo species1","mops species",
+       "myotis species","nycteris species","nyctophilus species",
+       "pipistrellus species",
+       "pteropus conspicillatus & dobsonia magna",
+       "pteropus species","rhinolophus species","scotorepens species",
+       "synconycterus species","tadarida species","unknown species",
+       "vespertilionidae species1","vespertilioniformes species",
+       "unidentified nycterid bat",
+       "unidentified myonycteris/epomophorous bat",
+       "unidentified molossid bat",
+       "unidentified hipposiderod bat",
+       "unidentified epomophorous bat",
+       "unidentified chaerephon bat",
+       "rhinolophus sp.",
+       "nycteris sp.",
+       "mops sp.",
+       "miniopterus sp.",
+       "microchiroptere species",
+       "kerivoula sp.",
+       "hipposideros sp.",
+       "hipposideros ruber/caffer",
+       "glossophaginae species1",
+       "glossophaginae species3",
+       "epomophorus species",
+       "eonycteris spelaea & rousettus species",
+       "cynopterus species",
+       "chalinobus species",
+       "chaerephon sp.",
+       "carollia species",
+       "neoromicia sp.")
+pool=sort(unique(pool))
+
+## code to drop these
+data$phy_drop=ifelse(data$species%in%pool,"genus pool","keep")
+
+## subset
+data=data[-which(data$phy_drop=="genus pool"),]
+
+## fix multiple species
+data$species_final=revalue(data$species,c("pteropus alecto, pteropus poliocephalus"="pteropus alecto",
+                                          "pteropus alecto, pteropus poliocephalus, pteropus scapulatus"="pteropus alecto",
+                                          "pteropus alecto, pteropus scapulatus"="pteropus alecto",
+                                          "pteropus conspicillatus, pteropus scapulatus"="pteropus conspicillatus"))
+data$species=data$species_final
+data$species_final=NULL
 
 ## data frame of all species
 sdata=data.frame(sort(unique(data$species)))
 names(sdata)="species"
 
 ## filovirus
-fdata=data[which(data$virus=="Filovirus"),]
+fdata=data[which(data$virus=="filovirus"),]
 filodata=data.frame(table(fdata$species))
 names(filodata)=c("species","filo_samps")
 
 ## hnv
-hdata=data[which(data$virus=="Henipavirus"),]
+hdata=data[which(data$virus=="henipavirus"),]
 hnvdata=data.frame(table(hdata$species))
 names(hnvdata)=c("species","hnv_samps")
 
@@ -104,9 +168,6 @@ rm(hdata,fdata,hdetect,fdetect,adetect)
 
 ## sdata sort
 sdata=sdata[order(sdata$species),]
-
-## remove weird species
-sdata=sdata[-which(sdata$species=="miniopterus species"),]
 
 ## obtain host phylogeny, remove spp records
 library(rotl)

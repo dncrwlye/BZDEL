@@ -12,8 +12,10 @@ library(ape)
 library(plyr)
 
 ## read in Rdata file
-setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
-load(file='data/seroprevalence.Rdata')
+setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis")
+load("seroprevalence_revised.Rdata")
+#setwd("/Users/buckcrowley/Desktop/BDEL/BZDEL/meta_analysis/")
+#load(file='data/seroprevalence.Rdata')
 
 #load("/Users/danielbecker/Desktop/BZDEL/meta_analysis/data/seroprevalence.Rdata")
 data=seroprevalence
@@ -34,6 +36,18 @@ data$sample=as.numeric(data$sample)
 ## make detection
 data$detection=ifelse(data$serop>0,1,0)
 
+## convert virus to lower
+data$virus=tolower(data$virus)
+
+## standardize virus
+table(data$virus)
+data$virus=revalue(data$virus,c("bombali virus"="filovirus",
+                                "cedar"="henipavirus",
+                                "ebola"="filovirus",
+                                "hendra"="henipavirus",
+                                "nipah"="henipavirus"))
+table(data$virus)
+
 ## if methodology==isolation
 data$detection=ifelse(data$methodology=="isolation",1,data$detection)
 
@@ -47,23 +61,81 @@ data$species=revalue(data$species,c("rhinolophus refulgens"="rhinolophus lepidus
                                     "hipposideros cf ruber"="hipposideros ruber",
                                     "natalus lanatus"="natalus mexicanus",
                                     "myonycteris leptodon"="myonycteris torquata",
-                                    "nanonycteris veldkampiii"="nanonycteris veldkampii",
-                                    "tadarida plicata"="chaerephon plicata"))
+                                    "tadarida plicata"="chaerephon plicatus",
+                                    "pipistrellus cf nanus/nanulus"="neoromicia nanus",
+                                    "neoromicia nana"="neoromicia nanus",
+                                    "hypsygnathus monstrosus"="hypsignathus monstrosus",
+                                    "miniopterus schrebersii"="miniopterus schreibersii",
+                                    "lissonycteris angolensis"="myonycteris angolensis",
+                                    "pteropus medius"="pteropus giganteus",
+                                    "artibeus planirostris"="artibeus jamaicensis"))
 
-## remove unapplicable names
-data=data[-which(data$species=="bat"),]
+## fix mini
+data$species=revalue(data$species,c("miniopterus schreibersii"="miniopterus schreibersii schreibersii"))
+
+## record pooled ones
+pool=c("bat","bats*",
+       "carollia species","chalinobus species","cynopterus species","eonycteris spelaea & rousettus species",
+       "epomophorus species","glossophaginae species1","glossophaginae species3",
+       "hipposideros species","hypsignathus monstrosus, epomops franqueti, myonycteris torquata",
+       "microchiroptere species","micropteropus/nanonycteris",
+       "miniopterus species","molossideo species1","mops species",
+       "myotis species","nycteris species","nyctophilus species",
+       "pipistrellus species",
+       "pteropus conspicillatus & dobsonia magna",
+       "pteropus species","rhinolophus species","scotorepens species",
+       "synconycterus species","tadarida species","unknown species",
+       "vespertilionidae species1","vespertilioniformes species",
+       "unidentified nycterid bat",
+       "unidentified myonycteris/epomophorous bat",
+       "unidentified molossid bat",
+       "unidentified hipposiderod bat",
+       "unidentified epomophorous bat",
+       "unidentified chaerephon bat",
+       "rhinolophus sp.",
+       "nycteris sp.",
+       "mops sp.",
+       "miniopterus sp.",
+       "microchiroptere species",
+       "kerivoula sp.",
+       "hipposideros sp.",
+       "hipposideros ruber/caffer",
+       "glossophaginae species1",
+       "glossophaginae species3",
+       "epomophorus species",
+       "eonycteris spelaea & rousettus species",
+       "cynopterus species",
+       "chalinobus species",
+       "chaerephon sp.",
+       "carollia species",
+       "neoromicia sp.")
+pool=sort(unique(pool))
+
+## code to drop these
+data$phy_drop=ifelse(data$species%in%pool,"genus pool","keep")
+
+## subset
+data=data[-which(data$phy_drop=="genus pool"),]
+
+## fix multiple species
+data$species_final=revalue(data$species,c("pteropus alecto, pteropus poliocephalus"="pteropus alecto",
+                                          "pteropus alecto, pteropus poliocephalus, pteropus scapulatus"="pteropus alecto",
+                                          "pteropus alecto, pteropus scapulatus"="pteropus alecto",
+                                          "pteropus conspicillatus, pteropus scapulatus"="pteropus conspicillatus"))
+data$species=data$species_final
+data$species_final=NULL
 
 ## data frame of all species
 sdata=data.frame(sort(unique(data$species)))
 names(sdata)="species"
 
 ## filovirus
-fdata=data[which(data$virus=="Filovirus"),]
+fdata=data[which(data$virus=="filovirus"),]
 filodata=data.frame(table(fdata$species))
 names(filodata)=c("species","filo_samps")
 
 ## hnv
-hdata=data[which(data$virus=="Henipavirus"),]
+hdata=data[which(data$virus=="henipavirus"),]
 hnvdata=data.frame(table(hdata$species))
 names(hnvdata)=c("species","hnv_samps")
 
@@ -105,9 +177,6 @@ rm(hdata,fdata,hdetect,fdetect,adetect)
 ## sdata sort
 sdata=sdata[order(sdata$species),]
 
-## remove weird species
-sdata=sdata[-which(sdata$species=="miniopterus species"),]
-
 ## obtain host phylogeny, remove spp records
 library(rotl)
 library(ape)
@@ -117,17 +186,13 @@ phy=tnrs_match_names(names=as.character(sdata$species),context_name="Animals",do
 sdata=data.frame(sdata,phy)
 rm(phy)
 
+## order
+sdata=sdata[order(sdata$unique_name,sdata$search_string),]
+
 ## remove NA
 sdata=sdata[!is.na(sdata$ott_id),]
 
 ## rotl the tree
-tree=tol_induced_subtree(ott_ids=sdata$ott_id)
-
-## drop bad tips
-sdata=sdata[-which(sdata$ott_id=="1039982"),]
-sdata=sdata[-which(sdata$ott_id=="238425"),]
-
-## tree
 tree=tol_induced_subtree(ott_ids=sdata$ott_id)
 
 ## remove ott information from the tips
@@ -165,11 +230,17 @@ sdata$species=sdata$unique_name
 sdata$unique_name=gsub(" ","_",sdata$unique_name)
 rm(data)
 
-## load wilson and reeder bat data
-#setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis/trait data")
-#bats=read.csv("wilson and reeder_chiroptera.csv",header=TRUE)
+## which names don't match
+sdata$unique_name[!sdata$unique_name%in%tree$tip.label]
 
-bats = read.csv("/Users/buckcrowley/Dropbox_gmail/Dropbox/bat virus meta-analysis/trait data/wilson and reeder_chiroptera.csv", header =TRUE)
+## fix sdata and tree
+sdata$unique_name=revalue(sdata$unique_name,c("Miniopterus_schreibersii_schreibersii"="Miniopterus_schreibersii"))
+tree$tip.label=revalue(tree$tip.label,c("Miniopterus_schreibersii_schreibersii"="Miniopterus_schreibersii"))
+
+## load wilson and reeder bat data
+setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis/trait data")
+bats=read.csv("wilson and reeder_chiroptera.csv",header=TRUE)
+#bats = read.csv("/Users/buckcrowley/Dropbox_gmail/Dropbox/bat virus meta-analysis/trait data/wilson and reeder_chiroptera.csv", header =TRUE)
 
 ## remove no species
 bats=bats[!is.na(bats$Species),]
@@ -433,7 +504,7 @@ bats=bats[c("species","region")]
 ## get phylogeny
 bphy=tnrs_match_names(names=bats$species,context_name="Animals",do_approximate_matching=F)
 
-## fuck you R, do this 1319/250 times
+## fuck you R, do this 1116/250 times
 bs=seq(1,nrow(bats),by=250)
 
 ## get sets of names
@@ -460,15 +531,17 @@ bphy=bphy[order(bphy$species),]
 ## get tree of all bats from rotl
 btree=tol_induced_subtree(ott_ids=bphy$ott_id)
 
-## remove bad otts
-bphy=bphy[-which(bphy$ott_id=="687487"),]
-bphy=bphy[-which(bphy$ott_id=="1034143"),]
-bphy=bphy[-which(bphy$ott_id=="756131"),]
-bphy=bphy[-which(bphy$ott_id=="513426"),]
-bphy=bphy[-which(bphy$ott_id=="1055363"),]
-bphy=bphy[-which(bphy$ott_id=="1080286"),]
-bphy=bphy[-which(bphy$ott_id=="342715"),]
-bphy=bphy[-which(bphy$ott_id=="238425"),]
+## clean
+rm(bphy1,bphy2,bphy3,bphy4,bphy5)
+# ## remove bad otts
+# bphy=bphy[-which(bphy$ott_id=="687487"),]
+# bphy=bphy[-which(bphy$ott_id=="1034143"),]
+# bphy=bphy[-which(bphy$ott_id=="756131"),]
+# bphy=bphy[-which(bphy$ott_id=="513426"),]
+# bphy=bphy[-which(bphy$ott_id=="1055363"),]
+# bphy=bphy[-which(bphy$ott_id=="1080286"),]
+# bphy=bphy[-which(bphy$ott_id=="342715"),]
+# bphy=bphy[-which(bphy$ott_id=="238425"),]
 
 ## convert names to match
 bphy$unique_name=gsub(" ","_",bphy$unique_name)
@@ -545,7 +618,11 @@ batphy$both_surv=ifelse(batphy$surveyed==0,NA,ifelse(batphy$filo_surv==1 & batph
 
 ## export batphy
 #setwd("~/Dropbox (MSU projects)/Spillover postdoc/bat virus meta-analysis/bat phylogeny")
-write.csv(batphy,"data/batphy_for_rotl.csv")
+setwd("~/Desktop/BZDEL/meta_analysis/R/revised analyses")
+write.csv(batphy,"batphy_for_rotl.csv")
+
+## as Rdata
+save(batphy,file="batphy_revised.Rdata")
 
 ## get tree with otts
 bat_tree=tol_induced_subtree(ott_ids=batphy$ott_id)
@@ -559,6 +636,7 @@ bat_tree=compute.brlen(bat_tree,method="Grafen")
 ## sort batphy into same order as bat_tree
 bat_tree=makeLabel(bat_tree)
 batphy=batphy[match(bat_tree$tip.label,batphy$tree_species),]
+batphy=batphy[!is.na(batphy$tree_species),]
 
 ## give row names
 rownames(batphy)=batphy$tree_species
@@ -567,46 +645,3 @@ rownames(batphy)=batphy$tree_species
 library(caper)
 cdata=comparative.data(phy=bat_tree,data=batphy,names.col=tree_species,vcv=T,na.omit=F,warn.dropped=T)
 
-## assign colors for sampled or not
-cdata$data$survey_col=ifelse(cdata$data$surveyed==1,"blueviolet",NA)
-
-## assign colors for viral detection
-cdata$data$survey_col=ifelse(cdata$data$surveyed==0,NA,ifelse(cdata$data$both_surv==1,"blueviolet",
-                                                              ifelse(cdata$data$filo_surv==1,
-                                                                     "cornflowerblue","firebrick3")))
-
-## trim to africa only
-afdata=cdata[which(cdata$data$region=="Africa"),]
-
-## plot bat tree without tips
-png("bat phylo effort.png",width=7,height=4,units="in",res=300)
-par(mar=c(2.5,0,2,0),oma=c(0,0,0,0),mfrow=c(1,2))
-
-## full phylogeny
-plot(cdata$phy,type="fan",show.tip.label=F,edge.width=1)
-
-## add labels based on sampling or not
-tiplabels(pch=21,col=cdata$data$survey_col,bg=cdata$data$survey_col,cex=1)
-
-## legend
-legend("topleft","(A) full bat phylogeny",bty="n",inset=c(0.175,-0.12),xpd=T)
-
-## africa only
-plot(afdata$phy,type="fan",show.tip.label=F,edge.width=1)
-
-## add labels based on sampling or not
-tiplabels(pch=21,col=afdata$data$survey_col,bg=afdata$data$survey_col,cex=1)
-
-## legend
-legend("topleft","(B) African bats only",bty="n",inset=c(0.175,-0.12),xpd=T)
-
-## bottom legend
-par(fig=c(0,1,0,1),oma=c(0,0,0,0),mar=c(0,0,0,0),new=TRUE)
-plot(0,0,type="n",bty="n",xaxt="n",yaxt="n")
-legend("bottomleft",c("filovirus surveyed","HNV surveyed","both surveyed"),
-       pch=21,col=c("cornflowerblue","firebrick3","blueviolet"),
-       pt.bg=c("cornflowerblue","firebrick3","blueviolet"),bty="n",
-       xpd=T,ncol=3,x.intersp=0.75,text.width=0.425,inset=c(0.2,0))
-
-## dev
-dev.off()
