@@ -50,6 +50,9 @@ new_data <- read_excel("additional_data.xlsx",
                                                                    "text", "text", "text", "text","text"),
                        trim_ws=T)
 
+## REMOVE DUP
+new_data=new_data[-which(new_data$Notes=="DUP"),]
+
 ## add note
 MetaAnalysis_Data_New_Version$search="previous"
 new_data$search="new"
